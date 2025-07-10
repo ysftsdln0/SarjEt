@@ -14,3 +14,5 @@
 ## REPOYU CLONLE'LAMAK İCİN
 
     git clone https://github.com/ysftsdln0/SarjEt
+
+## KULLANIM.md Yİ OKUYUN
