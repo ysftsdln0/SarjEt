@@ -65,12 +65,31 @@ export class ChargingStationService {
         params.key = this.apiKey;
       }
 
+      console.log('🌐 OpenChargeMap API çağrısı:', { 
+        url: BASE_URL, 
+        params,
+        hasApiKey: !!this.apiKey 
+      });
+
       const response = await axios.get(BASE_URL, { params });
+      
+      console.log('📡 API Response:', {
+        status: response.status,
+        dataLength: response.data?.length || 0,
+        sampleStation: response.data?.[0]?.AddressInfo?.Title || 'Yok'
+      });
       
       return response.data as ChargingStation[];
     } catch (error) {
-      console.error('Şarj istasyonları alınırken hata:', error);
-      console.warn('API hatası, demo veriler kullanılıyor');
+      console.error('❌ API Hatası:', error);
+      if (axios.isAxiosError(error)) {
+        console.error('API Response Error:', {
+          status: error.response?.status,
+          statusText: error.response?.statusText,
+          data: error.response?.data
+        });
+      }
+      console.warn('🔄 API hatası, demo veriler kullanılıyor');
       return this.getMockStations(latitude, longitude, radiusKM, maxResults);
     }
   }
@@ -84,6 +103,8 @@ export class ChargingStationService {
     radiusKM: number,
     maxResults: number
   ): ChargingStation[] {
+    console.log('🔄 Mock data kullanılıyor:', { latitude, longitude, radiusKM, maxResults });
+    
     // Mock data'yı kopyala ve mesafeleri hesapla
     const stationsWithDistance = mockChargingStations.map(station => {
       const distance = this.calculateDistance(
@@ -103,10 +124,18 @@ export class ChargingStationService {
     });
 
     // Mesafeye göre filtrele ve sırala
-    return stationsWithDistance
+    const filteredStations = stationsWithDistance
       .filter(station => station.AddressInfo.Distance <= radiusKM)
       .sort((a, b) => a.AddressInfo.Distance - b.AddressInfo.Distance)
       .slice(0, maxResults);
+
+    console.log('📍 Mock data sonucu:', {
+      totalMockStations: mockChargingStations.length,
+      stationsInRange: filteredStations.length,
+      nearestStation: filteredStations[0]?.AddressInfo?.Title || 'Yok'
+    });
+
+    return filteredStations;
   }
 
   /**

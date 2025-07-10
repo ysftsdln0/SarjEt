@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+// Updated color palette: #000000, #14213d, #fca311, #e5e5e5, #ffffff
 import {
   View,
   Text,
@@ -9,10 +10,23 @@ import {
   SafeAreaView,
   StatusBar,
   Linking,
+  Dimensions,
 } from 'react-native';
+import Animated, { 
+  FadeInDown, 
+  FadeInUp, 
+  SlideInRight,
+  useSharedValue,
+  withSpring,
+  useAnimatedStyle,
+} from 'react-native-reanimated';
+import { MotiView } from 'moti';
+import { Ionicons, MaterialIcons, FontAwesome5 } from '@expo/vector-icons';
 import { ChargingStation, UserLocation } from '../types';
 import { StationUtils } from '../utils/stationUtils';
 import { LocationService } from '../services/locationService';
+
+const { width } = Dimensions.get('window');
 
 interface StationDetailScreenProps {
   route: {
@@ -29,13 +43,31 @@ export const StationDetailScreen: React.FC<StationDetailScreenProps> = ({
 }) => {
   const { station } = route.params;
   const [userLocation, setUserLocation] = useState<UserLocation | null>(null);
+  const [isDarkMode] = useState(false); // Koyu mod için state
+  
+  // Animasyon shared values
+  const headerOpacity = useSharedValue(0);
+  const cardScale = useSharedValue(0.9);
 
   useEffect(() => {
+    // Animasyonları başlat
+    headerOpacity.value = withSpring(1, { duration: 800 });
+    cardScale.value = withSpring(1, { duration: 600 });
+    
     // Kullanıcı konumunu al
     LocationService.getCurrentLocation()
       .then(setUserLocation)
       .catch(console.error);
   }, []);
+
+  // Animasyon stilleri
+  const headerAnimatedStyle = useAnimatedStyle(() => ({
+    opacity: headerOpacity.value,
+  }));
+
+  const cardAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: cardScale.value }],
+  }));
 
   const handleGetDirections = async () => {
     try {
@@ -96,31 +128,56 @@ export const StationDetailScreen: React.FC<StationDetailScreenProps> = ({
   const renderConnectionInfo = () => {
     if (!station.Connections || station.Connections.length === 0) {
       return (
-        <View style={styles.infoCard}>
-          <Text style={styles.cardTitle}>Bağlantı Bilgisi</Text>
-          <Text style={styles.noDataText}>Bağlantı bilgisi mevcut değil</Text>
+        <MotiView
+          from={{ opacity: 0, translateY: 20 }}
+          animate={{ opacity: 1, translateY: 0 }}
+          transition={{ type: 'timing', duration: 600, delay: 400 }}
+          style={[styles.infoCard, isDarkMode && styles.darkCard]}
+        >        <View style={styles.cardHeader}>
+          <FontAwesome5 name="plug" size={20} color="#fca311" />
+          <Text style={[styles.cardTitle, isDarkMode && styles.darkText]}>Bağlantı Bilgisi</Text>
         </View>
+          <Text style={[styles.noDataText, isDarkMode && styles.darkSubText]}>
+            Bağlantı bilgisi mevcut değil
+          </Text>
+        </MotiView>
       );
     }
 
     return (
-      <View style={styles.infoCard}>
-        <Text style={styles.cardTitle}>Bağlantı Bilgileri</Text>
+      <MotiView
+        from={{ opacity: 0, translateY: 20 }}
+        animate={{ opacity: 1, translateY: 0 }}
+        transition={{ type: 'timing', duration: 600, delay: 400 }}
+        style={[styles.infoCard, isDarkMode && styles.darkCard]}
+      >
+        <View style={styles.cardHeader}>
+          <FontAwesome5 name="plug" size={20} color="#fca311" />
+          <Text style={[styles.cardTitle, isDarkMode && styles.darkText]}>Bağlantı Bilgileri</Text>
+        </View>
         {station.Connections.map((connection, index) => (
-          <View key={index} style={styles.connectionItem}>
+          <MotiView
+            key={index}
+            from={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ type: 'timing', duration: 400, delay: 500 + (index * 100) }}
+            style={[styles.connectionItem, isDarkMode && styles.darkConnectionItem]}
+          >
             <View style={styles.connectionHeader}>
-              <Text style={styles.connectionType}>
+              <Text style={[styles.connectionType, isDarkMode && styles.darkText]}>
                 {connection.ConnectionType?.Title || 'Bilinmeyen'}
               </Text>
               {connection.PowerKW && (
-                <Text style={styles.connectionPower}>
-                  {connection.PowerKW} kW
-                </Text>
+                <View style={styles.powerBadge}>
+                  <Text style={styles.connectionPower}>
+                    {connection.PowerKW} kW
+                  </Text>
+                </View>
               )}
             </View>
             
             {connection.Quantity && connection.Quantity > 1 && (
-              <Text style={styles.connectionQuantity}>
+              <Text style={[styles.connectionQuantity, isDarkMode && styles.darkSubText]}>
                 {connection.Quantity} adet
               </Text>
             )}
@@ -129,89 +186,169 @@ export const StationDetailScreen: React.FC<StationDetailScreenProps> = ({
               <View style={styles.connectionStatus}>
                 <View
                   style={[
-                    styles.statusDot,
+                    styles.statusIndicator,
                     {
                       backgroundColor: connection.StatusType.IsOperational
-                        ? '#22c55e'
-                        : '#ef4444',
+                        ? '#fca311'
+                        : '#000000',
                     },
                   ]}
                 />
-                <Text style={styles.connectionStatusText}>
+                <Text style={[styles.connectionStatusText, isDarkMode && styles.darkText]}>
                   {connection.StatusType.IsOperational ? 'Aktif' : 'Devre dışı'}
                 </Text>
               </View>
             )}
-          </View>
+          </MotiView>
         ))}
-      </View>
+      </MotiView>
     );
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
+    <SafeAreaView style={[styles.container, isDarkMode && styles.darkContainer]}>
+      <StatusBar 
+        barStyle={isDarkMode ? "light-content" : "light-content"} 
+        backgroundColor={isDarkMode ? "#000000" : "#14213d"} 
+      />
       
-      {/* Header */}
-      <View style={styles.header}>
+      {/* Modern Header with Animation */}
+      <Animated.View style={[styles.header, isDarkMode && styles.darkHeader, headerAnimatedStyle]}>
         <TouchableOpacity
           style={styles.backButton}
           onPress={() => navigation.goBack()}
         >
-          <Text style={styles.backButtonText}>← Geri</Text>
+          <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>İstasyon Detayı</Text>
-      </View>
+        <TouchableOpacity style={styles.favoriteButton}>
+          <Ionicons name="heart-outline" size={24} color="#FFFFFF" />
+        </TouchableOpacity>
+      </Animated.View>
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {/* Ana bilgiler */}
-        <View style={styles.mainCard}>
-          <View style={styles.stationHeader}>
-            <Text style={styles.stationName}>
-              {station.AddressInfo.Title || 'İsimsiz İstasyon'}
-            </Text>
-            <View style={styles.statusContainer}>
-              <View
-                style={[
-                  styles.statusDot,
-                  { backgroundColor: StationUtils.getStatusColor(station) },
-                ]}
-              />
-              <Text style={styles.statusText}>
-                {StationUtils.getStationStatus(station)}
-              </Text>
-            </View>
-          </View>
+      <ScrollView 
+        style={[styles.content, isDarkMode && styles.darkContent]} 
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Hero Card with Animation */}
+        <Animated.View 
+          entering={FadeInDown.delay(200).duration(800)}
+          style={[styles.heroCard, cardAnimatedStyle, isDarkMode && styles.darkCard]}
+        >
+          <MotiView
+            from={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ type: 'spring', duration: 1000, delay: 300 }}
+            style={styles.statusBadge}
+          >
+            <View
+              style={[
+                styles.statusIndicator,
+                { backgroundColor: StationUtils.getStatusColor(station) },
+              ]}
+            />
+          </MotiView>
 
-          <Text style={styles.address}>
-            {StationUtils.getFormattedAddress(station)}
+          <Text style={[styles.stationName, isDarkMode && styles.darkText]}>
+            {station.AddressInfo.Title || 'İsimsiz İstasyon'}
           </Text>
 
-          {station.AddressInfo.Distance && (
-            <Text style={styles.distance}>
-              Uzaklık: {StationUtils.formatDistance(station.AddressInfo.Distance)}
+          <View style={styles.locationRow}>
+            <Ionicons name="location-outline" size={16} color="#fca311" />
+            <Text style={[styles.address, isDarkMode && styles.darkSubText]}>
+              {StationUtils.getFormattedAddress(station)}
             </Text>
+          </View>
+
+          {station.AddressInfo.Distance && (
+            <View style={styles.distanceRow}>
+              <MaterialIcons name="directions-car" size={16} color="#ffffff" />
+              <Text style={styles.distance}>
+                {StationUtils.formatDistance(station.AddressInfo.Distance)}
+              </Text>
+            </View>
           )}
 
           {StationUtils.isFreeStation(station) && (
-            <View style={styles.freeTag}>
+            <MotiView
+              from={{ opacity: 0, scale: 0 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ type: 'spring', duration: 800, delay: 600 }}
+              style={styles.freeTag}
+            >
+              <FontAwesome5 name="gift" size={12} color="#000000" />
               <Text style={styles.freeTagText}>ÜCRETSIZ</Text>
-            </View>
+            </MotiView>
           )}
-        </View>
+        </Animated.View>
 
-        {/* Operatör bilgisi */}
+        {/* Power Stats Grid */}
+        <Animated.View 
+          entering={SlideInRight.delay(400).duration(600)}
+          style={[styles.statsGrid, isDarkMode && styles.darkCard]}
+        >
+          <MotiView
+            from={{ opacity: 0, translateY: 20 }}
+            animate={{ opacity: 1, translateY: 0 }}
+            transition={{ type: 'timing', duration: 500, delay: 500 }}
+            style={styles.statItem}
+          >
+            <FontAwesome5 name="bolt" size={24} color="#fca311" />
+            <Text style={[styles.statValue, isDarkMode && styles.darkText]}>
+              {StationUtils.getMaxPower(station)}
+            </Text>
+            <Text style={[styles.statLabel, isDarkMode && styles.darkSubText]}>
+              Maksimum Güç
+            </Text>
+          </MotiView>
+
+          <View style={[styles.statDivider, isDarkMode && styles.darkDivider]} />
+
+          <MotiView
+            from={{ opacity: 0, translateY: 20 }}
+            animate={{ opacity: 1, translateY: 0 }}
+            transition={{ type: 'timing', duration: 500, delay: 600 }}
+            style={styles.statItem}
+          >
+            <FontAwesome5 name="tachometer-alt" size={24} color="#fca311" />
+            <Text 
+              style={[
+                styles.statValue, 
+                { color: StationUtils.getSpeedColor(station) },
+                isDarkMode && styles.darkText
+              ]}
+            >
+              {StationUtils.getChargingSpeed(station)}
+            </Text>
+            <Text style={[styles.statLabel, isDarkMode && styles.darkSubText]}>
+              Şarj Hızı
+            </Text>
+          </MotiView>
+        </Animated.View>
+
+        {/* Operator Info */}
         {station.OperatorInfo && (
-          <View style={styles.infoCard}>
-            <Text style={styles.cardTitle}>Operatör</Text>
-            <Text style={styles.operatorName}>
+          <MotiView
+            from={{ opacity: 0, translateX: -50 }}
+            animate={{ opacity: 1, translateX: 0 }}
+            transition={{ type: 'timing', duration: 600, delay: 300 }}
+            style={[styles.infoCard, isDarkMode && styles.darkCard]}
+          >
+            <View style={styles.cardHeader}>
+              <FontAwesome5 name="building" size={20} color="#fca311" />
+              <Text style={[styles.cardTitle, isDarkMode && styles.darkText]}>Operatör</Text>
+            </View>
+            
+            <Text style={[styles.operatorName, isDarkMode && styles.darkText]}>
               {station.OperatorInfo.Title}
             </Text>
             
             {station.OperatorInfo.WebsiteURL && (
               <TouchableOpacity
                 onPress={() => Linking.openURL(station.OperatorInfo!.WebsiteURL!)}
+                style={styles.linkButton}
               >
+                <Ionicons name="globe-outline" size={16} color="#fca311" />
                 <Text style={styles.link}>
                   {station.OperatorInfo.WebsiteURL}
                 </Text>
@@ -220,261 +357,339 @@ export const StationDetailScreen: React.FC<StationDetailScreenProps> = ({
             
             {station.OperatorInfo.PhonePrimaryContact && (
               <TouchableOpacity
-                style={styles.phoneButton}
+                style={[styles.phoneButton, isDarkMode && styles.darkPhoneButton]}
                 onPress={() => handleCall(station.OperatorInfo!.PhonePrimaryContact!)}
               >
+                <Ionicons name="call" size={20} color="#ffffff" />
                 <Text style={styles.phoneButtonText}>
-                  📞 {station.OperatorInfo.PhonePrimaryContact}
+                  {station.OperatorInfo.PhonePrimaryContact}
                 </Text>
               </TouchableOpacity>
             )}
-          </View>
+          </MotiView>
         )}
 
-        {/* Güç ve hız bilgisi */}
-        <View style={styles.infoCard}>
-          <Text style={styles.cardTitle}>Şarj Bilgileri</Text>
-          <View style={styles.powerInfo}>
-            <View style={styles.powerItem}>
-              <Text style={styles.powerLabel}>Maksimum Güç</Text>
-              <Text style={styles.powerValue}>
-                {StationUtils.getMaxPower(station)}
-              </Text>
-            </View>
-            <View style={styles.powerItem}>
-              <Text style={styles.powerLabel}>Şarj Hızı</Text>
-              <Text
-                style={[
-                  styles.powerValue,
-                  { color: StationUtils.getSpeedColor(station) },
-                ]}
-              >
-                {StationUtils.getChargingSpeed(station)}
-              </Text>
-            </View>
-          </View>
-          
-          <Text style={styles.connectionTypes}>
-            Bağlantı Türleri: {StationUtils.getConnectionTypes(station)}
-          </Text>
-        </View>
-
-        {/* Bağlantı detayları */}
+        {/* Connection Details */}
         {renderConnectionInfo()}
 
-        {/* Kullanım bilgisi */}
-        <View style={styles.infoCard}>
-          <Text style={styles.cardTitle}>Kullanım Bilgileri</Text>
-          <Text style={styles.usageType}>
+        {/* Usage Info */}
+        <MotiView
+          from={{ opacity: 0, translateY: 20 }}
+          animate={{ opacity: 1, translateY: 0 }}
+          transition={{ type: 'timing', duration: 600, delay: 500 }}
+          style={[styles.infoCard, isDarkMode && styles.darkCard]}
+        >
+          <View style={styles.cardHeader}>
+            <MaterialIcons name="info-outline" size={20} color="#fca311" />
+            <Text style={[styles.cardTitle, isDarkMode && styles.darkText]}>Kullanım Bilgileri</Text>
+          </View>
+          
+          <Text style={[styles.usageType, isDarkMode && styles.darkText]}>
             {StationUtils.getUsageType(station)}
           </Text>
           
           {station.GeneralComments && (
-            <Text style={styles.comments}>
-              Not: {station.GeneralComments}
-            </Text>
+            <View style={[styles.commentBox, isDarkMode && styles.darkCommentBox]}>
+              <FontAwesome5 name="comment-dots" size={14} color="#ffffff" />
+              <Text style={[styles.comments, isDarkMode && styles.darkText]}>
+                {station.GeneralComments}
+              </Text>
+            </View>
           )}
-        </View>
+        </MotiView>
 
-        {/* Tarih bilgileri */}
+        {/* Date Info */}
         {(station.DateLastConfirmed || station.DateLastVerified) && (
-          <View style={styles.infoCard}>
-            <Text style={styles.cardTitle}>Güncellik Bilgileri</Text>
+          <MotiView
+            from={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ type: 'timing', duration: 500, delay: 600 }}
+            style={[styles.infoCard, isDarkMode && styles.darkCard]}
+          >
+            <View style={styles.cardHeader}>
+              <MaterialIcons name="schedule" size={20} color="#fca311" />
+              <Text style={[styles.cardTitle, isDarkMode && styles.darkText]}>Güncellik Bilgileri</Text>
+            </View>
             
             {station.DateLastConfirmed && (
-              <Text style={styles.dateInfo}>
-                Son Onay: {new Date(station.DateLastConfirmed).toLocaleDateString('tr-TR')}
-              </Text>
+              <View style={styles.dateRow}>
+                <Ionicons name="checkmark-circle-outline" size={16} color="#fca311" />
+                <Text style={[styles.dateInfo, isDarkMode && styles.darkSubText]}>
+                  Son Onay: {new Date(station.DateLastConfirmed).toLocaleDateString('tr-TR')}
+                </Text>
+              </View>
             )}
             
             {station.DateLastVerified && (
-              <Text style={styles.dateInfo}>
-                Son Doğrulama: {new Date(station.DateLastVerified).toLocaleDateString('tr-TR')}
-              </Text>
+              <View style={styles.dateRow}>
+                <Ionicons name="shield-checkmark-outline" size={16} color="#fca311" />
+                <Text style={[styles.dateInfo, isDarkMode && styles.darkSubText]}>
+                  Son Doğrulama: {new Date(station.DateLastVerified).toLocaleDateString('tr-TR')}
+                </Text>
+              </View>
             )}
-          </View>
+          </MotiView>
         )}
 
-        {/* Yol tarifi butonu */}
-        <TouchableOpacity
-          style={styles.directionsButton}
-          onPress={handleGetDirections}
+        {/* Modern Action Button */}
+        <MotiView
+          from={{ opacity: 0, translateY: 50 }}
+          animate={{ opacity: 1, translateY: 0 }}
+          transition={{ type: 'spring', duration: 1000, delay: 700 }}
         >
-          <Text style={styles.directionsButtonText}>
-            🗺️ Yol Tarifi Al
-          </Text>
-        </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.directionsButton, isDarkMode && styles.darkDirectionsButton]}
+            onPress={handleGetDirections}
+            activeOpacity={0.8}
+          >
+            <View style={styles.buttonContent}>
+              <MaterialIcons name="directions" size={24} color="#FFFFFF" />
+              <Text style={styles.directionsButtonText}>
+                Yol Tarifi Al
+              </Text>
+              <Ionicons name="arrow-forward" size={20} color="#FFFFFF" />
+            </View>
+          </TouchableOpacity>
+        </MotiView>
       </ScrollView>
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+  // Base Styles
   container: {
     flex: 1,
-    backgroundColor: '#f9fafb',
+    backgroundColor: '#fff', // Tamamen beyaz arka plan
   },
+  darkContainer: {
+    backgroundColor: '#fff', // Koyu modda da beyaz (örneklerde koyu mod yok)
+  },
+  // Header Styles
   header: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
     paddingHorizontal: 16,
     paddingVertical: 16,
-    backgroundColor: '#ffffff',
+    backgroundColor: '#fff',
     borderBottomWidth: 1,
-    borderBottomColor: '#f3f4f6',
+    borderBottomColor: '#e5e5e5',
+    elevation: 0,
+    shadowOpacity: 0,
+  },
+  darkHeader: {
+    backgroundColor: '#fff',
   },
   backButton: {
-    marginRight: 16,
-  },
-  backButtonText: {
-    fontSize: 16,
-    color: '#3b82f6',
-    fontWeight: '500',
+    padding: 8,
+    borderRadius: 20,
+    backgroundColor: '#f5f5f5',
   },
   headerTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#1f2937',
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#14213d',
+    textAlign: 'center',
+    flex: 1,
   },
+  favoriteButton: {
+    padding: 8,
+    borderRadius: 20,
+    backgroundColor: '#f5f5f5',
+  },
+  // Content Styles
   content: {
     flex: 1,
-    padding: 16,
+    padding: 0,
+    backgroundColor: '#fff',
   },
-  mainCard: {
-    backgroundColor: '#ffffff',
-    borderRadius: 12,
-    padding: 20,
-    marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 3.84,
-    elevation: 5,
+  darkContent: {
+    backgroundColor: '#fff',
   },
-  stationHeader: {
-    marginBottom: 12,
+  // Hero Card
+  heroCard: {
+    backgroundColor: '#fff',
+    borderRadius: 0,
+    padding: 0,
+    marginBottom: 0,
+    shadowOpacity: 0,
+    elevation: 0,
+    borderWidth: 0,
+    position: 'relative',
+  },
+  darkCard: {
+    backgroundColor: '#fff',
+    borderColor: '#fff',
+  },
+  statusBadge: {
+    display: 'none', // Sadeleştirme için kaldırıldı
+  },
+  statusIndicator: {
+    display: 'none',
   },
   stationName: {
-    fontSize: 22,
+    fontSize: 28,
     fontWeight: 'bold',
-    color: '#1f2937',
-    marginBottom: 8,
+    color: '#14213d',
+    marginBottom: 4,
+    lineHeight: 34,
   },
-  statusContainer: {
+  darkText: {
+    color: '#14213d',
+  },
+  locationRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    marginBottom: 8,
     gap: 8,
-  },
-  statusDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-  },
-  statusText: {
-    fontSize: 14,
-    color: '#6b7280',
-    fontWeight: '500',
+    backgroundColor: '#f5f5f5',
+    padding: 8,
+    borderRadius: 8,
   },
   address: {
     fontSize: 16,
-    color: '#6b7280',
+    color: '#14213d',
     lineHeight: 24,
-    marginBottom: 8,
+    flex: 1,
+  },
+  darkSubText: {
+    color: '#b0b0b0',
+  },
+  distanceRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginTop: 8,
+    backgroundColor: '#f5f5f5',
+    padding: 8,
+    borderRadius: 8,
   },
   distance: {
-    fontSize: 14,
-    color: '#3b82f6',
+    fontSize: 16,
+    color: '#14213d',
     fontWeight: '600',
   },
   freeTag: {
-    position: 'absolute',
-    top: 16,
-    right: 16,
-    backgroundColor: '#10b981',
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 6,
+    display: 'none', // Sadeleştirme için kaldırıldı
   },
   freeTagText: {
-    color: '#ffffff',
-    fontSize: 12,
-    fontWeight: 'bold',
+    display: 'none',
   },
+  // Stats Grid
+  statsGrid: {
+    backgroundColor: '#fff',
+    borderRadius: 0,
+    padding: 0,
+    marginBottom: 0,
+    flexDirection: 'row',
+    alignItems: 'center',
+    shadowOpacity: 0,
+    elevation: 0,
+    borderWidth: 0,
+  },
+  statItem: {
+    flex: 1,
+    alignItems: 'center',
+    gap: 8,
+  },
+  statValue: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#14213d',
+  },
+  statLabel: {
+    fontSize: 13,
+    color: '#b0b0b0',
+    fontWeight: '500',
+    textAlign: 'center',
+  },
+  statDivider: {
+    width: 1,
+    height: 40,
+    backgroundColor: '#e5e5e5',
+    marginHorizontal: 8,
+    borderRadius: 1,
+  },
+  darkDivider: {
+    backgroundColor: '#e5e5e5',
+  },
+  // Info Cards
   infoCard: {
-    backgroundColor: '#ffffff',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 2,
+    backgroundColor: '#fff',
+    borderRadius: 0,
+    padding: 0,
+    marginBottom: 0,
+    shadowOpacity: 0,
+    elevation: 0,
+    borderWidth: 0,
+  },
+  cardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+    gap: 8,
+    paddingBottom: 0,
+    borderBottomWidth: 0,
   },
   cardTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#1f2937',
-    marginBottom: 12,
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#14213d',
   },
+  // Operator Styles
   operatorName: {
     fontSize: 16,
-    color: '#374151',
+    color: '#14213d',
+    marginBottom: 8,
+    fontWeight: '500',
+  },
+  linkButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingVertical: 4,
+    backgroundColor: '#f5f5f5',
+    borderRadius: 8,
     marginBottom: 8,
   },
   link: {
-    fontSize: 14,
-    color: '#3b82f6',
-    textDecorationLine: 'underline',
-    marginBottom: 8,
+    fontSize: 13,
+    color: '#039BE5',
+    fontWeight: '500',
   },
   phoneButton: {
-    backgroundColor: '#f3f4f6',
-    padding: 12,
+    backgroundColor: '#039BE5',
+    padding: 10,
     borderRadius: 8,
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
     marginTop: 8,
+    shadowOpacity: 0,
+    elevation: 0,
+  },
+  darkPhoneButton: {
+    backgroundColor: '#039BE5',
   },
   phoneButtonText: {
-    fontSize: 14,
-    color: '#374151',
+    fontSize: 15,
+    color: '#fff',
     fontWeight: '500',
   },
-  powerInfo: {
-    flexDirection: 'row',
-    gap: 24,
-    marginBottom: 12,
-  },
-  powerItem: {
-    flex: 1,
-  },
-  powerLabel: {
-    fontSize: 12,
-    color: '#9ca3af',
-    fontWeight: '500',
-    marginBottom: 4,
-  },
-  powerValue: {
-    fontSize: 16,
-    color: '#374151',
-    fontWeight: '600',
-  },
-  connectionTypes: {
-    fontSize: 14,
-    color: '#6b7280',
-    lineHeight: 20,
-  },
+  // Connection Styles
   connectionItem: {
-    backgroundColor: '#f9fafb',
-    padding: 12,
+    backgroundColor: '#f5f5f5',
+    padding: 10,
     borderRadius: 8,
     marginBottom: 8,
+    borderLeftWidth: 0,
+    shadowOpacity: 0,
+    elevation: 0,
+  },
+  darkConnectionItem: {
+    backgroundColor: '#f5f5f5',
   },
   connectionHeader: {
     flexDirection: 'row',
@@ -483,19 +698,26 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   connectionType: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#374151',
+    fontSize: 15,
+    fontWeight: 'bold',
+    color: '#14213d',
+  },
+  powerBadge: {
+    backgroundColor: '#039BE5',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 8,
   },
   connectionPower: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#3b82f6',
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: '#fff',
   },
   connectionQuantity: {
     fontSize: 12,
-    color: '#6b7280',
+    color: '#b0b0b0',
     marginBottom: 4,
+    fontWeight: '500',
   },
   connectionStatus: {
     flexDirection: 'row',
@@ -504,48 +726,81 @@ const styles = StyleSheet.create({
   },
   connectionStatusText: {
     fontSize: 12,
-    color: '#6b7280',
+    color: '#14213d',
+    fontWeight: '500',
   },
+  // Usage Styles
   usageType: {
     fontSize: 14,
-    color: '#374151',
-    marginBottom: 8,
+    color: '#14213d',
+    marginBottom: 4,
+    fontWeight: '500',
+  },
+  commentBox: {
+    backgroundColor: '#f5f5f5',
+    padding: 10,
+    borderRadius: 8,
+    flexDirection: 'row',
+    gap: 8,
+    alignItems: 'flex-start',
+  },
+  darkCommentBox: {
+    backgroundColor: '#f5f5f5',
   },
   comments: {
-    fontSize: 14,
-    color: '#6b7280',
-    fontStyle: 'italic',
-    lineHeight: 20,
+    fontSize: 13,
+    color: '#14213d',
+    lineHeight: 18,
+    flex: 1,
+    fontWeight: '400',
+  },
+  // Date Styles
+  dateRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 4,
+    backgroundColor: '#f5f5f5',
+    padding: 8,
+    borderRadius: 8,
   },
   dateInfo: {
-    fontSize: 14,
-    color: '#6b7280',
-    marginBottom: 4,
+    fontSize: 12,
+    color: '#b0b0b0',
+    fontWeight: '400',
   },
+  // Action Button
   directionsButton: {
-    backgroundColor: '#3b82f6',
-    paddingVertical: 16,
-    paddingHorizontal: 24,
-    borderRadius: 12,
+    backgroundColor: '#039BE5',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    marginBottom: 16,
+    shadowOpacity: 0,
+    elevation: 0,
+    borderWidth: 0,
+  },
+  darkDirectionsButton: {
+    backgroundColor: '#039BE5',
+    shadowColor: '#039BE5',
+  },
+  buttonContent: {
+    flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 32,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 3.84,
-    elevation: 5,
+    justifyContent: 'center',
+    gap: 8,
   },
   directionsButtonText: {
-    color: '#ffffff',
+    color: '#fff',
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: 'bold',
   },
   noDataText: {
     fontSize: 14,
-    color: '#9ca3af',
+    color: '#b0b0b0',
+    textAlign: 'center',
+    opacity: 1,
+    fontWeight: '400',
     fontStyle: 'italic',
   },
 });

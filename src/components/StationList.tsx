@@ -126,27 +126,22 @@ export const StationList: React.FC<StationListProps> = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f9fafb',
+    backgroundColor: '#fff',
   },
   contentContainer: {
     padding: 16,
-    paddingBottom: 100, // Bottom tab navigation için ekstra alan
+    paddingBottom: 100,
   },
   stationCard: {
-    backgroundColor: '#ffffff',
-    borderRadius: 12,
+    backgroundColor: '#fff',
+    borderRadius: 8,
     padding: 16,
     marginBottom: 12,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 3.84,
-    elevation: 5,
+    shadowOpacity: 0,
+    elevation: 0,
     borderWidth: 1,
-    borderColor: '#f3f4f6',
+    borderColor: '#e5e5e5',
+    position: 'relative',
   },
   stationHeader: {
     flexDirection: 'row',
@@ -160,8 +155,8 @@ const styles = StyleSheet.create({
   },
   stationName: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#1f2937',
+    fontWeight: 'bold',
+    color: '#14213d',
     marginBottom: 4,
   },
   statusContainer: {
@@ -176,16 +171,16 @@ const styles = StyleSheet.create({
   },
   statusText: {
     fontSize: 12,
-    color: '#6b7280',
+    color: '#b0b0b0',
   },
   distance: {
     fontSize: 14,
-    fontWeight: '600',
-    color: '#3b82f6',
+    fontWeight: 'bold',
+    color: '#039BE5',
   },
   address: {
     fontSize: 14,
-    color: '#6b7280',
+    color: '#b0b0b0',
     marginBottom: 12,
     lineHeight: 20,
   },
@@ -201,30 +196,30 @@ const styles = StyleSheet.create({
   },
   detailLabel: {
     fontSize: 12,
-    color: '#9ca3af',
+    color: '#b0b0b0',
     fontWeight: '500',
   },
   detailValue: {
     fontSize: 12,
-    color: '#374151',
-    fontWeight: '600',
+    color: '#14213d',
+    fontWeight: 'bold',
   },
   operator: {
     fontSize: 12,
-    color: '#9ca3af',
+    color: '#b0b0b0',
     fontStyle: 'italic',
   },
   freeTag: {
     position: 'absolute',
     top: 12,
     right: 12,
-    backgroundColor: '#10b981',
+    backgroundColor: '#039BE5',
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 4,
   },
   freeTagText: {
-    color: '#ffffff',
+    color: '#fff',
     fontSize: 10,
     fontWeight: 'bold',
   },
@@ -235,13 +230,13 @@ const styles = StyleSheet.create({
   },
   emptyTitle: {
     fontSize: 18,
-    fontWeight: '600',
-    color: '#374151',
+    fontWeight: 'bold',
+    color: '#14213d',
     marginBottom: 8,
   },
   emptySubtitle: {
     fontSize: 14,
-    color: '#9ca3af',
+    color: '#b0b0b0',
     textAlign: 'center',
     lineHeight: 20,
   },

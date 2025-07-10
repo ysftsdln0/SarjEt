@@ -2,7 +2,7 @@ import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator, CardStyleInterpolators } from '@react-navigation/stack';
 import { RootStackParamList } from '../types';
-import { HomeScreen } from '../screens/HomeScreen';
+import SarjetMainScreen from '../screens/SarjetMainScreen';
 import { StationDetailScreen } from '../screens/StationDetailScreen';
 
 const Stack = createStackNavigator<RootStackParamList>();
@@ -20,7 +20,7 @@ export const AppNavigator: React.FC = () => {
       >
         <Stack.Screen
           name="Home"
-          component={HomeScreen}
+          component={SarjetMainScreen}
           options={{
             title: 'Şarjet',
           }}
