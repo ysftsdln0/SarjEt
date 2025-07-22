@@ -201,7 +201,7 @@ export const StationCallout: React.FC<StationCalloutProps> = ({
       {/* Detay Butonu */}
       <View style={styles.actionRow}>
         <TouchableOpacity style={styles.detailButton}>
-          <Text style={styles.detailButtonText}>Detayları Gör</Text>
+          <Text style={styles.detailButtonText}>İstasyona Git</Text>
           <Ionicons name="chevron-forward" size={16} color="#00C853" />
         </TouchableOpacity>
       </View>

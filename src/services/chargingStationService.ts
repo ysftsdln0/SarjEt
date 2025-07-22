@@ -37,7 +37,7 @@ export class ChargingStationService {
     latitude: number,
     longitude: number,
     radiusKM: number = 25,
-    maxResults: number = 100
+    maxResults: number = 5000 // Türkiye geneli için yüksek limit
   ): Promise<ChargingStation[]> {
     // Önce bağlantıyı kontrol et
     const isConnected = await this.checkConnection();
@@ -158,7 +158,7 @@ export class ChargingStationService {
    */
   async searchStationsByCity(
     city: string,
-    maxResults: number = 50
+    maxResults: number = 1000 // Şehir araması için yüksek limit
   ): Promise<ChargingStation[]> {
     // Önce bağlantıyı kontrol et
     const isConnected = await this.checkConnection();
@@ -193,6 +193,47 @@ export class ChargingStationService {
       console.error('Şehir araması sırasında hata:', error);
       console.warn('API hatası, demo veriler kullanılıyor');
       return this.searchMockStationsByCity(city, maxResults);
+    }
+  }
+
+  /**
+   * Türkiye geneli tüm şarj istasyonlarını getirir
+   */
+  async getAllStationsInTurkey(maxResults: number = 10000): Promise<ChargingStation[]> {
+    const isConnected = await this.checkConnection();
+    
+    if (!isConnected) {
+      console.warn('İnternet bağlantısı yok, demo veriler kullanılıyor');
+      return this.getMockStations(39.9334, 32.8597, 2000, maxResults); // Ankara merkez, 2000km yarıçap
+    }
+
+    try {
+      const params: any = {
+        output: 'json',
+        maxresults: maxResults,
+        compact: false,
+        verbose: false,
+        countrycode: 'TR', // Sadece Türkiye
+        // Koordinat belirtmeyerek ülke geneli alıyoruz
+      };
+
+      if (this.apiKey) {
+        params.key = this.apiKey;
+      }
+
+      console.log('🇹🇷 Türkiye geneli şarj istasyonları getiriliyor...', { maxResults });
+      const response = await axios.get(BASE_URL, { params });
+      
+      console.log('📡 Türkiye geneli API Response:', {
+        status: response.status,
+        dataLength: response.data?.length || 0,
+      });
+      
+      return response.data as ChargingStation[];
+    } catch (error) {
+      console.error('Türkiye geneli istasyon alımında hata:', error);
+      console.warn('API hatası, demo veriler kullanılıyor');
+      return this.getMockStations(39.9334, 32.8597, 2000, maxResults);
     }
   }
 

@@ -109,7 +109,7 @@ export const StationList: React.FC<StationListProps> = ({
     <FlatList
       data={stations}
       renderItem={renderStationItem}
-      keyExtractor={(item) => `station-${item.ID}`}
+      keyExtractor={(item, index) => `station-${item.ID}-${index}`}
       style={styles.container}
       contentContainerStyle={styles.contentContainer}
       showsVerticalScrollIndicator={false}

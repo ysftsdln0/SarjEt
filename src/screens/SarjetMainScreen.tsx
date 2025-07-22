@@ -59,6 +59,19 @@ const SarjetMainScreen: React.FC<SarjetMainScreenProps> = () => {
     }
   };
 
+  // Mesafe hesaplama fonksiyonu
+  const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
+    const R = 6371; // Earth's radius in km
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = 
+      Math.sin(dLat/2) * Math.sin(dLat/2) +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+      Math.sin(dLon/2) * Math.sin(dLon/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c;
+  };
+
   // Yakındaki şarj istasyonlarını yükle
   const loadNearbyStations = async (location?: UserLocation) => {
     const currentLocation = location || userLocation;
@@ -69,31 +82,61 @@ const SarjetMainScreen: React.FC<SarjetMainScreenProps> = () => {
 
     try {
       setLoading(true);
-      console.log('📍 Şarj istasyonları aranıyor:', {
-        latitude: currentLocation.latitude,
-        longitude: currentLocation.longitude,
-        radius: 25
-      });
+      console.log('📍 Türkiye geneli şarj istasyonları yükleniyor...');
 
-      const nearbyStations = await stationService.getNearbyStations(
-        currentLocation.latitude,
-        currentLocation.longitude,
-        50, // 50km yarıçap (daha geniş alan)
-        100  // maksimum 100 istasyon
-      );
+      // Türkiye geneli tüm istasyonları getir
+      const allStations = await stationService.getAllStationsInTurkey(10000);
       
-      console.log('🔋 Bulunan istasyon sayısı:', nearbyStations.length);
+      console.log('🔋 Türkiye geneli bulunan istasyon sayısı:', allStations.length);
       
       // Sadece operasyonel istasyonları filtrele
-      const operationalStations = stationService.filterOperational(nearbyStations);
+      const operationalStations = stationService.filterOperational(allStations);
       console.log('✅ Operasyonel istasyon sayısı:', operationalStations.length);
       
-      setStations(operationalStations);
+      // Kullanıcı konumuna göre mesafeleri hesapla ve sırala
+      const stationsWithDistance = operationalStations.map(station => {
+        if (station.AddressInfo && currentLocation) {
+          const distance = calculateDistance(
+            currentLocation.latitude,
+            currentLocation.longitude,
+            station.AddressInfo.Latitude,
+            station.AddressInfo.Longitude
+          );
+          return {
+            ...station,
+            AddressInfo: {
+              ...station.AddressInfo,
+              Distance: distance
+            }
+          };
+        }
+        return station;
+      });
 
-      if (operationalStations.length === 0) {
+      // Duplike istasyonları kaldır (aynı ID'ye sahip olanları)
+      const uniqueStations = stationsWithDistance.filter((station, index, self) => 
+        index === self.findIndex(s => s.ID === station.ID)
+      );
+
+      // Mesafeye göre sırala
+      const sortedStations = uniqueStations.sort((a, b) => {
+        const distanceA = a.AddressInfo?.Distance || 999999;
+        const distanceB = b.AddressInfo?.Distance || 999999;
+        return distanceA - distanceB;
+      });
+
+      console.log('🧹 Duplike temizleme:', {
+        originalCount: stationsWithDistance.length,
+        uniqueCount: uniqueStations.length,
+        duplicatesRemoved: stationsWithDistance.length - uniqueStations.length
+      });
+
+      setStations(sortedStations);
+
+      if (stationsWithDistance.length === 0) {
         Alert.alert(
           'İstasyon Bulunamadı',
-          'Çevrenizde şarj istasyonu bulunamadı. Arama yarıçapını artırmayı deneyin.',
+          'Türkiye\'de şarj istasyonu bulunamadı. Lütfen daha sonra tekrar deneyin.',
           [
             {
               text: 'Tekrar Dene',
@@ -241,9 +284,9 @@ const SarjetMainScreen: React.FC<SarjetMainScreenProps> = () => {
         showsScale={false}
         mapType="standard"
       >
-        {stations.map((station) => (
+        {stations.map((station, index) => (
           <Marker
-            key={station.ID}
+            key={`${station.ID}-${index}`}
             coordinate={{
               latitude: station.AddressInfo.Latitude,
               longitude: station.AddressInfo.Longitude,
