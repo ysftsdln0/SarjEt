@@ -1,18 +1,3 @@
-# şarjet elektrikli şarj is## 🚀 Özellikler
-
-✅ **Gerçek Zamanlı Veri**: OpenChargeMap API kullanarak güncel şarj istasyonu verileri
-
-✅ **Türkiye Geneli Kapsama**: Tüm Türkiye'deki şarj istasyonlarını sınırsız görüntüleme
-
-✅ **Detaylı İstasyon Bilgileri**: Güç, konnektör tipi, operatör, adres ve kullanılabilirlik durumu
-
-✅ **İkili Görünüm**: Harita ve liste görünümü arasında geçiş
-
-✅ **Arama ve Filtreleme**: İstasyon adı, operatör ve mesafeye göre filtreleme
-
-✅ **Kullanıcı Profili**: İstatistikler, ayarlar ve kişiselleştirme seçenekleri
-
-✅ **Modern UI/UX**: Karanlık tema, erişilebilirlik ve kullanıcı dostu arayüzını tek noktada birleştiren uygulama
 
 ##  Uygulama Ekran Görüntüleri
 

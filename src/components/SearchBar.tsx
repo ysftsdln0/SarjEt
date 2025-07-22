@@ -6,8 +6,9 @@ interface SearchBarProps {
   value: string;
   onChangeText: (text: string) => void;
   onSearch: () => void;
-  onShowFilters: () => void;
+  onShowFilters?: () => void;
   placeholder?: string;
+  filterCount?: number;
 }
 
 export const SearchBar: React.FC<SearchBarProps> = ({
@@ -16,6 +17,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
   onSearch,
   onShowFilters,
   placeholder = 'Search by city or district...',
+  filterCount = 0,
 }) => {
   return (
     <View style={styles.searchSection}>
@@ -31,11 +33,18 @@ export const SearchBar: React.FC<SearchBarProps> = ({
         <TouchableOpacity style={styles.searchButton} onPress={onSearch}>
           <Ionicons name="search" size={20} color="#FFFFFF" />
         </TouchableOpacity>
+        
+        {onShowFilters && (
+          <TouchableOpacity style={styles.filterButton} onPress={onShowFilters}>
+            <Ionicons name="options" size={20} color="#FFFFFF" />
+            {filterCount > 0 && (
+              <View style={styles.filterBadge}>
+                <Text style={styles.filterBadgeText}>{filterCount}</Text>
+              </View>
+            )}
+          </TouchableOpacity>
+        )}
       </View>
-      
-      <TouchableOpacity style={styles.filtersButton} onPress={onShowFilters}>
-        <Text style={styles.filtersText}>Show Filters</Text>
-      </TouchableOpacity>
     </View>
   );
 };
@@ -49,7 +58,6 @@ const styles = StyleSheet.create({
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
   },
   searchInput: {
     flex: 1,
@@ -68,6 +76,32 @@ const styles = StyleSheet.create({
     backgroundColor: '#00C853',
     justifyContent: 'center',
     alignItems: 'center',
+    marginRight: 8,
+  },
+  filterButton: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#37474F',
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'relative',
+  },
+  filterBadge: {
+    position: 'absolute',
+    top: -2,
+    right: -2,
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: '#FF5722',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  filterBadgeText: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
   },
   filtersButton: {
     alignSelf: 'flex-start',

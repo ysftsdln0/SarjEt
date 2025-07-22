@@ -18,20 +18,25 @@ import { StationMarker, StationCallout } from '../components/StationMarker';
 import { LoadingScreen } from '../components/LoadingScreen';
 import { StationList } from '../components/StationList';
 import { ProfileModal } from '../components/ProfileModal';
+import { FilterModal, FilterOptions } from '../components/FilterModal';
 import { ChargingStationService } from '../services/chargingStationService';
 import { LocationService } from '../services/locationService';
+import { FilterService } from '../services/filterService';
 
 interface SarjetMainScreenProps {}
 
 const SarjetMainScreen: React.FC<SarjetMainScreenProps> = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [stations, setStations] = useState<ChargingStation[]>([]);
+  const [allStations, setAllStations] = useState<ChargingStation[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [viewMode, setViewMode] = useState<'map' | 'list'>('map');
   const [userLocation, setUserLocation] = useState<UserLocation | null>(null);
   const [profileVisible, setProfileVisible] = useState(false);
+  const [filterVisible, setFilterVisible] = useState(false);
   const [locationLoading, setLocationLoading] = useState(true);
+  const [filters, setFilters] = useState<FilterOptions>(FilterService.getDefaultFilters());
 
   // OpenChargeMap API servisi
   const stationService = new ChargingStationService('6ce97f56-cef6-4f87-b772-00b99fdb9547');
@@ -131,9 +136,14 @@ const SarjetMainScreen: React.FC<SarjetMainScreenProps> = () => {
         duplicatesRemoved: stationsWithDistance.length - uniqueStations.length
       });
 
-      setStations(sortedStations);
+      // Tüm istasyonları sakla (filtreleme için)
+      setAllStations(sortedStations);
+      
+      // Filtreleri uygula
+      const filteredStations = FilterService.applyFilters(sortedStations, filters);
+      setStations(filteredStations);
 
-      if (stationsWithDistance.length === 0) {
+      if (sortedStations.length === 0) {
         Alert.alert(
           'İstasyon Bulunamadı',
           'Türkiye\'de şarj istasyonu bulunamadı. Lütfen daha sonra tekrar deneyin.',
@@ -162,6 +172,52 @@ const SarjetMainScreen: React.FC<SarjetMainScreenProps> = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Filtreleme işlemleri
+  const applyFilters = (newFilters: FilterOptions) => {
+    setFilters(newFilters);
+    const filteredStations = FilterService.applyFilters(allStations, newFilters);
+    setStations(filteredStations);
+    
+    console.log('🔍 Filtre uygulandı:', {
+      originalCount: allStations.length,
+      filteredCount: filteredStations.length,
+      activeFilters: FilterService.getActiveFilterCount(newFilters),
+      summary: FilterService.getFilterSummary(newFilters)
+    });
+  };
+
+  const resetFilters = () => {
+    const defaultFilters = FilterService.getDefaultFilters();
+    setFilters(defaultFilters);
+    setStations(allStations);
+  };
+
+  // Arama işlemi
+  const handleSearch = (query: string) => {
+    setSearchQuery(query);
+    
+    if (!query.trim()) {
+      // Arama boşsa filtreleri uygula
+      const filteredStations = FilterService.applyFilters(allStations, filters);
+      setStations(filteredStations);
+      return;
+    }
+
+    // Önce filtreleri uygula, sonra arama yap
+    const filteredStations = FilterService.applyFilters(allStations, filters);
+    const searchResults = filteredStations.filter(station => {
+      const searchText = query.toLowerCase();
+      return (
+        station.AddressInfo?.Title?.toLowerCase().includes(searchText) ||
+        station.AddressInfo?.Town?.toLowerCase().includes(searchText) ||
+        station.AddressInfo?.StateOrProvince?.toLowerCase().includes(searchText) ||
+        station.OperatorInfo?.Title?.toLowerCase().includes(searchText)
+      );
+    });
+    
+    setStations(searchResults);
   };
 
   // Sayfa yüklendiğinde konum al ve istasyonları yükle
@@ -206,7 +262,7 @@ const SarjetMainScreen: React.FC<SarjetMainScreenProps> = () => {
     // Navigation to detail screen can be implemented here
   };
 
-  const handleSearch = async () => {
+  const handleCitySearch = async () => {
     if (!searchQuery.trim()) return;
 
     try {
@@ -327,10 +383,11 @@ const SarjetMainScreen: React.FC<SarjetMainScreenProps> = () => {
       
       <SearchBar
         value={searchQuery}
-        onChangeText={setSearchQuery}
-        onSearch={handleSearch}
-        onShowFilters={handleShowFilters}
+        onChangeText={handleSearch}
+        onSearch={handleCitySearch}
+        onShowFilters={() => setFilterVisible(true)}
         placeholder="Şehir veya ilçe ile arayın..."
+        filterCount={FilterService.getActiveFilterCount(filters)}
       />
       
       <SegmentedControl
@@ -351,6 +408,14 @@ const SarjetMainScreen: React.FC<SarjetMainScreenProps> = () => {
         )}
         {viewMode === 'map' && renderLocationButton()}
       </View>
+
+      <FilterModal
+        visible={filterVisible}
+        onClose={() => setFilterVisible(false)}
+        filters={filters}
+        onApplyFilters={applyFilters}
+        stations={allStations}
+      />
 
       <ProfileModal 
         visible={profileVisible}
