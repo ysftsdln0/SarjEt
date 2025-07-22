@@ -1,4 +1,5 @@
 import { ChargingStation } from '../types';
+import colors from '../constants/colors';
 
 /**
  * Şarj istasyonu bilgilerini formatlamak için yardımcı fonksiyonlar
@@ -21,9 +22,9 @@ export class StationUtils {
    * İstasyon durumuna göre renk döndürür
    */
   static getStatusColor(station: ChargingStation): string {
-    if (!station.StatusType) return '#gray';
+    if (!station.StatusType) return colors.gray500;
     
-    return station.StatusType.IsOperational ? '#22c55e' : '#ef4444';
+    return station.StatusType.IsOperational ? colors.secondary : colors.accent2;
   }
 
   /**
@@ -91,11 +92,11 @@ export class StationUtils {
     const speed = this.getChargingSpeed(station);
     
     switch (speed) {
-      case 'Yavaş': return '#ef4444'; // Kırmızı
-      case 'Orta': return '#f59e0b'; // Turuncu
-      case 'Hızlı': return '#10b981'; // Yeşil
-      case 'Süper Hızlı': return '#3b82f6'; // Mavi
-      default: return '#6b7280'; // Gri
+      case 'Yavaş': return colors.accent2; // Kırmızı-pembe
+      case 'Orta': return colors.accent1; // Turuncu
+      case 'Hızlı': return colors.secondary; // Yeşil
+      case 'Süper Hızlı': return colors.primary; // Mavi
+      default: return colors.gray500; // Gri
     }
   }
 

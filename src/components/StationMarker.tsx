@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ChargingStation } from '../types';
+import colors from '../constants/colors';
 
 interface StationMarkerProps {
   isAvailable?: boolean;
@@ -36,12 +37,12 @@ export const StationMarker: React.FC<StationMarkerProps> = ({
 
   const markerSize = getMarkerSize();
   const iconSize = getIconSize();
-  const backgroundColor = isAvailable ? '#00C853' : '#FF5722';
+  const backgroundColor = isAvailable ? colors.secondary : colors.accent2;
 
   return (
     <View style={[styles.markerContainer, markerSize, { backgroundColor }]}>
       <View style={[styles.markerInner, { backgroundColor }]}>
-        <Ionicons name="flash" size={iconSize} color="#FFFFFF" />
+        <Ionicons name="flash" size={iconSize} color={colors.white} />
       </View>
     </View>
   );
@@ -128,14 +129,14 @@ export const StationCallout: React.FC<StationCalloutProps> = ({
       {/* Güç ve Durum Bilgisi */}
       <View style={styles.powerStatusRow}>
         <View style={styles.powerInfo}>
-          <Ionicons name="flash" size={14} color="#00C853" />
+          <Ionicons name="flash" size={14} color={colors.secondary} />
           <Text style={styles.calloutPower}>{powerKW} kW</Text>
         </View>
         
         <View style={styles.statusInfo}>
           <View style={[
             styles.statusDot,
-            { backgroundColor: isAvailable ? '#00C853' : '#FF5722' }
+            { backgroundColor: isAvailable ? colors.secondary : colors.accent2 }
           ]} />
           <Text style={[
             styles.calloutStatus,
@@ -148,7 +149,7 @@ export const StationCallout: React.FC<StationCalloutProps> = ({
 
       {/* Şarj Noktası Sayısı */}
       <View style={styles.infoRow}>
-        <Ionicons name="car-outline" size={14} color="#666666" />
+        <Ionicons name="car-outline" size={14} color={colors.gray600} />
         <Text style={styles.infoText}>
           {getNumberOfPoints()} şarj noktası
         </Text>
@@ -156,7 +157,7 @@ export const StationCallout: React.FC<StationCalloutProps> = ({
 
       {/* Konnektör Türü */}
       <View style={styles.infoRow}>
-        <Ionicons name="link-outline" size={14} color="#666666" />
+        <Ionicons name="link-outline" size={14} color={colors.gray600} />
         <Text style={styles.infoText} numberOfLines={1}>
           {getConnectionTypes()}
         </Text>
@@ -164,7 +165,7 @@ export const StationCallout: React.FC<StationCalloutProps> = ({
 
       {/* Kullanım Türü */}
       <View style={styles.infoRow}>
-        <Ionicons name="people-outline" size={14} color="#666666" />
+        <Ionicons name="people-outline" size={14} color={colors.gray600} />
         <Text style={styles.infoText}>
           {getUsageType()}
         </Text>
@@ -173,7 +174,7 @@ export const StationCallout: React.FC<StationCalloutProps> = ({
       {/* Operatör */}
       {getOperatorName() !== 'Bilinmiyor' && (
         <View style={styles.infoRow}>
-          <Ionicons name="business-outline" size={14} color="#666666" />
+          <Ionicons name="business-outline" size={14} color={colors.gray600} />
           <Text style={styles.infoText} numberOfLines={1}>
             {getOperatorName()}
           </Text>
@@ -182,7 +183,7 @@ export const StationCallout: React.FC<StationCalloutProps> = ({
 
       {/* Adres */}
       <View style={styles.addressRow}>
-        <Ionicons name="location-outline" size={14} color="#666666" />
+        <Ionicons name="location-outline" size={14} color={colors.gray600} />
         <Text style={styles.addressText} numberOfLines={2}>
           {getAddress()}
         </Text>
@@ -191,7 +192,7 @@ export const StationCallout: React.FC<StationCalloutProps> = ({
       {/* Son Güncelleme */}
       {station.DateLastStatusUpdate && (
         <View style={styles.updateRow}>
-          <Ionicons name="time-outline" size={12} color="#999999" />
+          <Ionicons name="time-outline" size={12} color={colors.gray500} />
           <Text style={styles.updateText}>
             Son güncelleme: {new Date(station.DateLastStatusUpdate).toLocaleDateString('tr-TR')}
           </Text>
@@ -202,7 +203,7 @@ export const StationCallout: React.FC<StationCalloutProps> = ({
       <View style={styles.actionRow}>
         <TouchableOpacity style={styles.detailButton}>
           <Text style={styles.detailButtonText}>İstasyona Git</Text>
-          <Ionicons name="chevron-forward" size={16} color="#00C853" />
+          <Ionicons name="chevron-forward" size={16} color={colors.secondary} />
         </TouchableOpacity>
       </View>
     </View>
@@ -214,8 +215,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 3,
-    borderColor: '#FFFFFF',
-    shadowColor: '#000000',
+    borderColor: colors.white,
+    shadowColor: colors.black,
     shadowOffset: {
       width: 0,
       height: 2,
@@ -245,12 +246,12 @@ const styles = StyleSheet.create({
   calloutTitle: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#263238',
+    color: colors.lightText,
     flex: 1,
     marginRight: 8,
   },
   distanceBadge: {
-    backgroundColor: '#00C853',
+    backgroundColor: colors.secondary,
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 12,
@@ -258,7 +259,7 @@ const styles = StyleSheet.create({
   distanceText: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#FFFFFF',
+    color: colors.white,
   },
   powerStatusRow: {
     flexDirection: 'row',
@@ -267,7 +268,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     paddingBottom: 8,
     borderBottomWidth: 1,
-    borderBottomColor: '#E0E0E0',
+    borderBottomColor: colors.gray300,
   },
   powerInfo: {
     flexDirection: 'row',
@@ -276,7 +277,7 @@ const styles = StyleSheet.create({
   calloutPower: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#263238',
+    color: colors.lightText,
     marginLeft: 4,
   },
   statusInfo: {
@@ -294,10 +295,10 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   calloutStatusAvailable: {
-    color: '#00C853',
+    color: colors.secondary,
   },
   calloutStatusBusy: {
-    color: '#FF5722',
+    color: colors.accent2,
   },
   infoRow: {
     flexDirection: 'row',
@@ -306,7 +307,7 @@ const styles = StyleSheet.create({
   },
   infoText: {
     fontSize: 13,
-    color: '#555555',
+    color: colors.gray700,
     marginLeft: 8,
     flex: 1,
   },
@@ -318,7 +319,7 @@ const styles = StyleSheet.create({
   },
   addressText: {
     fontSize: 13,
-    color: '#555555',
+    color: colors.gray700,
     marginLeft: 8,
     flex: 1,
     lineHeight: 18,
@@ -331,30 +332,30 @@ const styles = StyleSheet.create({
   },
   updateText: {
     fontSize: 11,
-    color: '#999999',
+    color: colors.gray500,
     marginLeft: 4,
   },
   actionRow: {
     marginTop: 12,
     paddingTop: 8,
     borderTopWidth: 1,
-    borderTopColor: '#E0E0E0',
+    borderTopColor: colors.gray300,
   },
   detailButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#F0F8F0',
+    backgroundColor: `${colors.secondary}20`,
     paddingVertical: 8,
     paddingHorizontal: 12,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#00C853',
+    borderColor: colors.secondary,
   },
   detailButtonText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#00C853',
+    color: colors.secondary,
     marginRight: 4,
   },
 });

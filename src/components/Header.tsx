@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import colors from '../constants/colors';
 
 interface HeaderProps {
   title: string;
@@ -12,7 +13,7 @@ export const Header: React.FC<HeaderProps> = ({ title, onProfilePress }) => {
     <View style={styles.header}>
       <Text style={styles.headerTitle}>{title}</Text>
       <TouchableOpacity style={styles.profileButton} onPress={onProfilePress}>
-        <Ionicons name="person-circle-outline" size={28} color="#FFFFFF" />
+        <Ionicons name="person-circle-outline" size={28} color={colors.darkText} />
       </TouchableOpacity>
     </View>
   );
@@ -25,12 +26,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 20,
     paddingVertical: 16,
-    backgroundColor: '#263238',
+    backgroundColor: colors.darkBg,
   },
   headerTitle: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#FFFFFF',
+    color: colors.darkText,
   },
   profileButton: {
     padding: 4,

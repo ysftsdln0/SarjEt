@@ -10,6 +10,7 @@ import {
   ScrollView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import colors from '../constants/colors';
 
 interface ProfileModalProps {
   visible: boolean;
@@ -43,7 +44,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
       <SafeAreaView style={styles.container}>
         <View style={styles.header}>
           <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-            <Ionicons name="close" size={24} color="#FFFFFF" />
+            <Ionicons name="close" size={24} color={colors.darkText} />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Profil</Text>
           <View style={styles.headerSpacer} />
@@ -54,7 +55,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
           <View style={styles.section}>
             <View style={styles.userInfo}>
               <View style={styles.avatar}>
-                <Ionicons name="person" size={40} color="#FFFFFF" />
+                <Ionicons name="person" size={40} color={colors.white} />
               </View>
               <View style={styles.userDetails}>
                 <Text style={styles.userName}>Şarjet Kullanıcısı</Text>
@@ -103,40 +104,40 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
             
             <View style={styles.settingItem}>
               <View style={styles.settingLeft}>
-                <Ionicons name="notifications-outline" size={20} color="#00C853" />
+                <Ionicons name="notifications-outline" size={20} color={colors.primary} />
                 <Text style={styles.settingText}>Bildirimler</Text>
               </View>
               <Switch
                 value={notificationsEnabled}
                 onValueChange={setNotificationsEnabled}
-                trackColor={{ false: '#767577', true: '#00C853' }}
-                thumbColor={notificationsEnabled ? '#FFFFFF' : '#f4f3f4'}
+                trackColor={{ false: colors.gray500, true: colors.primary }}
+                thumbColor={notificationsEnabled ? colors.white : colors.gray200}
               />
             </View>
 
             <View style={styles.settingItem}>
               <View style={styles.settingLeft}>
-                <Ionicons name="flash-outline" size={20} color="#00C853" />
+                <Ionicons name="flash-outline" size={20} color={colors.primary} />
                 <Text style={styles.settingText}>Sadece Hızlı Şarj</Text>
               </View>
               <Switch
                 value={fastChargingOnly}
                 onValueChange={setFastChargingOnly}
-                trackColor={{ false: '#767577', true: '#00C853' }}
-                thumbColor={fastChargingOnly ? '#FFFFFF' : '#f4f3f4'}
+                trackColor={{ false: colors.gray500, true: colors.primary }}
+                thumbColor={fastChargingOnly ? colors.white : colors.gray200}
               />
             </View>
 
             <View style={styles.settingItem}>
               <View style={styles.settingLeft}>
-                <Ionicons name="moon-outline" size={20} color="#00C853" />
+                <Ionicons name="moon-outline" size={20} color={colors.primary} />
                 <Text style={styles.settingText}>Karanlık Tema</Text>
               </View>
               <Switch
                 value={darkMode}
                 onValueChange={setDarkMode}
-                trackColor={{ false: '#767577', true: '#00C853' }}
-                thumbColor={darkMode ? '#FFFFFF' : '#f4f3f4'}
+                trackColor={{ false: colors.gray500, true: colors.primary }}
+                thumbColor={darkMode ? colors.white : colors.gray200}
               />
             </View>
           </View>
@@ -144,15 +145,15 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
           {/* Menü Öğeleri */}
           <View style={styles.section}>
             <TouchableOpacity style={styles.menuItem}>
-              <Ionicons name="heart-outline" size={20} color="#00C853" />
+              <Ionicons name="heart-outline" size={20} color={colors.primary} />
               <Text style={styles.menuText}>Favori İstasyonlarım</Text>
-              <Ionicons name="chevron-forward" size={20} color="#B0BEC5" />
+              <Ionicons name="chevron-forward" size={20} color={colors.gray500} />
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.menuItem}>
-              <Ionicons name="time-outline" size={20} color="#00C853" />
+              <Ionicons name="time-outline" size={20} color={colors.primary} />
               <Text style={styles.menuText}>Şarj Geçmişi</Text>
-              <Ionicons name="chevron-forward" size={20} color="#B0BEC5" />
+              <Ionicons name="chevron-forward" size={20} color={colors.gray500} />
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.menuItem}>

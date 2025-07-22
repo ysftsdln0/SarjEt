@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-// Updated color palette: #000000, #14213d, #fca311, #e5e5e5, #ffffff
 import {
   View,
   Text,
@@ -25,6 +24,7 @@ import { Ionicons, MaterialIcons, FontAwesome5 } from '@expo/vector-icons';
 import { ChargingStation, UserLocation } from '../types';
 import { StationUtils } from '../utils/stationUtils';
 import { LocationService } from '../services/locationService';
+import colors from '../constants/colors';
 
 const { width } = Dimensions.get('window');
 
@@ -134,7 +134,7 @@ export const StationDetailScreen: React.FC<StationDetailScreenProps> = ({
           transition={{ type: 'timing', duration: 600, delay: 400 }}
           style={[styles.infoCard, isDarkMode && styles.darkCard]}
         >        <View style={styles.cardHeader}>
-          <FontAwesome5 name="plug" size={20} color="#fca311" />
+          <FontAwesome5 name="plug" size={20} color={colors.accent1} />
           <Text style={[styles.cardTitle, isDarkMode && styles.darkText]}>Bağlantı Bilgisi</Text>
         </View>
           <Text style={[styles.noDataText, isDarkMode && styles.darkSubText]}>
@@ -152,7 +152,7 @@ export const StationDetailScreen: React.FC<StationDetailScreenProps> = ({
         style={[styles.infoCard, isDarkMode && styles.darkCard]}
       >
         <View style={styles.cardHeader}>
-          <FontAwesome5 name="plug" size={20} color="#fca311" />
+          <FontAwesome5 name="plug" size={20} color={colors.accent1} />
           <Text style={[styles.cardTitle, isDarkMode && styles.darkText]}>Bağlantı Bilgileri</Text>
         </View>
         {station.Connections.map((connection, index) => (
@@ -209,7 +209,7 @@ export const StationDetailScreen: React.FC<StationDetailScreenProps> = ({
     <SafeAreaView style={[styles.container, isDarkMode && styles.darkContainer]}>
       <StatusBar 
         barStyle={isDarkMode ? "light-content" : "light-content"} 
-        backgroundColor={isDarkMode ? "#000000" : "#14213d"} 
+        backgroundColor={isDarkMode ? colors.black : colors.darkBg} 
       />
       
       {/* Modern Header with Animation */}
@@ -218,11 +218,11 @@ export const StationDetailScreen: React.FC<StationDetailScreenProps> = ({
           style={styles.backButton}
           onPress={() => navigation.goBack()}
         >
-          <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
+          <Ionicons name="arrow-back" size={24} color={colors.white} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>İstasyon Detayı</Text>
         <TouchableOpacity style={styles.favoriteButton}>
-          <Ionicons name="heart-outline" size={24} color="#FFFFFF" />
+          <Ionicons name="heart-outline" size={24} color={colors.white} />
         </TouchableOpacity>
       </Animated.View>
 

@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { ChargingStation } from '../types';
 import { StationUtils } from '../utils/stationUtils';
+import colors from '../constants/colors';
 
 interface StationListProps {
   stations: ChargingStation[];
@@ -136,14 +137,14 @@ const styles = StyleSheet.create({
     paddingTop: 16,
   },
   stationCard: {
-    backgroundColor: '#fff',
+    backgroundColor: colors.lightCard,
     borderRadius: 8,
     padding: 16,
     marginBottom: 12,
     shadowOpacity: 0,
     elevation: 0,
     borderWidth: 1,
-    borderColor: '#e5e5e5',
+    borderColor: colors.gray300,
     position: 'relative',
   },
   stationHeader: {
@@ -159,7 +160,7 @@ const styles = StyleSheet.create({
   stationName: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#14213d',
+    color: colors.lightText,
     marginBottom: 4,
   },
   statusContainer: {
@@ -174,16 +175,16 @@ const styles = StyleSheet.create({
   },
   statusText: {
     fontSize: 12,
-    color: '#b0b0b0',
+    color: colors.gray500,
   },
   distance: {
     fontSize: 14,
     fontWeight: 'bold',
-    color: '#039BE5',
+    color: colors.primary,
   },
   address: {
     fontSize: 14,
-    color: '#b0b0b0',
+    color: colors.gray500,
     marginBottom: 12,
     lineHeight: 20,
   },
@@ -199,30 +200,30 @@ const styles = StyleSheet.create({
   },
   detailLabel: {
     fontSize: 12,
-    color: '#b0b0b0',
+    color: colors.gray500,
     fontWeight: '500',
   },
   detailValue: {
     fontSize: 12,
-    color: '#14213d',
+    color: colors.lightText,
     fontWeight: 'bold',
   },
   operator: {
     fontSize: 12,
-    color: '#b0b0b0',
+    color: colors.gray500,
     fontStyle: 'italic',
   },
   freeTag: {
     position: 'absolute',
     top: 12,
     right: 12,
-    backgroundColor: '#039BE5',
+    backgroundColor: colors.accent1,
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 4,
   },
   freeTagText: {
-    color: '#fff',
+    color: colors.white,
     fontSize: 10,
     fontWeight: 'bold',
   },
@@ -234,12 +235,12 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#14213d',
+    color: colors.lightText,
     marginBottom: 8,
   },
   emptySubtitle: {
     fontSize: 14,
-    color: '#b0b0b0',
+    color: colors.gray500,
     textAlign: 'center',
     lineHeight: 20,
   },

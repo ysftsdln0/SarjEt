@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, TouchableOpacity, Text, StyleSheet } from 'react-native';
+import colors from '../constants/colors';
 
 interface SegmentedControlProps {
   options: string[];
@@ -40,7 +41,7 @@ export const SegmentedControl: React.FC<SegmentedControlProps> = ({
 const styles = StyleSheet.create({
   segmentedControl: {
     flexDirection: 'row',
-    backgroundColor: '#37474F',
+    backgroundColor: colors.darkCard,
     borderRadius: 8,
     marginHorizontal: 20,
     marginBottom: 0,
@@ -53,14 +54,14 @@ const styles = StyleSheet.create({
     borderRadius: 6,
   },
   segmentButtonActive: {
-    backgroundColor: '#263238',
+    backgroundColor: colors.primary,
   },
   segmentText: {
     fontSize: 16,
     fontWeight: '500',
-    color: '#B0BEC5',
+    color: colors.gray500,
   },
   segmentTextActive: {
-    color: '#FFFFFF',
+    color: colors.white,
   },
 });

@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, TextInput, TouchableOpacity, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import colors from '../constants/colors';
 
 interface SearchBarProps {
   value: string;
@@ -25,18 +26,18 @@ export const SearchBar: React.FC<SearchBarProps> = ({
         <TextInput
           style={styles.searchInput}
           placeholder={placeholder}
-          placeholderTextColor="#999999"
+          placeholderTextColor={colors.gray500}
           value={value}
           onChangeText={onChangeText}
           onSubmitEditing={onSearch}
         />
         <TouchableOpacity style={styles.searchButton} onPress={onSearch}>
-          <Ionicons name="search" size={20} color="#FFFFFF" />
+          <Ionicons name="search" size={20} color={colors.white} />
         </TouchableOpacity>
         
         {onShowFilters && (
           <TouchableOpacity style={styles.filterButton} onPress={onShowFilters}>
-            <Ionicons name="options" size={20} color="#FFFFFF" />
+            <Ionicons name="options" size={20} color={colors.white} />
             {filterCount > 0 && (
               <View style={styles.filterBadge}>
                 <Text style={styles.filterBadgeText}>{filterCount}</Text>
@@ -53,7 +54,7 @@ const styles = StyleSheet.create({
   searchSection: {
     paddingHorizontal: 20,
     paddingBottom: 16,
-    backgroundColor: '#263238',
+    backgroundColor: colors.darkBg,
   },
   searchContainer: {
     flexDirection: 'row',
@@ -62,18 +63,18 @@ const styles = StyleSheet.create({
   searchInput: {
     flex: 1,
     height: 48,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.lightCard,
     borderRadius: 24,
     paddingHorizontal: 20,
     fontSize: 16,
-    color: '#333333',
+    color: colors.lightText,
     marginRight: 12,
   },
   searchButton: {
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: '#00C853',
+    backgroundColor: colors.primary,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 8,
@@ -82,7 +83,7 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: '#37474F',
+    backgroundColor: colors.darkCard,
     justifyContent: 'center',
     alignItems: 'center',
     position: 'relative',
@@ -94,21 +95,21 @@ const styles = StyleSheet.create({
     width: 20,
     height: 20,
     borderRadius: 10,
-    backgroundColor: '#FF5722',
+    backgroundColor: colors.accent2,
     justifyContent: 'center',
     alignItems: 'center',
   },
   filterBadgeText: {
     fontSize: 12,
     fontWeight: 'bold',
-    color: '#FFFFFF',
+    color: colors.white,
   },
   filtersButton: {
     alignSelf: 'flex-start',
   },
   filtersText: {
     fontSize: 16,
-    color: '#00C853',
+    color: colors.primary,
     fontWeight: '500',
   },
 });

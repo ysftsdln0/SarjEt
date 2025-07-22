@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ChargingStation } from '../types';
+import colors from '../constants/colors';
 
 export interface FilterOptions {
   minPowerKW: number;
@@ -124,7 +125,7 @@ export const FilterModal: React.FC<FilterModalProps> = ({
         {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-            <Ionicons name="close" size={24} color="#666666" />
+            <Ionicons name="close" size={24} color={colors.gray600} />
           </TouchableOpacity>
           <Text style={styles.title}>Filtreleme Seçenekleri</Text>
           <TouchableOpacity onPress={handleResetFilters} style={styles.resetButton}>
@@ -198,8 +199,8 @@ export const FilterModal: React.FC<FilterModalProps> = ({
                   ...localFilters,
                   onlyFastCharging: value,
                 })}
-                trackColor={{ false: '#E0E0E0', true: '#00C853' }}
-                thumbColor="#FFFFFF"
+                trackColor={{ false: colors.gray300, true: colors.secondary }}
+                thumbColor={colors.white}
               />
             </View>
 
@@ -211,8 +212,8 @@ export const FilterModal: React.FC<FilterModalProps> = ({
                   ...localFilters,
                   onlyAvailable: value,
                 })}
-                trackColor={{ false: '#E0E0E0', true: '#00C853' }}
-                thumbColor="#FFFFFF"
+                trackColor={{ false: colors.gray300, true: colors.secondary }}
+                thumbColor={colors.white}
               />
             </View>
 
@@ -224,8 +225,8 @@ export const FilterModal: React.FC<FilterModalProps> = ({
                   ...localFilters,
                   onlyFree: value,
                 })}
-                trackColor={{ false: '#E0E0E0', true: '#00C853' }}
-                thumbColor="#FFFFFF"
+                trackColor={{ false: colors.gray300, true: colors.secondary }}
+                thumbColor={colors.white}
               />
             </View>
           </View>
@@ -293,7 +294,7 @@ export const FilterModal: React.FC<FilterModalProps> = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.lightCard,
   },
   header: {
     flexDirection: 'row',
@@ -303,31 +304,31 @@ const styles = StyleSheet.create({
     paddingTop: 60,
     paddingBottom: 20,
     borderBottomWidth: 1,
-    borderBottomColor: '#E0E0E0',
+    borderBottomColor: colors.gray300,
   },
   closeButton: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: colors.lightBg,
     justifyContent: 'center',
     alignItems: 'center',
   },
   title: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#263238',
+    color: colors.lightText,
   },
   resetButton: {
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 8,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: colors.lightBg,
   },
   resetText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#00C853',
+    color: colors.primary,
   },
   content: {
     flex: 1,
@@ -339,26 +340,26 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#263238',
+    color: colors.lightText,
     marginBottom: 12,
   },
   optionButton: {
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderRadius: 8,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: colors.lightBg,
     marginBottom: 8,
   },
   optionButtonActive: {
-    backgroundColor: '#00C853',
+    backgroundColor: colors.secondary,
   },
   optionText: {
     fontSize: 14,
-    color: '#666666',
+    color: colors.gray600,
     fontWeight: '500',
   },
   optionTextActive: {
-    color: '#FFFFFF',
+    color: colors.white,
     fontWeight: '600',
   },
   switchRow: {
@@ -367,11 +368,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
+    borderBottomColor: colors.gray200,
   },
   switchLabel: {
     fontSize: 14,
-    color: '#263238',
+    color: colors.lightText,
     flex: 1,
   },
   chipContainer: {
@@ -381,32 +382,32 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: colors.lightBg,
     marginRight: 8,
     borderWidth: 1,
-    borderColor: '#E0E0E0',
+    borderColor: colors.gray300,
   },
   chipActive: {
-    backgroundColor: '#00C853',
-    borderColor: '#00C853',
+    backgroundColor: colors.secondary,
+    borderColor: colors.secondary,
   },
   chipText: {
     fontSize: 12,
-    color: '#666666',
+    color: colors.gray600,
     fontWeight: '500',
   },
   chipTextActive: {
-    color: '#FFFFFF',
+    color: colors.white,
     fontWeight: '600',
   },
   footer: {
     paddingHorizontal: 20,
     paddingVertical: 20,
     borderTopWidth: 1,
-    borderTopColor: '#E0E0E0',
+    borderTopColor: colors.gray300,
   },
   applyButton: {
-    backgroundColor: '#00C853',
+    backgroundColor: colors.primary,
     paddingVertical: 16,
     borderRadius: 12,
     alignItems: 'center',
@@ -414,6 +415,6 @@ const styles = StyleSheet.create({
   applyButtonText: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#FFFFFF',
+    color: colors.white,
   },
 });
