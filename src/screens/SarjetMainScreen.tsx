@@ -176,16 +176,19 @@ const SarjetMainScreen: React.FC<SarjetMainScreenProps> = () => {
 
   // Filtreleme işlemleri
   const applyFilters = (newFilters: FilterOptions) => {
+    console.log('🔍 Filtre uygulanıyor:', newFilters);
     setFilters(newFilters);
-    const filteredStations = FilterService.applyFilters(allStations, newFilters);
-    setStations(filteredStations);
     
-    console.log('🔍 Filtre uygulandı:', {
+    const filteredStations = FilterService.applyFilters(allStations, newFilters);
+    console.log('� Filtreleme sonucu:', {
       originalCount: allStations.length,
       filteredCount: filteredStations.length,
       activeFilters: FilterService.getActiveFilterCount(newFilters),
-      summary: FilterService.getFilterSummary(newFilters)
+      summary: FilterService.getFilterSummary(newFilters),
+      sampleFilteredStation: filteredStations[0]?.AddressInfo?.Title || 'Yok'
     });
+    
+    setStations(filteredStations);
   };
 
   const resetFilters = () => {
@@ -324,44 +327,105 @@ const SarjetMainScreen: React.FC<SarjetMainScreenProps> = () => {
       return <LoadingScreen message="Konum bilgisi alınıyor..." />;
     }
 
+    // Harita region'ını belirle
+    let mapRegion = {
+      latitude: userLocation.latitude,
+      longitude: userLocation.longitude,
+      latitudeDelta: 0.0922,
+      longitudeDelta: 0.0421,
+    };
+
+    // Eğer filtrelenmiş istasyonlar varsa, haritayı bu istasyonları gösterecek şekilde ayarla
+    if (stations.length > 0) {
+      const latitudes = stations.map(s => s.AddressInfo.Latitude);
+      const longitudes = stations.map(s => s.AddressInfo.Longitude);
+      
+      const minLat = Math.min(...latitudes);
+      const maxLat = Math.max(...latitudes);
+      const minLng = Math.min(...longitudes);
+      const maxLng = Math.max(...longitudes);
+      
+      const centerLat = (minLat + maxLat) / 2;
+      const centerLng = (minLng + maxLng) / 2;
+      
+      // Minimum zoom seviyesi için sınır koy
+      let latDelta = Math.max((maxLat - minLat) * 1.1, 0.05);
+      let lngDelta = Math.max((maxLng - minLng) * 1.1, 0.05);
+      
+      // Maximum zoom seviyesi için sınır koy (çok geniş olmasın)
+      latDelta = Math.min(latDelta, 10);
+      lngDelta = Math.min(lngDelta, 10);
+
+      mapRegion = {
+        latitude: centerLat,
+        longitude: centerLng,
+        latitudeDelta: latDelta,
+        longitudeDelta: lngDelta,
+      };
+    }
+
+    console.log('🗺️ Harita render ediliyor:', {
+      stationCount: stations.length,
+      region: {
+        lat: mapRegion.latitude.toFixed(4),
+        lng: mapRegion.longitude.toFixed(4),
+        latDelta: mapRegion.latitudeDelta.toFixed(4),
+        lngDelta: mapRegion.longitudeDelta.toFixed(4)
+      },
+      sampleStation: stations[0]?.AddressInfo?.Title || 'Yok',
+      firstFewStations: stations.slice(0, 3).map(s => ({
+        name: s.AddressInfo?.Title,
+        lat: s.AddressInfo?.Latitude,
+        lng: s.AddressInfo?.Longitude
+      }))
+    });
+
     return (
       <MapView
         provider={Platform.OS === 'android' ? PROVIDER_GOOGLE : undefined}
         style={styles.map}
-        initialRegion={{
-          latitude: userLocation.latitude,
-          longitude: userLocation.longitude,
-          latitudeDelta: 0.0922,
-          longitudeDelta: 0.0421,
-        }}
+        region={mapRegion}
         showsUserLocation={true}
         showsMyLocationButton={false}
         showsCompass={false}
         showsScale={false}
         mapType="standard"
       >
-        {stations.map((station, index) => (
-          <Marker
-            key={`${station.ID}-${index}`}
-            coordinate={{
-              latitude: station.AddressInfo.Latitude,
-              longitude: station.AddressInfo.Longitude,
-            }}
-            onPress={() => handleStationPress(station)}
-          >
-            <StationMarker isAvailable={isStationAvailable(station)} />
-            
-            <Callout style={styles.callout}>
-              <StationCallout
-                title={station.AddressInfo.Title}
-                powerKW={getStationPowerKW(station)}
-                status={getStationStatus(station)}
-                isAvailable={isStationAvailable(station)}
-                station={station}
-              />
-            </Callout>
-          </Marker>
-        ))}
+        {stations.map((station, index) => {
+          // İlk 5 marker için debug log
+          if (index < 5) {
+            console.log(`🎯 Marker ${index + 1}:`, {
+              name: station.AddressInfo?.Title,
+              coords: {
+                lat: station.AddressInfo?.Latitude,
+                lng: station.AddressInfo?.Longitude
+              }
+            });
+          }
+          
+          return (
+            <Marker
+              key={`${station.ID}-${index}`}
+              coordinate={{
+                latitude: station.AddressInfo.Latitude,
+                longitude: station.AddressInfo.Longitude,
+              }}
+              onPress={() => handleStationPress(station)}
+            >
+              <StationMarker isAvailable={isStationAvailable(station)} />
+              
+              <Callout style={styles.callout}>
+                <StationCallout
+                  title={station.AddressInfo.Title}
+                  powerKW={getStationPowerKW(station)}
+                  status={getStationStatus(station)}
+                  isAvailable={isStationAvailable(station)}
+                  station={station}
+                />
+              </Callout>
+            </Marker>
+          );
+        })}
       </MapView>
     );
   };

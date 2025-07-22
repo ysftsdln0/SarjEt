@@ -6,30 +6,81 @@ export class FilterService {
    * İstasyonları filtreleme seçeneklerine göre filtreler
    */
   static applyFilters(stations: ChargingStation[], filters: FilterOptions): ChargingStation[] {
-    return stations.filter(station => {
+    console.log('🔧 FilterService.applyFilters çağrıldı:', {
+      stationCount: stations.length,
+      filters: filters
+    });
+
+    let powerFailCount = 0;
+    let distanceFailCount = 0;
+    let fastChargingFailCount = 0;
+    let availableFailCount = 0;
+    let freeFailCount = 0;
+    let connectionFailCount = 0;
+    let operatorFailCount = 0;
+
+    const filteredStations = stations.filter(station => {
       // Güç filtresi
-      if (!this.checkPowerFilter(station, filters)) return false;
+      if (!this.checkPowerFilter(station, filters)) {
+        powerFailCount++;
+        return false;
+      }
       
       // Mesafe filtresi
-      if (!this.checkDistanceFilter(station, filters)) return false;
+      if (!this.checkDistanceFilter(station, filters)) {
+        distanceFailCount++;
+        return false;
+      }
       
       // Hızlı şarj filtresi
-      if (filters.onlyFastCharging && !this.isFastCharging(station)) return false;
+      if (filters.onlyFastCharging && !this.isFastCharging(station)) {
+        fastChargingFailCount++;
+        return false;
+      }
       
       // Müsaitlik filtresi
-      if (filters.onlyAvailable && !this.isAvailable(station)) return false;
+      if (filters.onlyAvailable && !this.isAvailable(station)) {
+        availableFailCount++;
+        return false;
+      }
       
       // Ücretsiz filtresi
-      if (filters.onlyFree && !this.isFree(station)) return false;
+      if (filters.onlyFree && !this.isFree(station)) {
+        freeFailCount++;
+        return false;
+      }
       
       // Konnektör tipi filtresi
-      if (!this.checkConnectionTypeFilter(station, filters)) return false;
+      if (!this.checkConnectionTypeFilter(station, filters)) {
+        connectionFailCount++;
+        return false;
+      }
       
       // Operatör filtresi
-      if (!this.checkOperatorFilter(station, filters)) return false;
+      if (!this.checkOperatorFilter(station, filters)) {
+        operatorFailCount++;
+        return false;
+      }
       
       return true;
     });
+
+    console.log('✅ FilterService sonuç:', {
+      originalCount: stations.length,
+      filteredCount: filteredStations.length,
+      sampleStation: filteredStations[0]?.AddressInfo?.Title || 'Yok',
+      filterFailures: {
+        power: powerFailCount,
+        distance: distanceFailCount,
+        fastCharging: fastChargingFailCount,
+        available: availableFailCount,
+        free: freeFailCount,
+        connection: connectionFailCount,
+        operator: operatorFailCount
+      }
+    });
+
+    return filteredStations;
   }
 
   /**
@@ -39,7 +90,21 @@ export class FilterService {
     if (filters.minPowerKW === 0 && filters.maxPowerKW === 1000) return true;
     
     const stationPower = this.getStationMaxPower(station);
-    return stationPower >= filters.minPowerKW && stationPower <= filters.maxPowerKW;
+    const passes = stationPower >= filters.minPowerKW && stationPower <= filters.maxPowerKW;
+    
+    // İlk birkaç istasyon için debug log
+    if (Math.random() < 0.01) { // %1 şans ile log
+      console.log('⚡ Güç filtresi:', {
+        stationName: station.AddressInfo?.Title,
+        stationPower: stationPower,
+        filterMin: filters.minPowerKW,
+        filterMax: filters.maxPowerKW,
+        passes: passes,
+        connections: station.Connections?.map(c => ({ type: c.ConnectionType?.Title, power: c.PowerKW }))
+      });
+    }
+    
+    return passes;
   }
 
   /**
@@ -91,7 +156,19 @@ export class FilterService {
       .map(conn => conn.PowerKW)
       .filter(power => power && power > 0) as number[];
     
-    return powers.length > 0 ? Math.max(...powers) : 0;
+    const maxPower = powers.length > 0 ? Math.max(...powers) : 0;
+    
+    // İlk birkaç istasyon için debug log
+    if (Math.random() < 0.005) { // %0.5 şans ile log
+      console.log('🔋 İstasyon güç hesaplama:', {
+        stationName: station.AddressInfo?.Title,
+        connections: station.Connections?.map(c => ({ type: c.ConnectionType?.Title, power: c.PowerKW })),
+        powers: powers,
+        maxPower: maxPower
+      });
+    }
+    
+    return maxPower;
   }
 
   /**
