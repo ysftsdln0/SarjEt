@@ -461,15 +461,17 @@ const SarjetMainScreen: React.FC<SarjetMainScreenProps> = () => {
       />
       
       <View style={styles.contentContainer}>
-        {viewMode === 'map' ? renderMapView() : (
-          <StationList 
-            stations={stations} 
-            onStationPress={handleStationPress}
-            refreshing={refreshing}
-            onRefresh={handleRefresh}
-            userLocation={userLocation}
-          />
-        )}
+        <View style={styles.mapContainer}>
+          {viewMode === 'map' ? renderMapView() : (
+            <StationList 
+              stations={stations} 
+              onStationPress={handleStationPress}
+              refreshing={refreshing}
+              onRefresh={handleRefresh}
+              userLocation={userLocation}
+            />
+          )}
+        </View>
         {viewMode === 'map' && renderLocationButton()}
       </View>
 
@@ -498,6 +500,21 @@ const styles = StyleSheet.create({
   contentContainer: {
     flex: 1,
     position: 'relative',
+    padding: 16,
+  },
+  mapContainer: {
+    flex: 1,
+    borderRadius: 20,
+    overflow: 'hidden',
+    backgroundColor: '#FFFFFF',
+    shadowColor: '#000000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
   },
   map: {
     flex: 1,
@@ -507,8 +524,8 @@ const styles = StyleSheet.create({
   },
   locationButton: {
     position: 'absolute',
-    bottom: 30,
-    right: 20,
+    bottom: 46,
+    right: 36,
     width: 56,
     height: 56,
     borderRadius: 28,

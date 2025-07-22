@@ -126,11 +126,14 @@ export const StationList: React.FC<StationListProps> = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: 'transparent',
+    borderRadius: 20,
+    overflow: 'hidden',
   },
   contentContainer: {
     padding: 16,
     paddingBottom: 100,
+    paddingTop: 16,
   },
   stationCard: {
     backgroundColor: '#fff',
