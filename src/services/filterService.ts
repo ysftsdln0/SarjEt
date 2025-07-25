@@ -80,14 +80,7 @@ export class FilterService {
       }
     });
 
-    // MaxResults filtresi - en son uygula
-    const finalStations = filteredStations.slice(0, filters.maxResults);
-    
-    if (finalStations.length !== filteredStations.length) {
-      console.log(`📊 MaxResults filtresi uygulandı: ${filteredStations.length} -> ${finalStations.length}`);
-    }
-
-    return finalStations;
+    return filteredStations;
   }
 
   /**
@@ -295,7 +288,6 @@ export class FilterService {
       connectionTypes: [],
       operators: [],
       maxDistance: 100, // Varsayılan 100km
-      maxResults: 100,
       onlyFastCharging: false,
       onlyAvailable: false,
       onlyFree: false,

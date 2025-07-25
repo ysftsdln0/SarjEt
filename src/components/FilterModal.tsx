@@ -18,7 +18,6 @@ export interface FilterOptions {
   connectionTypes: string[];
   operators: string[];
   maxDistance: number;
-  maxResults: number;
   onlyFastCharging: boolean;
   onlyAvailable: boolean;
   onlyFree: boolean;
@@ -92,7 +91,6 @@ export const FilterModal: React.FC<FilterModalProps> = ({
       connectionTypes: [],
       operators: [],
       maxDistance: 100, // Varsayılan 100km
-      maxResults: 100,
       onlyFastCharging: false,
       onlyAvailable: false,
       onlyFree: false,
@@ -184,36 +182,6 @@ export const FilterModal: React.FC<FilterModalProps> = ({
                   localFilters.maxDistance === range.value && styles.optionTextActive
                 ]}>
                   {range.label}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-
-          {/* İstasyon Sayısı */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>📊 Gösterilecek İstasyon Sayısı</Text>
-            {[
-              { label: '50 istasyon', value: 50 },
-              { label: '100 istasyon', value: 100 },
-              { label: '200 istasyon', value: 200 },
-              { label: '500 istasyon', value: 500 },
-            ].map((option) => (
-              <TouchableOpacity
-                key={option.label}
-                style={[
-                  styles.optionButton,
-                  localFilters.maxResults === option.value && styles.optionButtonActive
-                ]}
-                onPress={() => setLocalFilters({
-                  ...localFilters,
-                  maxResults: option.value,
-                })}
-              >
-                <Text style={[
-                  styles.optionText,
-                  localFilters.maxResults === option.value && styles.optionTextActive
-                ]}>
-                  {option.label}
                 </Text>
               </TouchableOpacity>
             ))}
