@@ -149,19 +149,19 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
           <View style={styles.section}>
             <TouchableOpacity style={styles.menuItem}>
               <Ionicons name="heart-outline" size={20} color={colors.primary} />
-              <Text style={styles.menuText}>Favori İstasyonlarım</Text>
+              <Text style={[styles.menuText, !isDarkMode && styles.lightSettingText]}>Favori İstasyonlarım</Text>
               <Ionicons name="chevron-forward" size={20} color={colors.gray500} />
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.menuItem}>
               <Ionicons name="help-circle-outline" size={20} color="#00C853" />
-              <Text style={styles.menuText}>Yardım & Destek</Text>
+              <Text style={[styles.menuText, !isDarkMode && styles.lightSettingText]}>Yardım & Destek</Text>
               <Ionicons name="chevron-forward" size={20} color="#B0BEC5" />
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.menuItem}>
               <Ionicons name="information-circle-outline" size={20} color="#00C853" />
-              <Text style={styles.menuText}>Hakkında</Text>
+              <Text style={[styles.menuText, !isDarkMode && styles.lightSettingText]}>Hakkında</Text>
               <Ionicons name="chevron-forward" size={20} color="#B0BEC5" />
             </TouchableOpacity>
           </View>
