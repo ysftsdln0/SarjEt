@@ -6,14 +6,19 @@ import colors from '../constants/colors';
 interface HeaderProps {
   title: string;
   onProfilePress?: () => void;
+  isDarkMode?: boolean;
 }
 
-export const Header: React.FC<HeaderProps> = ({ title, onProfilePress }) => {
+export const Header: React.FC<HeaderProps> = ({ title, onProfilePress, isDarkMode = true }) => {
   return (
-    <View style={styles.header}>
-      <Text style={styles.headerTitle}>{title}</Text>
+    <View style={[styles.header, !isDarkMode && styles.lightHeader]}>
+      <Text style={[styles.headerTitle, !isDarkMode && styles.lightHeaderTitle]}>{title}</Text>
       <TouchableOpacity style={styles.profileButton} onPress={onProfilePress}>
-        <Ionicons name="person-circle-outline" size={28} color={colors.darkText} />
+        <Ionicons 
+          name="person-circle-outline" 
+          size={28} 
+          color={isDarkMode ? colors.darkText : colors.lightText} 
+        />
       </TouchableOpacity>
     </View>
   );
@@ -35,5 +40,11 @@ const styles = StyleSheet.create({
   },
   profileButton: {
     padding: 4,
+  },
+  lightHeader: {
+    backgroundColor: colors.lightBg,
+  },
+  lightHeaderTitle: {
+    color: colors.lightText,
   },
 });

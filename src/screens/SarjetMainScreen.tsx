@@ -38,6 +38,7 @@ const SarjetMainScreen: React.FC<SarjetMainScreenProps> = () => {
   const [filterVisible, setFilterVisible] = useState(false);
   const [locationLoading, setLocationLoading] = useState(true);
   const [filters, setFilters] = useState<FilterOptions>(FilterService.getDefaultFilters());
+  const [isDarkMode, setIsDarkMode] = useState(true);
 
   // OpenChargeMap API servisi
   const stationService = new ChargingStationService('6ce97f56-cef6-4f87-b772-00b99fdb9547');
@@ -441,10 +442,13 @@ const SarjetMainScreen: React.FC<SarjetMainScreenProps> = () => {
   );
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor={colors.darkBg} />
+    <SafeAreaView style={[styles.container, !isDarkMode && styles.lightContainer]}>
+      <StatusBar 
+        barStyle={isDarkMode ? "light-content" : "dark-content"} 
+        backgroundColor={isDarkMode ? colors.darkBg : colors.lightBg} 
+      />
       
-      <Header title="Şarjet" onProfilePress={handleProfilePress} />
+      <Header title="Şarjet" onProfilePress={handleProfilePress} isDarkMode={isDarkMode} />
       
       <SearchBar
         value={searchQuery}
@@ -453,12 +457,14 @@ const SarjetMainScreen: React.FC<SarjetMainScreenProps> = () => {
         onShowFilters={() => setFilterVisible(true)}
         placeholder="Şehir veya ilçe ile arayın..."
         filterCount={FilterService.getActiveFilterCount(filters)}
+        isDarkMode={isDarkMode}
       />
       
       <SegmentedControl
         options={['Harita', 'Liste']}
         selectedIndex={viewMode === 'map' ? 0 : 1}
         onSelectionChange={handleViewModeChange}
+        isDarkMode={isDarkMode}
       />
       
       <View style={styles.contentContainer}>
@@ -482,12 +488,15 @@ const SarjetMainScreen: React.FC<SarjetMainScreenProps> = () => {
         filters={filters}
         onApplyFilters={applyFilters}
         stations={allStations}
+        isDarkMode={isDarkMode}
       />
 
       <ProfileModal 
         visible={profileVisible}
         onClose={() => setProfileVisible(false)}
         userLocation={userLocation}
+        isDarkMode={isDarkMode}
+        onToggleDarkMode={setIsDarkMode}
       />
     </SafeAreaView>
   );
@@ -497,6 +506,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.darkBg,
+  },
+  lightContainer: {
+    backgroundColor: colors.lightBg,
   },
   contentContainer: {
     flex: 1,

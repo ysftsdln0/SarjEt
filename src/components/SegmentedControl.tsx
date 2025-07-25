@@ -6,15 +6,17 @@ interface SegmentedControlProps {
   options: string[];
   selectedIndex: number;
   onSelectionChange: (index: number) => void;
+  isDarkMode?: boolean;
 }
 
 export const SegmentedControl: React.FC<SegmentedControlProps> = ({
   options,
   selectedIndex,
   onSelectionChange,
+  isDarkMode = true,
 }) => {
   return (
-    <View style={styles.segmentedControl}>
+    <View style={[styles.segmentedControl, !isDarkMode && styles.lightSegmentedControl]}>
       {options.map((option, index) => (
         <TouchableOpacity
           key={option}
@@ -27,6 +29,7 @@ export const SegmentedControl: React.FC<SegmentedControlProps> = ({
           <Text
             style={[
               styles.segmentText,
+              !isDarkMode && styles.lightSegmentText,
               selectedIndex === index && styles.segmentTextActive,
             ]}
           >
@@ -47,6 +50,9 @@ const styles = StyleSheet.create({
     marginBottom: 0,
     padding: 4,
   },
+  lightSegmentedControl: {
+    backgroundColor: colors.lightCard,
+  },
   segmentButton: {
     flex: 1,
     paddingVertical: 12,
@@ -60,6 +66,9 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '500',
     color: colors.gray500,
+  },
+  lightSegmentText: {
+    color: colors.gray600,
   },
   segmentTextActive: {
     color: colors.white,

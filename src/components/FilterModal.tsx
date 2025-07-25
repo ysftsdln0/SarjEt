@@ -29,6 +29,7 @@ interface FilterModalProps {
   filters: FilterOptions;
   onApplyFilters: (filters: FilterOptions) => void;
   stations: ChargingStation[];
+  isDarkMode?: boolean;
 }
 
 export const FilterModal: React.FC<FilterModalProps> = ({
@@ -37,8 +38,10 @@ export const FilterModal: React.FC<FilterModalProps> = ({
   filters,
   onApplyFilters,
   stations,
+  isDarkMode = true,
 }) => {
   const [localFilters, setLocalFilters] = useState<FilterOptions>(filters);
+  const styles = getStyles(isDarkMode);
 
   const getAvailableConnectionTypes = (): string[] => {
     const types = new Set<string>();
@@ -125,7 +128,11 @@ export const FilterModal: React.FC<FilterModalProps> = ({
         {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-            <Ionicons name="close" size={24} color={colors.gray600} />
+            <Ionicons 
+              name="close" 
+              size={24} 
+              color={isDarkMode ? colors.gray600 : colors.gray500} 
+            />
           </TouchableOpacity>
           <Text style={styles.title}>Filtreleme Seçenekleri</Text>
           <TouchableOpacity onPress={handleResetFilters} style={styles.resetButton}>
@@ -291,10 +298,10 @@ export const FilterModal: React.FC<FilterModalProps> = ({
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (isDarkMode: boolean) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.darkBg,
+    backgroundColor: isDarkMode ? colors.darkBg : colors.lightBg,
   },
   header: {
     flexDirection: 'row',
@@ -304,26 +311,26 @@ const styles = StyleSheet.create({
     paddingTop: 60,
     paddingBottom: 20,
     borderBottomWidth: 1,
-    borderBottomColor: colors.gray600,
+    borderBottomColor: isDarkMode ? colors.gray600 : colors.gray300,
   },
   closeButton: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: colors.darkCard,
+    backgroundColor: isDarkMode ? colors.darkCard : colors.lightCard,
     justifyContent: 'center',
     alignItems: 'center',
   },
   title: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: colors.darkText,
+    color: isDarkMode ? colors.darkText : colors.lightText,
   },
   resetButton: {
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 8,
-    backgroundColor: colors.darkCard,
+    backgroundColor: isDarkMode ? colors.darkCard : colors.lightCard,
   },
   resetText: {
     fontSize: 14,
@@ -340,14 +347,14 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: colors.darkText,
+    color: isDarkMode ? colors.darkText : colors.lightText,
     marginBottom: 12,
   },
   optionButton: {
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderRadius: 8,
-    backgroundColor: colors.darkCard,
+    backgroundColor: isDarkMode ? colors.darkCard : colors.lightCard,
     marginBottom: 8,
   },
   optionButtonActive: {
@@ -355,7 +362,7 @@ const styles = StyleSheet.create({
   },
   optionText: {
     fontSize: 14,
-    color: colors.gray400,
+    color: isDarkMode ? colors.gray400 : colors.gray600,
     fontWeight: '500',
   },
   optionTextActive: {
@@ -368,11 +375,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: colors.gray600,
+    borderBottomColor: isDarkMode ? colors.gray600 : colors.gray300,
   },
   switchLabel: {
     fontSize: 14,
-    color: colors.darkText,
+    color: isDarkMode ? colors.darkText : colors.lightText,
     flex: 1,
   },
   chipContainer: {
@@ -382,10 +389,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
-    backgroundColor: colors.darkCard,
+    backgroundColor: isDarkMode ? colors.darkCard : colors.lightCard,
     marginRight: 8,
     borderWidth: 1,
-    borderColor: colors.gray600,
+    borderColor: isDarkMode ? colors.gray600 : colors.gray300,
   },
   chipActive: {
     backgroundColor: colors.primary,
@@ -393,7 +400,7 @@ const styles = StyleSheet.create({
   },
   chipText: {
     fontSize: 12,
-    color: colors.gray400,
+    color: isDarkMode ? colors.gray400 : colors.gray600,
     fontWeight: '500',
   },
   chipTextActive: {
@@ -404,7 +411,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 20,
     borderTopWidth: 1,
-    borderTopColor: colors.gray600,
+    borderTopColor: isDarkMode ? colors.gray600 : colors.gray300,
   },
   applyButton: {
     backgroundColor: colors.primary,

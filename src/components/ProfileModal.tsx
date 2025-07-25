@@ -16,16 +16,19 @@ interface ProfileModalProps {
   visible: boolean;
   onClose: () => void;
   userLocation: { latitude: number; longitude: number } | null;
+  isDarkMode: boolean;
+  onToggleDarkMode: (isDark: boolean) => void;
 }
 
 export const ProfileModal: React.FC<ProfileModalProps> = ({
   visible,
   onClose,
   userLocation,
+  isDarkMode,
+  onToggleDarkMode,
 }) => {
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [fastChargingOnly, setFastChargingOnly] = useState(false);
-  const [darkMode, setDarkMode] = useState(true);
 
   const userStats = {
     stationsVisited: 12,
@@ -41,12 +44,12 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
       presentationStyle="pageSheet"
       onRequestClose={onClose}
     >
-      <SafeAreaView style={styles.container}>
-        <View style={styles.header}>
+      <SafeAreaView style={[styles.container, !isDarkMode && styles.lightContainer]}>
+        <View style={[styles.header, !isDarkMode && styles.lightHeader]}>
           <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-            <Ionicons name="close" size={24} color={colors.darkText} />
+            <Ionicons name="close" size={24} color={isDarkMode ? colors.darkText : colors.lightText} />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Profil</Text>
+          <Text style={[styles.headerTitle, !isDarkMode && styles.lightHeaderTitle]}>Profil</Text>
           <View style={styles.headerSpacer} />
         </View>
 
@@ -58,8 +61,8 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                 <Ionicons name="person" size={40} color={colors.white} />
               </View>
               <View style={styles.userDetails}>
-                <Text style={styles.userName}>Şarjet Kullanıcısı</Text>
-                <Text style={styles.userEmail}>kullanici@sarjet.com</Text>
+                <Text style={[styles.userName, !isDarkMode && styles.lightUserName]}>Şarjet Kullanıcısı</Text>
+                <Text style={[styles.userEmail, !isDarkMode && styles.lightUserEmail]}>kullanici@sarjet.com</Text>
                 {userLocation && (
                   <Text style={styles.userLocation}>
                     📍 {userLocation.latitude.toFixed(4)}, {userLocation.longitude.toFixed(4)}
@@ -71,41 +74,41 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
 
           {/* İstatistikler */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>İstatistiklerim</Text>
+            <Text style={[styles.sectionTitle, !isDarkMode && styles.lightSectionTitle]}>İstatistiklerim</Text>
             
             <View style={styles.statsGrid}>
-              <View style={styles.statCard}>
+              <View style={[styles.statCard, !isDarkMode && styles.lightStatCard]}>
                 <Text style={styles.statNumber}>{userStats.stationsVisited}</Text>
-                <Text style={styles.statLabel}>Ziyaret Edilen İstasyon</Text>
+                <Text style={[styles.statLabel, !isDarkMode && styles.lightStatLabel]}>Ziyaret Edilen İstasyon</Text>
               </View>
               
-              <View style={styles.statCard}>
+              <View style={[styles.statCard, !isDarkMode && styles.lightStatCard]}>
                 <Text style={styles.statNumber}>{userStats.totalChargingSessions}</Text>
-                <Text style={styles.statLabel}>Şarj Seansı</Text>
+                <Text style={[styles.statLabel, !isDarkMode && styles.lightStatLabel]}>Şarj Seansı</Text>
               </View>
             </View>
 
             <View style={styles.statsGrid}>
-              <View style={styles.statCard}>
+              <View style={[styles.statCard, !isDarkMode && styles.lightStatCard]}>
                 <Text style={styles.statNumber}>{userStats.energyConsumed}</Text>
-                <Text style={styles.statLabel}>kWh Enerji</Text>
+                <Text style={[styles.statLabel, !isDarkMode && styles.lightStatLabel]}>kWh Enerji</Text>
               </View>
               
-              <View style={styles.statCard}>
+              <View style={[styles.statCard, !isDarkMode && styles.lightStatCard]}>
                 <Text style={styles.statNumber}>{userStats.carbonSaved}</Text>
-                <Text style={styles.statLabel}>kg CO₂ Tasarruf</Text>
+                <Text style={[styles.statLabel, !isDarkMode && styles.lightStatLabel]}>kg CO₂ Tasarruf</Text>
               </View>
             </View>
           </View>
 
           {/* Ayarlar */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Ayarlar</Text>
+            <Text style={[styles.sectionTitle, !isDarkMode && styles.lightSectionTitle]}>Ayarlar</Text>
             
-            <View style={styles.settingItem}>
+            <View style={[styles.settingItem, !isDarkMode && styles.lightSettingItem]}>
               <View style={styles.settingLeft}>
                 <Ionicons name="notifications-outline" size={20} color={colors.primary} />
-                <Text style={styles.settingText}>Bildirimler</Text>
+                <Text style={[styles.settingText, !isDarkMode && styles.lightSettingText]}>Bildirimler</Text>
               </View>
               <Switch
                 value={notificationsEnabled}
@@ -115,10 +118,10 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
               />
             </View>
 
-            <View style={styles.settingItem}>
+            <View style={[styles.settingItem, !isDarkMode && styles.lightSettingItem]}>
               <View style={styles.settingLeft}>
                 <Ionicons name="flash-outline" size={20} color={colors.primary} />
-                <Text style={styles.settingText}>Sadece Hızlı Şarj</Text>
+                <Text style={[styles.settingText, !isDarkMode && styles.lightSettingText]}>Sadece Hızlı Şarj</Text>
               </View>
               <Switch
                 value={fastChargingOnly}
@@ -128,16 +131,16 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
               />
             </View>
 
-            <View style={styles.settingItem}>
+            <View style={[styles.settingItem, !isDarkMode && styles.lightSettingItem]}>
               <View style={styles.settingLeft}>
                 <Ionicons name="moon-outline" size={20} color={colors.primary} />
-                <Text style={styles.settingText}>Karanlık Tema</Text>
+                <Text style={[styles.settingText, !isDarkMode && styles.lightSettingText]}>Karanlık Tema</Text>
               </View>
               <Switch
-                value={darkMode}
-                onValueChange={setDarkMode}
+                value={isDarkMode}
+                onValueChange={onToggleDarkMode}
                 trackColor={{ false: colors.gray500, true: colors.primary }}
-                thumbColor={darkMode ? colors.white : colors.gray200}
+                thumbColor={isDarkMode ? colors.white : colors.gray200}
               />
             </View>
           </View>
@@ -334,5 +337,36 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: colors.gray500,
     textAlign: 'center',
+  },
+  // Light theme styles
+  lightContainer: {
+    backgroundColor: colors.lightBg,
+  },
+  lightHeader: {
+    borderBottomColor: colors.gray300,
+  },
+  lightHeaderTitle: {
+    color: colors.lightText,
+  },
+  lightSectionTitle: {
+    color: colors.lightText,
+  },
+  lightUserName: {
+    color: colors.lightText,
+  },
+  lightUserEmail: {
+    color: colors.gray600,
+  },
+  lightSettingItem: {
+    borderBottomColor: colors.gray300,
+  },
+  lightSettingText: {
+    color: colors.lightText,
+  },
+  lightStatCard: {
+    backgroundColor: colors.lightCard,
+  },
+  lightStatLabel: {
+    color: colors.gray600,
   },
 });

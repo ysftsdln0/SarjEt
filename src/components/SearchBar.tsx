@@ -10,6 +10,7 @@ interface SearchBarProps {
   onShowFilters?: () => void;
   placeholder?: string;
   filterCount?: number;
+  isDarkMode?: boolean;
 }
 
 export const SearchBar: React.FC<SearchBarProps> = ({
@@ -19,14 +20,15 @@ export const SearchBar: React.FC<SearchBarProps> = ({
   onShowFilters,
   placeholder = 'Search by city or district...',
   filterCount = 0,
+  isDarkMode = true,
 }) => {
   return (
-    <View style={styles.searchSection}>
-      <View style={styles.searchContainer}>
+    <View style={[styles.searchSection, !isDarkMode && styles.lightSearchSection]}>
+      <View style={[styles.searchContainer, !isDarkMode && styles.lightSearchContainer]}>
         <TextInput
-          style={styles.searchInput}
+          style={[styles.searchInput, !isDarkMode && styles.lightSearchInput]}
           placeholder={placeholder}
-          placeholderTextColor={colors.gray500}
+          placeholderTextColor={isDarkMode ? colors.gray500 : colors.gray400}
           value={value}
           onChangeText={onChangeText}
           onSubmitEditing={onSearch}
@@ -36,8 +38,12 @@ export const SearchBar: React.FC<SearchBarProps> = ({
         </TouchableOpacity>
         
         {onShowFilters && (
-          <TouchableOpacity style={styles.filterButton} onPress={onShowFilters}>
-            <Ionicons name="options" size={20} color={colors.white} />
+          <TouchableOpacity style={[styles.filterButton, !isDarkMode && styles.lightFilterButton]} onPress={onShowFilters}>
+            <Ionicons 
+              name="options" 
+              size={20} 
+              color={isDarkMode ? colors.white : colors.lightText} 
+            />
             {filterCount > 0 && (
               <View style={styles.filterBadge}>
                 <Text style={styles.filterBadgeText}>{filterCount}</Text>
@@ -111,5 +117,18 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: colors.primary,
     fontWeight: '500',
+  },
+  lightSearchContainer: {
+    // Container için light mode değişikliği gerekmiyor
+  },
+  lightSearchSection: {
+    backgroundColor: colors.lightBg,
+  },
+  lightSearchInput: {
+    backgroundColor: colors.lightCard,
+    color: colors.lightText,
+  },
+  lightFilterButton: {
+    backgroundColor: colors.lightCard,
   },
 });
