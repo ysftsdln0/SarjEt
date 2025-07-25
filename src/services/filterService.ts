@@ -80,7 +80,14 @@ export class FilterService {
       }
     });
 
-    return filteredStations;
+    // MaxResults filtresi - en son uygula
+    const finalStations = filteredStations.slice(0, filters.maxResults);
+    
+    if (finalStations.length !== filteredStations.length) {
+      console.log(`📊 MaxResults filtresi uygulandı: ${filteredStations.length} -> ${finalStations.length}`);
+    }
+
+    return finalStations;
   }
 
   /**
@@ -287,7 +294,8 @@ export class FilterService {
       maxPowerKW: 1000,
       connectionTypes: [],
       operators: [],
-      maxDistance: 10000,
+      maxDistance: 100, // Varsayılan 100km
+      maxResults: 100,
       onlyFastCharging: false,
       onlyAvailable: false,
       onlyFree: false,

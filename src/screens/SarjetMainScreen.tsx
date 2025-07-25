@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   Alert,
 } from 'react-native';
+import colors from '../constants/colors';
 import { Ionicons } from '@expo/vector-icons';
 import MapView, { Marker, Callout, PROVIDER_GOOGLE } from 'react-native-maps';
 import { ChargingStation, UserLocation } from '../types';
@@ -327,18 +328,18 @@ const SarjetMainScreen: React.FC<SarjetMainScreenProps> = () => {
       return <LoadingScreen message="Konum bilgisi alınıyor..." />;
     }
 
-    // Harita region'ını belirle
+    // Harita region'ını belirle - öncelik kullanıcı konumunda
     let mapRegion = {
       latitude: userLocation.latitude,
       longitude: userLocation.longitude,
-      latitudeDelta: 0.0922,
-      longitudeDelta: 0.0421,
+      latitudeDelta: 0.1,
+      longitudeDelta: 0.1,
     };
 
-    // Eğer filtrelenmiş istasyonlar varsa, haritayı bu istasyonları gösterecek şekilde ayarla
-    if (stations.length > 0) {
-      const latitudes = stations.map(s => s.AddressInfo.Latitude);
-      const longitudes = stations.map(s => s.AddressInfo.Longitude);
+    // Eğer sadece birkaç istasyon varsa ve kullanıcıya yakınsa, haritayı bu istasyonları da gösterecek şekilde ayarla
+    if (stations.length > 0 && stations.length <= 10) {
+      const latitudes = [userLocation.latitude, ...stations.map(s => s.AddressInfo.Latitude)];
+      const longitudes = [userLocation.longitude, ...stations.map(s => s.AddressInfo.Longitude)];
       
       const minLat = Math.min(...latitudes);
       const maxLat = Math.max(...latitudes);
@@ -349,12 +350,12 @@ const SarjetMainScreen: React.FC<SarjetMainScreenProps> = () => {
       const centerLng = (minLng + maxLng) / 2;
       
       // Minimum zoom seviyesi için sınır koy
-      let latDelta = Math.max((maxLat - minLat) * 1.1, 0.05);
-      let lngDelta = Math.max((maxLng - minLng) * 1.1, 0.05);
+      let latDelta = Math.max((maxLat - minLat) * 1.3, 0.05);
+      let lngDelta = Math.max((maxLng - minLng) * 1.3, 0.05);
       
       // Maximum zoom seviyesi için sınır koy (çok geniş olmasın)
-      latDelta = Math.min(latDelta, 10);
-      lngDelta = Math.min(lngDelta, 10);
+      latDelta = Math.min(latDelta, 1);
+      lngDelta = Math.min(lngDelta, 1);
 
       mapRegion = {
         latitude: centerLat,
@@ -435,13 +436,13 @@ const SarjetMainScreen: React.FC<SarjetMainScreenProps> = () => {
       style={styles.locationButton}
       onPress={handleLocationPress}
     >
-      <Ionicons name="locate" size={24} color="#FFFFFF" />
+      <Ionicons name="locate" size={24} color={colors.darkText} />
     </TouchableOpacity>
   );
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="#263238" />
+      <StatusBar barStyle="light-content" backgroundColor={colors.darkBg} />
       
       <Header title="Şarjet" onProfilePress={handleProfilePress} />
       
@@ -495,7 +496,7 @@ const SarjetMainScreen: React.FC<SarjetMainScreenProps> = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#263238',
+    backgroundColor: colors.darkBg,
   },
   contentContainer: {
     flex: 1,
@@ -506,8 +507,8 @@ const styles = StyleSheet.create({
     flex: 1,
     borderRadius: 20,
     overflow: 'hidden',
-    backgroundColor: '#FFFFFF',
-    shadowColor: '#000000',
+    backgroundColor: colors.darkCard,
+    shadowColor: colors.black,
     shadowOffset: {
       width: 0,
       height: 2,
@@ -529,10 +530,10 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: '#00C853',
+    backgroundColor: colors.primary,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000000',
+    shadowColor: colors.black,
     shadowOffset: {
       width: 0,
       height: 4,

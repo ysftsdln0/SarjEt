@@ -11,19 +11,21 @@ import {
   Linking,
   Dimensions,
 } from 'react-native';
+
 import Animated, { 
   FadeInDown, 
   FadeInUp, 
   SlideInRight,
   useSharedValue,
-  withSpring,
   useAnimatedStyle,
+  ReduceMotion,
 } from 'react-native-reanimated';
 import { MotiView } from 'moti';
 import { Ionicons, MaterialIcons, FontAwesome5 } from '@expo/vector-icons';
 import { ChargingStation, UserLocation } from '../types';
 import { StationUtils } from '../utils/stationUtils';
 import { LocationService } from '../services/locationService';
+import { AnimationUtils } from '../utils/animationUtils';
 import colors from '../constants/colors';
 
 const { width } = Dimensions.get('window');
@@ -44,21 +46,37 @@ export const StationDetailScreen: React.FC<StationDetailScreenProps> = ({
   const { station } = route.params;
   const [userLocation, setUserLocation] = useState<UserLocation | null>(null);
   const [isDarkMode] = useState(false); // Koyu mod için state
+  const [isReducedMotion, setIsReducedMotion] = useState(false);
   
   // Animasyon shared values
   const headerOpacity = useSharedValue(0);
   const cardScale = useSharedValue(0.9);
 
   useEffect(() => {
-    // Animasyonları başlat
-    headerOpacity.value = withSpring(1, { duration: 800 });
-    cardScale.value = withSpring(1, { duration: 600 });
+    // Initialize animations and check reduced motion
+    const initializeAnimations = async () => {
+      const reducedMotion = await AnimationUtils.getReducedMotionSetting();
+      setIsReducedMotion(reducedMotion);
+      
+      // Animasyonları başlat - reduced motion ayarını göz önünde bulundurarak
+      headerOpacity.value = AnimationUtils.createSpringAnimation(1, { duration: 800 });
+      cardScale.value = AnimationUtils.createSpringAnimation(1, { duration: 600 });
+    };
+    
+    initializeAnimations();
     
     // Kullanıcı konumunu al
     LocationService.getCurrentLocation()
       .then(setUserLocation)
       .catch(console.error);
   }, []);
+
+  // Helper function to get transition config with reduced motion support
+  const getTransitionConfig = (originalDelay: number = 0, durationType: 'spring' | 'timing' = 'timing', originalDuration: number = 600) => ({
+    type: isReducedMotion ? 'timing' as const : durationType,
+    duration: isReducedMotion ? 0 : originalDuration,
+    delay: isReducedMotion ? 0 : originalDelay,
+  });
 
   // Animasyon stilleri
   const headerAnimatedStyle = useAnimatedStyle(() => ({
@@ -126,12 +144,14 @@ export const StationDetailScreen: React.FC<StationDetailScreenProps> = ({
   };
 
   const renderConnectionInfo = () => {
+    const animationConfig = AnimationUtils.getMotiAnimationConfig(isReducedMotion);
+    
     if (!station.Connections || station.Connections.length === 0) {
       return (
         <MotiView
-          from={{ opacity: 0, translateY: 20 }}
+          from={{ opacity: 0, translateY: isReducedMotion ? 0 : 20 }}
           animate={{ opacity: 1, translateY: 0 }}
-          transition={{ type: 'timing', duration: 600, delay: 400 }}
+          transition={{ ...animationConfig, delay: isReducedMotion ? 0 : 400 }}
           style={[styles.infoCard, isDarkMode && styles.darkCard]}
         >        <View style={styles.cardHeader}>
           <FontAwesome5 name="plug" size={20} color={colors.accent1} />
@@ -146,9 +166,9 @@ export const StationDetailScreen: React.FC<StationDetailScreenProps> = ({
 
     return (
       <MotiView
-        from={{ opacity: 0, translateY: 20 }}
+        from={{ opacity: 0, translateY: isReducedMotion ? 0 : 20 }}
         animate={{ opacity: 1, translateY: 0 }}
-        transition={{ type: 'timing', duration: 600, delay: 400 }}
+        transition={{ ...animationConfig, delay: isReducedMotion ? 0 : 400 }}
         style={[styles.infoCard, isDarkMode && styles.darkCard]}
       >
         <View style={styles.cardHeader}>
@@ -158,9 +178,12 @@ export const StationDetailScreen: React.FC<StationDetailScreenProps> = ({
         {station.Connections.map((connection, index) => (
           <MotiView
             key={index}
-            from={{ opacity: 0, scale: 0.9 }}
+            from={{ opacity: 0, scale: isReducedMotion ? 1 : 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ type: 'timing', duration: 400, delay: 500 + (index * 100) }}
+            transition={{ 
+              ...animationConfig, 
+              delay: isReducedMotion ? 0 : 500 + (index * 100) 
+            }}
             style={[styles.connectionItem, isDarkMode && styles.darkConnectionItem]}
           >
             <View style={styles.connectionHeader}>
@@ -232,13 +255,17 @@ export const StationDetailScreen: React.FC<StationDetailScreenProps> = ({
       >
         {/* Hero Card with Animation */}
         <Animated.View 
-          entering={FadeInDown.delay(200).duration(800)}
+          entering={isReducedMotion ? undefined : FadeInDown.delay(200).duration(800)}
           style={[styles.heroCard, cardAnimatedStyle, isDarkMode && styles.darkCard]}
         >
           <MotiView
-            from={{ scale: 0 }}
+            from={{ scale: isReducedMotion ? 1 : 0 }}
             animate={{ scale: 1 }}
-            transition={{ type: 'spring', duration: 1000, delay: 300 }}
+            transition={{ 
+              type: isReducedMotion ? 'timing' : 'spring', 
+              duration: isReducedMotion ? 0 : 1000, 
+              delay: isReducedMotion ? 0 : 300 
+            }}
             style={styles.statusBadge}
           >
             <View
@@ -271,9 +298,13 @@ export const StationDetailScreen: React.FC<StationDetailScreenProps> = ({
 
           {StationUtils.isFreeStation(station) && (
             <MotiView
-              from={{ opacity: 0, scale: 0 }}
+              from={{ opacity: 0, scale: isReducedMotion ? 1 : 0 }}
               animate={{ opacity: 1, scale: 1 }}
-              transition={{ type: 'spring', duration: 800, delay: 600 }}
+              transition={{ 
+                type: isReducedMotion ? 'timing' : 'spring', 
+                duration: isReducedMotion ? 0 : 800, 
+                delay: isReducedMotion ? 0 : 600 
+              }}
               style={styles.freeTag}
             >
               <FontAwesome5 name="gift" size={12} color="#000000" />
@@ -284,13 +315,16 @@ export const StationDetailScreen: React.FC<StationDetailScreenProps> = ({
 
         {/* Power Stats Grid */}
         <Animated.View 
-          entering={SlideInRight.delay(400).duration(600)}
+          entering={isReducedMotion ? undefined : SlideInRight.delay(400).duration(600)}
           style={[styles.statsGrid, isDarkMode && styles.darkCard]}
         >
           <MotiView
-            from={{ opacity: 0, translateY: 20 }}
+            from={{ opacity: 0, translateY: isReducedMotion ? 0 : 20 }}
             animate={{ opacity: 1, translateY: 0 }}
-            transition={{ type: 'timing', duration: 500, delay: 500 }}
+            transition={{ 
+              ...AnimationUtils.getMotiAnimationConfig(isReducedMotion), 
+              delay: isReducedMotion ? 0 : 500 
+            }}
             style={styles.statItem}
           >
             <FontAwesome5 name="bolt" size={24} color="#fca311" />
@@ -305,9 +339,9 @@ export const StationDetailScreen: React.FC<StationDetailScreenProps> = ({
           <View style={[styles.statDivider, isDarkMode && styles.darkDivider]} />
 
           <MotiView
-            from={{ opacity: 0, translateY: 20 }}
+            from={{ opacity: 0, translateY: isReducedMotion ? 0 : 20 }}
             animate={{ opacity: 1, translateY: 0 }}
-            transition={{ type: 'timing', duration: 500, delay: 600 }}
+            transition={getTransitionConfig(600, 'timing', 500)}
             style={styles.statItem}
           >
             <FontAwesome5 name="tachometer-alt" size={24} color="#fca311" />
@@ -329,9 +363,9 @@ export const StationDetailScreen: React.FC<StationDetailScreenProps> = ({
         {/* Operator Info */}
         {station.OperatorInfo && (
           <MotiView
-            from={{ opacity: 0, translateX: -50 }}
+            from={{ opacity: 0, translateX: isReducedMotion ? 0 : -50 }}
             animate={{ opacity: 1, translateX: 0 }}
-            transition={{ type: 'timing', duration: 600, delay: 300 }}
+            transition={getTransitionConfig(300, 'timing', 600)}
             style={[styles.infoCard, isDarkMode && styles.darkCard]}
           >
             <View style={styles.cardHeader}>
@@ -374,9 +408,9 @@ export const StationDetailScreen: React.FC<StationDetailScreenProps> = ({
 
         {/* Usage Info */}
         <MotiView
-          from={{ opacity: 0, translateY: 20 }}
+          from={{ opacity: 0, translateY: isReducedMotion ? 0 : 20 }}
           animate={{ opacity: 1, translateY: 0 }}
-          transition={{ type: 'timing', duration: 600, delay: 500 }}
+          transition={getTransitionConfig(500, 'timing', 600)}
           style={[styles.infoCard, isDarkMode && styles.darkCard]}
         >
           <View style={styles.cardHeader}>
@@ -401,9 +435,9 @@ export const StationDetailScreen: React.FC<StationDetailScreenProps> = ({
         {/* Date Info */}
         {(station.DateLastConfirmed || station.DateLastVerified) && (
           <MotiView
-            from={{ opacity: 0, scale: 0.9 }}
+            from={{ opacity: 0, scale: isReducedMotion ? 1 : 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ type: 'timing', duration: 500, delay: 600 }}
+            transition={getTransitionConfig(600, 'timing', 500)}
             style={[styles.infoCard, isDarkMode && styles.darkCard]}
           >
             <View style={styles.cardHeader}>
@@ -433,9 +467,9 @@ export const StationDetailScreen: React.FC<StationDetailScreenProps> = ({
 
         {/* Modern Action Button */}
         <MotiView
-          from={{ opacity: 0, translateY: 50 }}
+          from={{ opacity: 0, translateY: isReducedMotion ? 0 : 50 }}
           animate={{ opacity: 1, translateY: 0 }}
-          transition={{ type: 'spring', duration: 1000, delay: 700 }}
+          transition={getTransitionConfig(700, 'spring', 1000)}
         >
           <TouchableOpacity
             style={[styles.directionsButton, isDarkMode && styles.darkDirectionsButton]}
