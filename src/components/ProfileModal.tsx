@@ -197,7 +197,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#263238',
+    backgroundColor: colors.darkBg,
   },
   header: {
     flexDirection: 'row',
@@ -206,7 +206,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#37474F',
+    borderBottomColor: colors.gray600,
   },
   closeButton: {
     padding: 8,
@@ -214,7 +214,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#FFFFFF',
+    color: colors.darkText,
   },
   headerSpacer: {
     width: 40,
@@ -229,7 +229,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#FFFFFF',
+    color: colors.darkText,
     marginBottom: 16,
   },
   userInfo: {
@@ -240,7 +240,7 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: '#00C853',
+    backgroundColor: colors.primary,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 16,
@@ -251,17 +251,17 @@ const styles = StyleSheet.create({
   userName: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#FFFFFF',
+    color: colors.darkText,
     marginBottom: 4,
   },
   userEmail: {
     fontSize: 14,
-    color: '#B0BEC5',
+    color: colors.gray400,
     marginBottom: 4,
   },
   userLocation: {
     fontSize: 12,
-    color: '#00C853',
+    color: colors.primary,
   },
   statsGrid: {
     flexDirection: 'row',
@@ -270,7 +270,7 @@ const styles = StyleSheet.create({
   },
   statCard: {
     flex: 1,
-    backgroundColor: '#37474F',
+    backgroundColor: colors.darkCard,
     borderRadius: 12,
     padding: 16,
     alignItems: 'center',
@@ -279,12 +279,12 @@ const styles = StyleSheet.create({
   statNumber: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#00C853',
+    color: colors.primary,
     marginBottom: 4,
   },
   statLabel: {
     fontSize: 12,
-    color: '#B0BEC5',
+    color: colors.gray400,
     textAlign: 'center',
   },
   settingItem: {
@@ -293,7 +293,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#37474F',
+    borderBottomColor: colors.gray600,
   },
   settingLeft: {
     flexDirection: 'row',
@@ -301,7 +301,7 @@ const styles = StyleSheet.create({
   },
   settingText: {
     fontSize: 16,
-    color: '#FFFFFF',
+    color: colors.darkText,
     marginLeft: 12,
   },
   menuItem: {
@@ -309,19 +309,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#37474F',
+    borderBottomColor: colors.gray600,
   },
   menuText: {
     flex: 1,
     fontSize: 16,
-    color: '#FFFFFF',
+    color: colors.darkText,
     marginLeft: 12,
   },
   logoutButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#37474F',
+    backgroundColor: colors.darkCard,
     borderRadius: 12,
     paddingVertical: 16,
     marginTop: 8,
@@ -329,7 +329,7 @@ const styles = StyleSheet.create({
   logoutText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#FF5722',
+    color: colors.error,
     marginLeft: 8,
   },
   footer: {
@@ -339,12 +339,12 @@ const styles = StyleSheet.create({
   },
   appVersion: {
     fontSize: 14,
-    color: '#B0BEC5',
+    color: colors.gray400,
     marginBottom: 4,
   },
   copyright: {
     fontSize: 12,
-    color: '#78909C',
+    color: colors.gray500,
     textAlign: 'center',
   },
 });

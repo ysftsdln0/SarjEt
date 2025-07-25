@@ -294,7 +294,7 @@ export const FilterModal: React.FC<FilterModalProps> = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.lightCard,
+    backgroundColor: colors.darkBg,
   },
   header: {
     flexDirection: 'row',
@@ -304,26 +304,26 @@ const styles = StyleSheet.create({
     paddingTop: 60,
     paddingBottom: 20,
     borderBottomWidth: 1,
-    borderBottomColor: colors.gray300,
+    borderBottomColor: colors.gray600,
   },
   closeButton: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: colors.lightBg,
+    backgroundColor: colors.darkCard,
     justifyContent: 'center',
     alignItems: 'center',
   },
   title: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: colors.lightText,
+    color: colors.darkText,
   },
   resetButton: {
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 8,
-    backgroundColor: colors.lightBg,
+    backgroundColor: colors.darkCard,
   },
   resetText: {
     fontSize: 14,
@@ -340,22 +340,22 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: colors.lightText,
+    color: colors.darkText,
     marginBottom: 12,
   },
   optionButton: {
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderRadius: 8,
-    backgroundColor: colors.lightBg,
+    backgroundColor: colors.darkCard,
     marginBottom: 8,
   },
   optionButtonActive: {
-    backgroundColor: colors.secondary,
+    backgroundColor: colors.primary,
   },
   optionText: {
     fontSize: 14,
-    color: colors.gray600,
+    color: colors.gray400,
     fontWeight: '500',
   },
   optionTextActive: {
@@ -368,11 +368,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: colors.gray200,
+    borderBottomColor: colors.gray600,
   },
   switchLabel: {
     fontSize: 14,
-    color: colors.lightText,
+    color: colors.darkText,
     flex: 1,
   },
   chipContainer: {
@@ -382,18 +382,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
-    backgroundColor: colors.lightBg,
+    backgroundColor: colors.darkCard,
     marginRight: 8,
     borderWidth: 1,
-    borderColor: colors.gray300,
+    borderColor: colors.gray600,
   },
   chipActive: {
-    backgroundColor: colors.secondary,
-    borderColor: colors.secondary,
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
   },
   chipText: {
     fontSize: 12,
-    color: colors.gray600,
+    color: colors.gray400,
     fontWeight: '500',
   },
   chipTextActive: {
@@ -404,7 +404,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 20,
     borderTopWidth: 1,
-    borderTopColor: colors.gray300,
+    borderTopColor: colors.gray600,
   },
   applyButton: {
     backgroundColor: colors.primary,
