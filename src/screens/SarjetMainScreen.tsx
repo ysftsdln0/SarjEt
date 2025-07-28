@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import {
   View,
   Text,
@@ -46,11 +46,25 @@ const SarjetMainScreen: React.FC<SarjetMainScreenProps> = () => {
   const [isDarkMode, setIsDarkMode] = useState(true);
   const [mapRegion, setMapRegion] = useState<any>(null);
 
-  // SuperCluster instance'ı oluştur
+  // Performance optimization refs
+  const regionUpdateTimeout = useRef<NodeJS.Timeout | null>(null);
+
+  // Debounced region update function
+  const debouncedUpdateRegion = useCallback((region: any) => {
+    if (regionUpdateTimeout.current) {
+      clearTimeout(regionUpdateTimeout.current);
+    }
+    
+    regionUpdateTimeout.current = setTimeout(() => {
+      setMapRegion(region);
+    }, 150); // 150ms debounce
+  }, []);
+
+  // SuperCluster instance'ı oluştur ve stations yüklendiğinde veri yükle
   const superCluster = useMemo(() => {
     const cluster = new SuperCluster({
-      radius: 40,
-      maxZoom: 16,
+      radius: 80, // Radius'u biraz düşürdük performans için
+      maxZoom: 14,
       minZoom: 0,
       extent: 512,
       nodeSize: 64
@@ -58,9 +72,9 @@ const SarjetMainScreen: React.FC<SarjetMainScreenProps> = () => {
     return cluster;
   }, []);
 
-  // Stations'ları GeoJSON formatına çevir
+  // Stations'ları GeoJSON formatına çevir ve SuperCluster'a yükle
   const stationsAsGeoJSON = useMemo(() => {
-    return stations
+    const geoJsonStations = stations
       .filter(station => 
         station.AddressInfo && 
         typeof station.AddressInfo.Latitude === 'number' && 
@@ -78,15 +92,20 @@ const SarjetMainScreen: React.FC<SarjetMainScreenProps> = () => {
           coordinates: [station.AddressInfo.Longitude, station.AddressInfo.Latitude]
         }
       }));
-  }, [stations]);
 
-  // Clusters'ları hesapla
+    // SuperCluster'a veriyi yükle (sadece stations değiştiğinde)
+    if (geoJsonStations.length > 0) {
+      superCluster.load(geoJsonStations);
+    }
+    
+    return geoJsonStations;
+  }, [stations, superCluster]);
+
+  // Clusters'ları hesapla - sadece mapRegion değiştiğinde, SuperCluster.load() çağrılmaz
   const clusters = useMemo(() => {
     if (!mapRegion || stationsAsGeoJSON.length === 0) return [];
     
     try {
-      superCluster.load(stationsAsGeoJSON);
-      
       const bbox: [number, number, number, number] = [
         mapRegion.longitude - mapRegion.longitudeDelta,
         mapRegion.latitude - mapRegion.latitudeDelta,
@@ -95,12 +114,12 @@ const SarjetMainScreen: React.FC<SarjetMainScreenProps> = () => {
       ];
       
       const zoom = Math.round(Math.log(360 / mapRegion.longitudeDelta) / Math.LN2);
-      return superCluster.getClusters(bbox, Math.min(zoom, 16));
+      return superCluster.getClusters(bbox, Math.min(zoom, 14));
     } catch (error) {
       console.warn('Clustering error:', error);
       return stationsAsGeoJSON;
     }
-  }, [superCluster, stationsAsGeoJSON, mapRegion]);
+  }, [stationsAsGeoJSON, mapRegion, superCluster]);
 
   // Kullanıcı konumunu al
   const getUserLocation = async () => {
@@ -304,6 +323,15 @@ const SarjetMainScreen: React.FC<SarjetMainScreenProps> = () => {
     }
   }, [userLocation, locationLoading]);
 
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (regionUpdateTimeout.current) {
+        clearTimeout(regionUpdateTimeout.current);
+      }
+    };
+  }, []);
+
   // Yenile fonksiyonu
   const handleRefresh = async () => {
     setRefreshing(true);
@@ -384,6 +412,77 @@ const SarjetMainScreen: React.FC<SarjetMainScreenProps> = () => {
     await handleRefresh();
   };
 
+  // Memoized cluster markers for better performance
+  const clusterMarkers = useMemo(() => {
+    return clusters.map((cluster: any, index) => {
+      const [longitude, latitude] = cluster.geometry.coordinates;
+      const { cluster: isCluster, point_count: pointCount } = cluster.properties;
+
+      if (isCluster) {
+        // Render cluster
+        const size = Math.min(60, 30 + Math.log(pointCount || 1) * 5);
+        return (
+          <Marker
+            key={`cluster-${cluster.id || index}`}
+            coordinate={{ latitude, longitude }}
+            onPress={() => {
+              // Cluster'a tıklandığında zoom yap
+              if (cluster.id) {
+                const expansionZoom = Math.min(superCluster.getClusterExpansionZoom(cluster.id), 14);
+                const currentZoom = Math.round(Math.log(360 / mapRegion.longitudeDelta) / Math.LN2);
+                const zoomDiff = expansionZoom - currentZoom;
+                const zoomFactor = Math.pow(2, zoomDiff);
+                
+                setMapRegion({
+                  latitude,
+                  longitude,
+                  latitudeDelta: mapRegion.latitudeDelta / zoomFactor,
+                  longitudeDelta: mapRegion.longitudeDelta / zoomFactor,
+                });
+              }
+            }}
+          >
+            <View style={[
+              styles.clusterContainer,
+              {
+                width: size,
+                height: size,
+                borderRadius: size / 2,
+                backgroundColor: (pointCount || 0) > 10 ? '#FF6B6B' : (pointCount || 0) > 5 ? '#4ECDC4' : '#007AFF',
+              }
+            ]}>
+              <Text style={[styles.clusterText, { fontSize: (pointCount || 0) > 99 ? 12 : 14 }]}>
+                {(pointCount || 0) > 99 ? '99+' : (pointCount || 0)}
+              </Text>
+            </View>
+          </Marker>
+        );
+      } else {
+        // Render individual station
+        const station = cluster.properties.station;
+        return (
+          <Marker
+            key={`station-${station.ID}`}
+            coordinate={{ latitude, longitude }}
+            onPress={() => handleStationPress(station)}
+          >
+            <StationMarker isAvailable={isStationAvailable(station)} />
+            
+            <Callout style={styles.callout}>
+              <StationCallout
+                title={station.AddressInfo.Title}
+                powerKW={getStationPowerKW(station)}
+                status={getStationStatus(station)}
+                isAvailable={isStationAvailable(station)}
+                station={station}
+              />
+            </Callout>
+          </Marker>
+        );
+      }
+    });
+  }, [clusters, mapRegion, superCluster]);
+
   const renderMapView = () => {
     if (loading || locationLoading) {
       return <LoadingScreen message="Şarj istasyonları yükleniyor..." />;
@@ -393,151 +492,31 @@ const SarjetMainScreen: React.FC<SarjetMainScreenProps> = () => {
       return <LoadingScreen message="Konum bilgisi alınıyor..." />;
     }
 
-    // Harita region'ını belirle - öncelik kullanıcı konumunda
-    let initialMapRegion = {
-      latitude: userLocation.latitude,
-      longitude: userLocation.longitude,
-      latitudeDelta: 0.1,
-      longitudeDelta: 0.1,
-    };
-
-    // İlk kez map region'ı set et
     if (!mapRegion) {
-      setMapRegion(initialMapRegion);
-    }
-
-    // Eğer sadece birkaç istasyon varsa ve kullanıcıya yakınsa, haritayı bu istasyonları da gösterecek şekilde ayarla
-    if (stations.length > 0 && stations.length <= 10) {
-      const latitudes = [userLocation.latitude, ...stations.map(s => s.AddressInfo.Latitude)];
-      const longitudes = [userLocation.longitude, ...stations.map(s => s.AddressInfo.Longitude)];
-      
-      const minLat = Math.min(...latitudes);
-      const maxLat = Math.max(...latitudes);
-      const minLng = Math.min(...longitudes);
-      const maxLng = Math.max(...longitudes);
-      
-      const centerLat = (minLat + maxLat) / 2;
-      const centerLng = (minLng + maxLng) / 2;
-      
-      // Minimum zoom seviyesi için sınır koy
-      let latDelta = Math.max((maxLat - minLat) * 1.3, 0.05);
-      let lngDelta = Math.max((maxLng - minLng) * 1.3, 0.05);
-      
-      // Maximum zoom seviyesi için sınır koy (çok geniş olmasın)
-      latDelta = Math.min(latDelta, 1);
-      lngDelta = Math.min(lngDelta, 1);
-
-      const adjustedMapRegion = {
-        latitude: centerLat,
-        longitude: centerLng,
-        latitudeDelta: latDelta,
-        longitudeDelta: lngDelta,
+      // İlk kez map region'ı set et
+      const initialMapRegion = {
+        latitude: userLocation.latitude,
+        longitude: userLocation.longitude,
+        latitudeDelta: 0.1,
+        longitudeDelta: 0.1,
       };
-      
-      if (!mapRegion) {
-        setMapRegion(adjustedMapRegion);
-      }
+      setMapRegion(initialMapRegion);
+      return null;
     }
-
-    const currentMapRegion = mapRegion || initialMapRegion;
-
-    console.log('🗺️ Harita render ediliyor:', {
-      stationCount: stations.length,
-      region: {
-        lat: currentMapRegion.latitude.toFixed(4),
-        lng: currentMapRegion.longitude.toFixed(4),
-        latDelta: currentMapRegion.latitudeDelta.toFixed(4),
-        lngDelta: currentMapRegion.longitudeDelta.toFixed(4)
-      },
-      sampleStation: stations[0]?.AddressInfo?.Title || 'Yok',
-      firstFewStations: stations.slice(0, 3).map(s => ({
-        name: s.AddressInfo?.Title,
-        lat: s.AddressInfo?.Latitude,
-        lng: s.AddressInfo?.Longitude
-      }))
-    });
 
     return (
       <MapView
         provider={Platform.OS === 'android' ? PROVIDER_GOOGLE : undefined}
         style={styles.map}
-        region={currentMapRegion}
+        region={mapRegion}
         showsUserLocation={true}
         showsMyLocationButton={false}
         showsCompass={false}
         showsScale={false}
         mapType="standard"
-        onRegionChangeComplete={(region) => {
-          setMapRegion(region);
-        }}
+        onRegionChangeComplete={debouncedUpdateRegion}
       >
-        {clusters.map((cluster: any, index) => {
-          const [longitude, latitude] = cluster.geometry.coordinates;
-          const { cluster: isCluster, point_count: pointCount } = cluster.properties;
-
-          if (isCluster) {
-            // Render cluster
-            const size = Math.min(60, 30 + Math.log(pointCount || 1) * 5);
-            return (
-              <Marker
-                key={`cluster-${cluster.id || index}`}
-                coordinate={{ latitude, longitude }}
-                onPress={() => {
-                  // Cluster'a tıklandığında zoom yap
-                  if (cluster.id) {
-                    const expansionZoom = Math.min(superCluster.getClusterExpansionZoom(cluster.id), 16);
-                    const currentZoom = Math.round(Math.log(360 / mapRegion.longitudeDelta) / Math.LN2);
-                    const zoomDiff = expansionZoom - currentZoom;
-                    const zoomFactor = Math.pow(2, zoomDiff);
-                    
-                    setMapRegion({
-                      latitude,
-                      longitude,
-                      latitudeDelta: mapRegion.latitudeDelta / zoomFactor,
-                      longitudeDelta: mapRegion.longitudeDelta / zoomFactor,
-                    });
-                  }
-                }}
-              >
-                <View style={[
-                  styles.clusterContainer,
-                  {
-                    width: size,
-                    height: size,
-                    borderRadius: size / 2,
-                    backgroundColor: (pointCount || 0) > 10 ? '#FF6B6B' : (pointCount || 0) > 5 ? '#4ECDC4' : '#007AFF',
-                  }
-                ]}>
-                  <Text style={[styles.clusterText, { fontSize: (pointCount || 0) > 99 ? 12 : 14 }]}>
-                    {(pointCount || 0) > 99 ? '99+' : (pointCount || 0)}
-                  </Text>
-                </View>
-              </Marker>
-            );
-          } else {
-            // Render individual station
-            const station = cluster.properties.station;
-            return (
-              <Marker
-                key={`station-${station.ID}`}
-                coordinate={{ latitude, longitude }}
-                onPress={() => handleStationPress(station)}
-              >
-                <StationMarker isAvailable={isStationAvailable(station)} />
-                
-                <Callout style={styles.callout}>
-                  <StationCallout
-                    title={station.AddressInfo.Title}
-                    powerKW={getStationPowerKW(station)}
-                    status={getStationStatus(station)}
-                    isAvailable={isStationAvailable(station)}
-                    station={station}
-                  />
-                </Callout>
-              </Marker>
-            );
-          }
-        })}
+        {clusterMarkers}
       </MapView>
     );
   };
