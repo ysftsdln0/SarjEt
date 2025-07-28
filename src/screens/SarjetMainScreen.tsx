@@ -20,7 +20,7 @@ import { LoadingScreen } from '../components/LoadingScreen';
 import { StationList } from '../components/StationList';
 import { ProfileModal } from '../components/ProfileModal';
 import { FilterModal, FilterOptions } from '../components/FilterModal';
-import { ChargingStationService } from '../services/chargingStationService';
+import { chargingStationService } from '../services/chargingStationService';
 import { LocationService } from '../services/locationService';
 import { FilterService } from '../services/filterService';
 
@@ -39,9 +39,6 @@ const SarjetMainScreen: React.FC<SarjetMainScreenProps> = () => {
   const [locationLoading, setLocationLoading] = useState(true);
   const [filters, setFilters] = useState<FilterOptions>(FilterService.getDefaultFilters());
   const [isDarkMode, setIsDarkMode] = useState(true);
-
-  // OpenChargeMap API servisi
-  const stationService = new ChargingStationService('6ce97f56-cef6-4f87-b772-00b99fdb9547');
 
   // Kullanıcı konumunu al
   const getUserLocation = async () => {
@@ -92,12 +89,12 @@ const SarjetMainScreen: React.FC<SarjetMainScreenProps> = () => {
       console.log('📍 Türkiye geneli şarj istasyonları yükleniyor...');
 
       // Türkiye geneli tüm istasyonları getir
-      const allStations = await stationService.getAllStationsInTurkey(10000);
+      const allStations = await chargingStationService.getAllStationsInTurkey(100);
       
       console.log('🔋 Türkiye geneli bulunan istasyon sayısı:', allStations.length);
       
       // Sadece operasyonel istasyonları filtrele
-      const operationalStations = stationService.filterOperational(allStations);
+      const operationalStations = chargingStationService.filterOperational(allStations);
       console.log('✅ Operasyonel istasyon sayısı:', operationalStations.length);
       
       // Kullanıcı konumuna göre mesafeleri hesapla ve sırala
@@ -272,8 +269,8 @@ const SarjetMainScreen: React.FC<SarjetMainScreenProps> = () => {
 
     try {
       setLoading(true);
-      const searchResults = await stationService.searchStationsByCity(searchQuery.trim(), 30);
-      const operationalResults = stationService.filterOperational(searchResults);
+      const searchResults = await chargingStationService.searchStationsByCity(searchQuery.trim(), 30);
+      const operationalResults = chargingStationService.filterOperational(searchResults);
       setStations(operationalResults);
     } catch (error) {
       console.error('Arama hatası:', error);
@@ -295,7 +292,7 @@ const SarjetMainScreen: React.FC<SarjetMainScreenProps> = () => {
         {
           text: 'Hızlı Şarj',
           onPress: () => {
-            const fastStations = stationService.filterFastCharging(stations);
+            const fastStations = chargingStationService.filterFastCharging(stations);
             setStations(fastStations);
           }
         },

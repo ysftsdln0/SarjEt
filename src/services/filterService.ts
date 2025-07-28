@@ -287,7 +287,7 @@ export class FilterService {
       maxPowerKW: 1000,
       connectionTypes: [],
       operators: [],
-      maxDistance: 100, // Varsayılan 100km
+      maxDistance: 1000, // Varsayılan 1000km - Türkiye geneli için
       onlyFastCharging: false,
       onlyAvailable: false,
       onlyFree: false,

@@ -2,8 +2,7 @@ import axios from 'axios';
 import { ChargingStation } from '../types';
 import { mockChargingStations, checkNetworkConnection } from '../data/mockData';
 
-// React Native için IP adresi kullanıyoruz (localhost simülatörde çalışmaz)
-const BACKEND_URL = 'http://192.168.5.54:3000/api/stations';
+const BACKEND_URL = 'http://localhost:3000/api/stations';
 
 // SarjEt Backend servisi - OpenChargeMap cache sistemi kullanıyor
 export class ChargingStationService {
@@ -47,16 +46,6 @@ export class ChargingStationService {
     }
 
     try {
-      console.log('Backend API çağrısı:', {
-        url: `${BACKEND_URL}/nearby`,
-        params: {
-          latitude,
-          longitude,
-          radius: radiusKM,
-          limit: maxResults
-        }
-      });
-
       const response = await axios.get(`${BACKEND_URL}/nearby`, {
         params: {
           latitude,
@@ -72,12 +61,8 @@ export class ChargingStationService {
       } else {
         throw new Error('Backend API hatası');
       }
-    } catch (error: any) {
-      console.error('Backend bağlantı hatası, demo veriler kullanılıyor:', {
-        error: error.message,
-        status: error.response?.status,
-        data: error.response?.data
-      });
+    } catch (error) {
+      console.error('Backend bağlantı hatası, demo veriler kullanılıyor:', error);
       this.isOffline = true;
       return this.getMockStations(latitude, longitude, radiusKM, maxResults);
     }
@@ -86,7 +71,7 @@ export class ChargingStationService {
   /**
    * Tüm Türkiye'deki istasyonları getirir (eski metodla uyumluluk için)
    */
-  async getAllStationsInTurkey(maxResults: number = 100): Promise<ChargingStation[]> {
+  async getAllStationsInTurkey(maxResults: number = 1000): Promise<ChargingStation[]> {
     const isConnected = await this.checkConnection();
     
     if (!isConnected) {
@@ -95,16 +80,8 @@ export class ChargingStationService {
     }
 
     try {
-      // Backend maksimum limit 100, bu yüzden 100 ile sınırlıyoruz
-      const actualLimit = Math.min(maxResults, 100);
-      console.log('getAllStationsInTurkey çağrılıyor:', {
-        requestedLimit: maxResults,
-        actualLimit: actualLimit,
-        coordinates: { lat: 39.9334, lng: 32.8597, radius: 500 }
-      });
-      
-      // Türkiye merkezinden geniş radius ile arama (backend maksimum 500km)
-      return await this.getNearbyStations(39.9334, 32.8597, 500, actualLimit);
+      // Türkiye merkezinden geniş radius ile arama
+      return await this.getNearbyStations(39.9334, 32.8597, 2000, maxResults);
     } catch (error) {
       console.error('Tüm istasyonlar alınamadı, demo veriler kullanılıyor:', error);
       return mockChargingStations.slice(0, maxResults);
@@ -125,9 +102,6 @@ export class ChargingStationService {
     return backendStations.map(station => ({
       ID: station.ID,
       UUID: station.UUID,
-      DataProviderID: station.DataProviderID,
-      OperatorID: station.OperatorID,
-      UsageTypeID: station.UsageTypeID,
       AddressInfo: {
         ID: station.AddressInfo.ID,
         Title: station.AddressInfo.Title,
@@ -147,7 +121,9 @@ export class ChargingStationService {
       UserComments: station.UserComments || [],
       MediaItems: station.MediaItems || [],
       IsRecentlyVerified: station.IsRecentlyVerified || false,
-      DateLastVerified: station.DateLastVerified
+      DateLastVerified: station.DateLastVerified,
+      OperatorID: station.OperatorID,
+      UsageTypeID: station.UsageTypeID
     }));
   }
 

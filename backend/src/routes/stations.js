@@ -1,17 +1,29 @@
 const express = require('express');
-const ChargingStationController = require('../controllers/ChargingStationController');
-const authMiddleware = require('../middleware/auth');
+const router = express.Router();
+const chargingStationController = require('../controllers/ChargingStationController');
 const optionalAuth = require('../middleware/optionalAuth');
 
-const router = express.Router();
+// Cache kontrolü ve istatistikler
+router.get('/cache/status', chargingStationController.getCacheStatus);
+router.get('/stats', chargingStationController.getStats);
 
-// Public routes
-router.get('/', optionalAuth, ChargingStationController.getStations);
-router.get('/operators', ChargingStationController.getOperators);
-router.get('/connector-types', ChargingStationController.getConnectorTypes);
-router.get('/:id', optionalAuth, ChargingStationController.getStation);
+// Cache yenileme (admin only)
+router.post('/cache/refresh', optionalAuth, chargingStationController.refreshCache);
 
-// Protected routes (admin only)
-router.post('/sync', authMiddleware, ChargingStationController.syncStations);
+// Yakındaki istasyonları getir
+// GET /api/stations/nearby?latitude=41.0082&longitude=28.9784&radius=50&limit=20
+router.get('/nearby', chargingStationController.getNearbyStations);
+
+// Şehre göre istasyonları getir  
+// GET /api/stations/city?city=Istanbul&limit=50
+router.get('/city', chargingStationController.getStationsByCity);
+
+// Tüm istasyonları getir (sayfalama ile)
+// GET /api/stations?page=1&limit=20
+router.get('/', chargingStationController.getAllStations);
+
+// İstasyon detayını getir
+// GET /api/stations/12345
+router.get('/:stationId', chargingStationController.getStationDetail);
 
 module.exports = router;

@@ -2,9 +2,9 @@
 export interface ChargingStation {
   ID: number;
   UUID: string;
-  DataProviderID: number;
-  OperatorID: number;
-  UsageTypeID: number;
+  DataProviderID?: number;
+  OperatorID?: number;
+  UsageTypeID?: number;
   AddressInfo: {
     ID: number;
     Title: string;
@@ -59,6 +59,8 @@ export interface ChargingStation {
     ID: number;
     Title: string;
   };
+  UserComments?: any[];
+  MediaItems?: any[];
   IsRecentlyVerified?: boolean;
   DateLastVerified?: string;
 }
