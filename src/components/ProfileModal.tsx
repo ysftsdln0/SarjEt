@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import colors from '../constants/colors';
+import { useScrollToTop } from '@react-navigation/native';
 
 interface ProfileModalProps {
   visible: boolean;

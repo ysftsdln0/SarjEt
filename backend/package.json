@@ -1,0 +1,59 @@
+{
+  "name": "sarjet-backend",
+  "version": "1.0.0",
+  "description": "SarjEt Backend API - Electric Vehicle Charging Station Service",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "build": "npm run prisma:generate && npm run prisma:deploy",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:deploy": "prisma migrate deploy",
+    "prisma:studio": "prisma studio",
+    "prisma:seed": "node prisma/seed.js",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "lint": "eslint src/",
+    "lint:fix": "eslint src/ --fix"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "helmet": "^7.0.0",
+    "morgan": "^1.10.0",
+    "dotenv": "^16.3.1",
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.2",
+    "joi": "^17.9.2",
+    "express-rate-limit": "^6.8.1",
+    "compression": "^1.7.4",
+    "@prisma/client": "^5.1.1",
+    "axios": "^1.4.0",
+    "node-cron": "^3.0.2",
+    "winston": "^3.10.0",
+    "redis": "^4.6.7"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1",
+    "prisma": "^5.1.1",
+    "jest": "^29.6.1",
+    "supertest": "^6.3.3",
+    "eslint": "^8.45.0",
+    "@types/node": "^20.4.5"
+  },
+  "keywords": [
+    "electric-vehicle",
+    "charging-station",
+    "api",
+    "nodejs",
+    "prisma",
+    "postgresql"
+  ],
+  "author": "SarjEt Team",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  }
+}

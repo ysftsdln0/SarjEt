@@ -1,0 +1,296 @@
+// Prisma Schema for SarjEt Backend
+// This schema defines the database structure for the electric vehicle charging station app
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User Management
+model User {
+  id          String   @id @default(cuid())
+  email       String   @unique
+  name        String?
+  phone       String?
+  password    String
+  avatar      String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  preferences   UserPreferences?
+  sessions      UserSession[]
+  favorites     FavoriteStation[]
+  chargingSessions ChargingSession[]
+  routes        SavedRoute[]
+
+  @@map("users")
+}
+
+// User Authentication Sessions
+model UserSession {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_sessions")
+}
+
+// User Preferences and Settings
+model UserPreferences {
+  id                String  @id @default(cuid())
+  userId            String  @unique
+  isDarkMode        Boolean @default(true)
+  notificationsEnabled Boolean @default(true)
+  fastChargingOnly  Boolean @default(false)
+  maxDistance       Int     @default(100) // km
+  language          String  @default("tr")
+  
+  // Vehicle preferences
+  preferredConnectorTypes String[] // ["Type 2", "CCS", "CHAdeMO"]
+  preferredOperators String[]
+  
+  // Location preferences
+  defaultLatitude   Float?
+  defaultLongitude  Float?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_preferences")
+}
+
+// Electric Vehicle Information
+model Vehicle {
+  id               String @id @default(cuid())
+  make             String // Tesla, BMW, etc.
+  model            String // Model 3, i3, etc.
+  year             Int?
+  batteryCapacity  Float? // kWh
+  range            Int?   // km
+  chargingPower    Int?   // kW max charging power
+  connectorTypes   String[] // ["Type 2", "CCS"]
+  efficiency       Float?   // kWh/100km
+  isActive         Boolean @default(true)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  chargingSessions ChargingSession[]
+
+  @@map("vehicles")
+}
+
+// Charging Stations (Cache for OpenChargeMap data)
+model ChargingStation {
+  id                String  @id @default(cuid())
+  externalId        String  @unique // OpenChargeMap ID
+  title             String
+  address           String?
+  city              String?
+  country           String  @default("Turkey")
+  latitude          Float
+  longitude         Float
+  
+  // Station details
+  operatorName      String?
+  operatorWebsite   String?
+  operatorPhone     String?
+  numberOfPoints    Int?
+  isOperational     Boolean @default(true)
+  isPublic          Boolean @default(true)
+  
+  // Pricing
+  costPerKwh        Float?
+  costPerSession    Float?
+  isFree            Boolean @default(false)
+  
+  // Technical specs
+  maxPowerKW        Float?
+  connectorTypes    String[] // ["Type 2", "CCS", "CHAdeMO"]
+  hasPaymentTerminal Boolean @default(false)
+  hasWifi           Boolean @default(false)
+  hasParking        Boolean @default(true)
+  
+  // Metadata
+  dataQualityLevel  Int?
+  lastConfirmed     DateTime?
+  lastUpdated       DateTime @default(now())
+  createdAt         DateTime @default(now())
+
+  // Relations
+  favorites         FavoriteStation[]
+  chargingSessions  ChargingSession[]
+  connections       StationConnection[]
+
+  @@map("charging_stations")
+}
+
+// Individual connectors/plugs at stations
+model StationConnection {
+  id              String @id @default(cuid())
+  stationId       String
+  connectionType  String // "Type 2", "CCS", "CHAdeMO", etc.
+  powerKW         Float?
+  voltage         Int?
+  amperage        Int?
+  isOperational   Boolean @default(true)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  station ChargingStation @relation(fields: [stationId], references: [id], onDelete: Cascade)
+
+  @@map("station_connections")
+}
+
+// User's favorite stations
+model FavoriteStation {
+  id        String @id @default(cuid())
+  userId    String
+  stationId String
+  nickname  String? // User's custom name for the station
+  notes     String?
+  
+  createdAt DateTime @default(now())
+
+  // Relations
+  user    User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  station ChargingStation @relation(fields: [stationId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, stationId])
+  @@map("favorite_stations")
+}
+
+// Charging sessions history
+model ChargingSession {
+  id              String    @id @default(cuid())
+  userId          String
+  stationId       String
+  vehicleId       String?
+  
+  // Session details
+  startTime       DateTime
+  endTime         DateTime?
+  energyDelivered Float?    // kWh
+  cost            Float?    // Total cost
+  
+  // Battery info
+  startBatteryLevel Int?    // %
+  endBatteryLevel   Int?    // %
+  
+  // Payment
+  paymentMethod   String?   // "card", "app", "subscription"
+  paymentStatus   String    @default("pending") // "pending", "completed", "failed"
+  
+  notes           String?
+  rating          Int?      // 1-5 stars
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  user    User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  station ChargingStation  @relation(fields: [stationId], references: [id], onDelete: Cascade)
+  vehicle Vehicle?         @relation(fields: [vehicleId], references: [id])
+
+  @@map("charging_sessions")
+}
+
+// Saved routes for trip planning
+model SavedRoute {
+  id            String @id @default(cuid())
+  userId        String
+  name          String
+  
+  // Route details
+  startLatitude  Float
+  startLongitude Float
+  endLatitude    Float
+  endLongitude   Float
+  
+  startAddress   String?
+  endAddress     String?
+  
+  // Route planning
+  totalDistance  Float?  // km
+  estimatedTime  Int?    // minutes
+  plannedStops   Json?   // Array of planned charging stops
+  
+  // Vehicle requirements
+  vehicleId      String?
+  requiredRange  Int?    // km
+  
+  isPublic       Boolean @default(false)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("saved_routes")
+}
+
+// System notifications
+model Notification {
+  id          String   @id @default(cuid())
+  userId      String?  // null for broadcast notifications
+  title       String
+  message     String
+  type        String   @default("info") // "info", "warning", "error", "success"
+  isRead      Boolean  @default(false)
+  
+  // Optional data
+  data        Json?    // Additional notification data
+  actionUrl   String?  // Deep link or action URL
+  
+  expiresAt   DateTime?
+  createdAt   DateTime @default(now())
+
+  @@map("notifications")
+}
+
+// API usage tracking and rate limiting
+model ApiUsage {
+  id          String   @id @default(cuid())
+  endpoint    String
+  method      String
+  userId      String?
+  ipAddress   String?
+  userAgent   String?
+  
+  responseStatus Int
+  responseTime   Int    // milliseconds
+  
+  createdAt DateTime @default(now())
+
+  @@map("api_usage")
+}
+
+// System configuration
+model SystemConfig {
+  id    String @id @default(cuid())
+  key   String @unique
+  value String
+  
+  description String?
+  updatedAt   DateTime @updatedAt
+
+  @@map("system_config")
+}
