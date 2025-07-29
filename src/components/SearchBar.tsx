@@ -57,78 +57,78 @@ export const SearchBar: React.FC<SearchBarProps> = ({
 };
 
 const styles = StyleSheet.create({
-  searchSection: {
-    paddingHorizontal: 20,
-    paddingBottom: 16,
-    backgroundColor: colors.darkBg,
-  },
-  searchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  searchInput: {
-    flex: 1,
-    height: 48,
-    backgroundColor: colors.lightCard,
-    borderRadius: 24,
-    paddingHorizontal: 20,
-    fontSize: 16,
-    color: colors.lightText,
-    marginRight: 12,
-  },
-  searchButton: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: colors.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 8,
-  },
-  filterButton: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: colors.darkCard,
-    justifyContent: 'center',
-    alignItems: 'center',
-    position: 'relative',
-  },
   filterBadge: {
-    position: 'absolute',
-    top: -2,
-    right: -2,
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    backgroundColor: colors.accent2,
-    justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: colors.accent2,
+    borderRadius: 10,
+    height: 20,
+    justifyContent: 'center',
+    position: 'absolute',
+    right: -2,
+    top: -2,
+    width: 20,
   },
   filterBadgeText: {
+    color: colors.white,
     fontSize: 12,
     fontWeight: 'bold',
-    color: colors.white,
+  },
+  filterButton: {
+    alignItems: 'center',
+    backgroundColor: colors.darkCard,
+    borderRadius: 24,
+    height: 48,
+    justifyContent: 'center',
+    position: 'relative',
+    width: 48,
   },
   filtersButton: {
     alignSelf: 'flex-start',
   },
   filtersText: {
-    fontSize: 16,
     color: colors.primary,
+    fontSize: 16,
     fontWeight: '500',
+  },
+  lightFilterButton: {
+    backgroundColor: colors.lightCard,
   },
   lightSearchContainer: {
     // Container için light mode değişikliği gerekmiyor
-  },
-  lightSearchSection: {
-    backgroundColor: colors.lightBg,
   },
   lightSearchInput: {
     backgroundColor: colors.lightCard,
     color: colors.lightText,
   },
-  lightFilterButton: {
+  lightSearchSection: {
+    backgroundColor: colors.lightBg,
+  },
+  searchButton: {
+    alignItems: 'center',
+    backgroundColor: colors.primary,
+    borderRadius: 24,
+    height: 48,
+    justifyContent: 'center',
+    marginRight: 8,
+    width: 48,
+  },
+  searchContainer: {
+    alignItems: 'center',
+    flexDirection: 'row',
+  },
+  searchInput: {
     backgroundColor: colors.lightCard,
+    borderRadius: 24,
+    color: colors.lightText,
+    flex: 1,
+    fontSize: 16,
+    height: 48,
+    marginRight: 12,
+    paddingHorizontal: 20,
+  },
+  searchSection: {
+    backgroundColor: colors.darkBg,
+    paddingBottom: 16,
+    paddingHorizontal: 20,
   },
 });

@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import colors from '../constants/colors';
 import { Ionicons } from '@expo/vector-icons';
-import MapView, { Marker, Callout, PROVIDER_GOOGLE } from 'react-native-maps';
+import MapView, { Marker, Callout, PROVIDER_GOOGLE, Region } from 'react-native-maps';
 import SuperCluster from 'supercluster';
 import { ChargingStation, UserLocation } from '../types';
 import { Header } from '../components/Header';
@@ -26,6 +26,7 @@ import { chargingStationService } from '../services/chargingStationService';
 import { LocationService } from '../services/locationService';
 import { FilterService } from '../services/filterService';
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 interface SarjetMainScreenProps {}
 
 const SarjetMainScreen: React.FC<SarjetMainScreenProps> = () => {
@@ -44,13 +45,13 @@ const SarjetMainScreen: React.FC<SarjetMainScreenProps> = () => {
     maxDistance: 1000 // Türkiye geneli için 1000km
   });
   const [isDarkMode, setIsDarkMode] = useState(true);
-  const [mapRegion, setMapRegion] = useState<any>(null);
+  const [mapRegion, setMapRegion] = useState<Region | null>(null);
 
   // Performance optimization refs
   const regionUpdateTimeout = useRef<NodeJS.Timeout | null>(null);
 
   // Debounced region update function
-  const debouncedUpdateRegion = useCallback((region: any) => {
+  const debouncedUpdateRegion = useCallback((region: Region) => {
     if (regionUpdateTimeout.current) {
       clearTimeout(regionUpdateTimeout.current);
     }
@@ -276,6 +277,7 @@ const SarjetMainScreen: React.FC<SarjetMainScreenProps> = () => {
     setStations(filteredStations);
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const resetFilters = () => {
     const defaultFilters = FilterService.getDefaultFilters();
     setFilters(defaultFilters);
@@ -379,6 +381,7 @@ const SarjetMainScreen: React.FC<SarjetMainScreenProps> = () => {
     }
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleShowFilters = () => {
     Alert.alert(
       'Filtreler',
@@ -414,21 +417,28 @@ const SarjetMainScreen: React.FC<SarjetMainScreenProps> = () => {
 
   // Memoized cluster markers for better performance
   const clusterMarkers = useMemo(() => {
-    return clusters.map((cluster: any, index) => {
-      const [longitude, latitude] = cluster.geometry.coordinates;
-      const { cluster: isCluster, point_count: pointCount } = cluster.properties;
+    return clusters.map((cluster: unknown, index) => {
+      // Type assertion for cluster object
+      const clusterData = cluster as {
+        geometry: { coordinates: number[] };
+        properties: { cluster?: boolean; point_count?: number; station?: ChargingStation };
+        id?: number;
+      };
+      
+      const [longitude, latitude] = clusterData.geometry.coordinates;
+      const { cluster: isCluster, point_count: pointCount } = clusterData.properties;
 
       if (isCluster) {
         // Render cluster
         const size = Math.min(60, 30 + Math.log(pointCount || 1) * 5);
         return (
           <Marker
-            key={`cluster-${cluster.id || index}`}
+            key={`cluster-${clusterData.id || index}`}
             coordinate={{ latitude, longitude }}
             onPress={() => {
               // Cluster'a tıklandığında zoom yap
-              if (cluster.id) {
-                const expansionZoom = Math.min(superCluster.getClusterExpansionZoom(cluster.id), 14);
+              if (clusterData.id && mapRegion) {
+                const expansionZoom = Math.min(superCluster.getClusterExpansionZoom(clusterData.id), 14);
                 const currentZoom = Math.round(Math.log(360 / mapRegion.longitudeDelta) / Math.LN2);
                 const zoomDiff = expansionZoom - currentZoom;
                 const zoomFactor = Math.pow(2, zoomDiff);
@@ -448,10 +458,14 @@ const SarjetMainScreen: React.FC<SarjetMainScreenProps> = () => {
                 width: size,
                 height: size,
                 borderRadius: size / 2,
-                backgroundColor: (pointCount || 0) > 10 ? '#FF6B6B' : (pointCount || 0) > 5 ? '#4ECDC4' : '#007AFF',
-              }
+              },
+              (pointCount || 0) > 10 ? styles.clusterLarge : 
+              (pointCount || 0) > 5 ? styles.clusterMedium : styles.clusterSmall
             ]}>
-              <Text style={[styles.clusterText, { fontSize: (pointCount || 0) > 99 ? 12 : 14 }]}>
+              <Text style={[
+                styles.clusterText, 
+                (pointCount || 0) > 99 ? styles.clusterTextLarge : styles.clusterTextNormal
+              ]}>
                 {(pointCount || 0) > 99 ? '99+' : (pointCount || 0)}
               </Text>
             </View>
@@ -459,7 +473,9 @@ const SarjetMainScreen: React.FC<SarjetMainScreenProps> = () => {
         );
       } else {
         // Render individual station
-        const station = cluster.properties.station;
+        const station = clusterData.properties.station;
+        if (!station) return null;
+        
         return (
           <Marker
             key={`station-${station.ID}`}
@@ -592,62 +608,15 @@ const SarjetMainScreen: React.FC<SarjetMainScreenProps> = () => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.darkBg,
-  },
-  lightContainer: {
-    backgroundColor: colors.lightBg,
-  },
-  contentContainer: {
-    flex: 1,
-    position: 'relative',
-    padding: 16,
-  },
-  mapContainer: {
-    flex: 1,
-    borderRadius: 20,
-    overflow: 'hidden',
-    backgroundColor: colors.darkCard,
-    shadowColor: colors.black,
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  map: {
-    flex: 1,
-  },
   callout: {
     width: 320,
   },
-  locationButton: {
-    position: 'absolute',
-    bottom: 46,
-    right: 36,
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: colors.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: colors.black,
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.3,
-    shadowRadius: 4.65,
-    elevation: 8,
-  },
   clusterContainer: {
-    justifyContent: 'center',
     alignItems: 'center',
+    borderColor: colors.white,
     borderWidth: 2,
-    borderColor: '#FFFFFF',
+    elevation: 5,
+    justifyContent: 'center',
     shadowColor: colors.black,
     shadowOffset: {
       width: 0,
@@ -655,12 +624,74 @@ const styles = StyleSheet.create({
     },
     shadowOpacity: 0.3,
     shadowRadius: 3,
-    elevation: 5,
+  },
+  clusterLarge: {
+    backgroundColor: colors.error,
+  },
+  clusterMedium: {
+    backgroundColor: colors.warning,
+  },
+  clusterSmall: {
+    backgroundColor: colors.primary,
   },
   clusterText: {
-    color: '#FFFFFF',
+    color: colors.white,
     fontWeight: 'bold',
     textAlign: 'center',
+  },
+  clusterTextLarge: {
+    fontSize: 12,
+  },
+  clusterTextNormal: {
+    fontSize: 14,
+  },
+  container: {
+    backgroundColor: colors.darkBg,
+    flex: 1,
+  },
+  contentContainer: {
+    flex: 1,
+    padding: 16,
+    position: 'relative',
+  },
+  lightContainer: {
+    backgroundColor: colors.lightBg,
+  },
+  locationButton: {
+    alignItems: 'center',
+    backgroundColor: colors.primary,
+    borderRadius: 28,
+    bottom: 46,
+    elevation: 8,
+    height: 56,
+    justifyContent: 'center',
+    position: 'absolute',
+    right: 36,
+    shadowColor: colors.black,
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 4.65,
+    width: 56,
+  },
+  map: {
+    flex: 1,
+  },
+  mapContainer: {
+    backgroundColor: colors.darkCard,
+    borderRadius: 20,
+    elevation: 4,
+    flex: 1,
+    overflow: 'hidden',
+    shadowColor: colors.black,
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
   },
 });
 

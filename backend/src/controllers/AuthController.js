@@ -82,7 +82,8 @@ class AuthController {
       });
 
       // Remove password from response
-      const { password: _, ...userWithoutPassword } = user;
+      const userWithoutPassword = { ...user };
+      delete userWithoutPassword.password;
 
       logger.info(`New user registered: ${email}`);
 
@@ -179,7 +180,8 @@ class AuthController {
       });
 
       // Remove password from response
-      const { password: _, ...userWithoutPassword } = user;
+      const userWithoutPassword = { ...user };
+      delete userWithoutPassword.password;
 
       logger.info(`User logged in: ${email}`);
 
@@ -251,7 +253,8 @@ class AuthController {
       }
 
       // Remove password from response
-      const { password: _, ...userWithoutPassword } = user;
+      const userWithoutPassword = { ...user };
+      delete userWithoutPassword.password;
 
       res.json({
         user: userWithoutPassword

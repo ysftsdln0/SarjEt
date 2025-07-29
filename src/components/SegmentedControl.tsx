@@ -42,35 +42,35 @@ export const SegmentedControl: React.FC<SegmentedControlProps> = ({
 };
 
 const styles = StyleSheet.create({
-  segmentedControl: {
-    flexDirection: 'row',
-    backgroundColor: colors.darkCard,
-    borderRadius: 8,
-    marginHorizontal: 20,
-    marginBottom: 0,
-    padding: 4,
+  lightSegmentText: {
+    color: colors.gray600,
   },
   lightSegmentedControl: {
     backgroundColor: colors.lightCard,
   },
   segmentButton: {
-    flex: 1,
-    paddingVertical: 12,
     alignItems: 'center',
     borderRadius: 6,
+    flex: 1,
+    paddingVertical: 12,
   },
   segmentButtonActive: {
     backgroundColor: colors.primary,
   },
   segmentText: {
+    color: colors.gray500,
     fontSize: 16,
     fontWeight: '500',
-    color: colors.gray500,
-  },
-  lightSegmentText: {
-    color: colors.gray600,
   },
   segmentTextActive: {
     color: colors.white,
+  },
+  segmentedControl: {
+    backgroundColor: colors.darkCard,
+    borderRadius: 8,
+    flexDirection: 'row',
+    marginBottom: 0,
+    marginHorizontal: 20,
+    padding: 4,
   },
 });

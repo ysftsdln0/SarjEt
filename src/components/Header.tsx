@@ -26,25 +26,25 @@ export const Header: React.FC<HeaderProps> = ({ title, onProfilePress, isDarkMod
 
 const styles = StyleSheet.create({
   header: {
+    alignItems: 'center',
+    backgroundColor: colors.darkBg,
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
     paddingHorizontal: 20,
     paddingVertical: 16,
-    backgroundColor: colors.darkBg,
   },
   headerTitle: {
+    color: colors.darkText,
     fontSize: 24,
     fontWeight: 'bold',
-    color: colors.darkText,
-  },
-  profileButton: {
-    padding: 4,
   },
   lightHeader: {
     backgroundColor: colors.lightBg,
   },
   lightHeaderTitle: {
     color: colors.lightText,
+  },
+  profileButton: {
+    padding: 4,
   },
 });

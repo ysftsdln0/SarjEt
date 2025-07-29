@@ -70,7 +70,7 @@ class EVDataService {
     let vehicles = [];
     
     for (const key in obj) {
-      if (obj.hasOwnProperty(key)) {
+      if (Object.prototype.hasOwnProperty.call(obj, key)) {
         const value = obj[key];
         
         // Eğer bu bir vehicle object'i gibi görünüyorsa

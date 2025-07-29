@@ -24,7 +24,6 @@ export const StationList: React.FC<StationListProps> = ({
   onStationPress,
   onRefresh,
   refreshing = false,
-  userLocation,
 }) => {
   const renderStationItem = ({ item }: { item: ChargingStation }) => {
     return (
@@ -125,10 +124,16 @@ export const StationList: React.FC<StationListProps> = ({
 };
 
 const styles = StyleSheet.create({
+  address: {
+    color: colors.gray500,
+    fontSize: 14,
+    lineHeight: 20,
+    marginBottom: 12,
+  },
   container: {
-    flex: 1,
-    backgroundColor: 'transparent',
+    backgroundColor: colors.overlayLight,
     borderRadius: 20,
+    flex: 1,
     overflow: 'hidden',
   },
   contentContainer: {
@@ -136,95 +141,24 @@ const styles = StyleSheet.create({
     paddingBottom: 100,
     paddingTop: 16,
   },
-  stationCard: {
-    backgroundColor: colors.lightCard,
-    borderRadius: 8,
-    padding: 16,
-    marginBottom: 12,
-    shadowOpacity: 0,
-    elevation: 0,
-    borderWidth: 1,
-    borderColor: colors.gray300,
-    position: 'relative',
-  },
-  stationHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 8,
-  },
-  stationTitle: {
-    flex: 1,
-    marginRight: 12,
-  },
-  stationName: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: colors.lightText,
-    marginBottom: 4,
-  },
-  statusContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  statusDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-  },
-  statusText: {
-    fontSize: 12,
-    color: colors.gray500,
-  },
-  distance: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: colors.primary,
-  },
-  address: {
-    fontSize: 14,
-    color: colors.gray500,
-    marginBottom: 12,
-    lineHeight: 20,
-  },
-  stationDetails: {
-    flexDirection: 'row',
-    gap: 24,
-    marginBottom: 8,
-  },
   detailItem: {
-    flexDirection: 'row',
     alignItems: 'center',
+    flexDirection: 'row',
     gap: 4,
   },
   detailLabel: {
-    fontSize: 12,
     color: colors.gray500,
+    fontSize: 12,
     fontWeight: '500',
   },
   detailValue: {
-    fontSize: 12,
     color: colors.lightText,
+    fontSize: 12,
     fontWeight: 'bold',
   },
-  operator: {
-    fontSize: 12,
-    color: colors.gray500,
-    fontStyle: 'italic',
-  },
-  freeTag: {
-    position: 'absolute',
-    top: 12,
-    right: 12,
-    backgroundColor: colors.accent1,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 4,
-  },
-  freeTagText: {
-    color: colors.white,
-    fontSize: 10,
+  distance: {
+    color: colors.primary,
+    fontSize: 14,
     fontWeight: 'bold',
   },
   emptyContainer: {
@@ -232,16 +166,81 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: 60,
   },
+  emptySubtitle: {
+    color: colors.gray500,
+    fontSize: 14,
+    lineHeight: 20,
+    textAlign: 'center',
+  },
   emptyTitle: {
+    color: colors.lightText,
     fontSize: 18,
     fontWeight: 'bold',
-    color: colors.lightText,
     marginBottom: 8,
   },
-  emptySubtitle: {
-    fontSize: 14,
+  freeTag: {
+    backgroundColor: colors.accent1,
+    borderRadius: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    position: 'absolute',
+    right: 12,
+    top: 12,
+  },
+  freeTagText: {
+    color: colors.white,
+    fontSize: 10,
+    fontWeight: 'bold',
+  },
+  operator: {
     color: colors.gray500,
-    textAlign: 'center',
-    lineHeight: 20,
+    fontSize: 12,
+    fontStyle: 'italic',
+  },
+  stationCard: {
+    backgroundColor: colors.lightCard,
+    borderColor: colors.gray300,
+    borderRadius: 8,
+    borderWidth: 1,
+    elevation: 0,
+    marginBottom: 12,
+    padding: 16,
+    position: 'relative',
+    shadowOpacity: 0,
+  },
+  stationDetails: {
+    flexDirection: 'row',
+    gap: 24,
+    marginBottom: 8,
+  },
+  stationHeader: {
+    alignItems: 'flex-start',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  stationName: {
+    color: colors.lightText,
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 4,
+  },
+  stationTitle: {
+    flex: 1,
+    marginRight: 12,
+  },
+  statusContainer: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 6,
+  },
+  statusDot: {
+    borderRadius: 4,
+    height: 8,
+    width: 8,
+  },
+  statusText: {
+    color: colors.gray500,
+    fontSize: 12,
   },
 });

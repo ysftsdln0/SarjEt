@@ -41,6 +41,14 @@ export const colors = {
   // Semi-transparent colors for overlays
   overlay: 'rgba(0, 0, 0, 0.5)',
   overlayLight: 'rgba(0, 0, 0, 0.2)',
+
+  // StationDetailScreen specific colors
+  stationDetail_accent: '#fca311',
+  stationDetail_darkBlue: '#14213d',
+  stationDetail_lightGray: '#f5f5f5',
+  stationDetail_mediumGray: '#e5e5e5',
+  stationDetail_textGray: '#b0b0b0',
+  stationDetail_link: '#039BE5',
 };
 
 export default colors;

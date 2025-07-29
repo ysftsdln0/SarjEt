@@ -3,12 +3,11 @@ import { View, Text, StyleSheet, Dimensions } from 'react-native';
 import MapView, { 
   Marker, 
   PROVIDER_GOOGLE, 
-  Region,
-  MapPressEvent 
+  Region
 } from 'react-native-maps';
 import MapViewClustering from 'react-native-map-clustering';
 import { ChargingStation, UserLocation } from '../types';
-import { StationMarker, StationCallout } from './StationMarker';
+import { StationMarker } from './StationMarker';
 import colors from '../constants/colors';
 
 interface ClusteredMapViewProps {
@@ -33,8 +32,8 @@ export const ClusteredMapView: React.FC<ClusteredMapViewProps> = ({
   const mapRef = useRef<MapView>(null);
 
   // Custom cluster marker renderer
-  const renderCluster = useCallback((cluster: any, onPress: () => void) => {
-    const { id, geometry, onPress: clusterPress, properties } = cluster;
+  const renderCluster = useCallback((cluster: { id: string; geometry: { coordinates: [number, number] }; properties: { point_count: number } }) => {
+    const { geometry, properties } = cluster;
     const points = properties.point_count;
     
     // Determine cluster size and color based on point count
@@ -43,25 +42,25 @@ export const ClusteredMapView: React.FC<ClusteredMapViewProps> = ({
         return {
           size: 70,
           backgroundColor: colors.error,
-          borderColor: colors.errorLight,
+          borderColor: colors.gray300,
         };
       } else if (count >= 25) {
         return {
           size: 60,
           backgroundColor: colors.warning,
-          borderColor: colors.warningLight,
+          borderColor: colors.gray300,
         };
-      } else if (count >= 5) {
+      } else if (count >= 10) {
         return {
           size: 50,
           backgroundColor: colors.primary,
-          borderColor: colors.primaryLight,
+          borderColor: colors.gray300,
         };
       } else {
         return {
           size: 40,
           backgroundColor: colors.success,
-          borderColor: colors.successLight,
+          borderColor: colors.gray300,
         };
       }
     };
@@ -70,12 +69,11 @@ export const ClusteredMapView: React.FC<ClusteredMapViewProps> = ({
 
     return (
       <Marker
-        key={`cluster-${id}`}
+        key={`cluster-${geometry.coordinates[0]}-${geometry.coordinates[1]}`}
         coordinate={{
           longitude: geometry.coordinates[0],
           latitude: geometry.coordinates[1],
         }}
-        onPress={clusterPress}
       >
         <View style={[
           styles.cluster,
@@ -104,12 +102,6 @@ export const ClusteredMapView: React.FC<ClusteredMapViewProps> = ({
     return (
       <StationMarker
         key={`station-${station.ID}`}
-        station={station}
-        onPress={() => onStationPress(station)}
-        coordinate={{
-          latitude: station.AddressInfo.Latitude,
-          longitude: station.AddressInfo.Longitude,
-        }}
       />
     );
   }, [onStationPress]);
@@ -156,7 +148,7 @@ export const ClusteredMapView: React.FC<ClusteredMapViewProps> = ({
         // Clustering configuration
         clusteringEnabled={true}
         clusterColor={colors.primary}
-        clusterTextColor={colors.background}
+        clusterTextColor={colors.white}
         clusterFontFamily="System"
         radius={50} // Clustering radius in pixels
         maxZoom={15} // Max zoom level before clusters split
@@ -182,55 +174,55 @@ export const ClusteredMapView: React.FC<ClusteredMapViewProps> = ({
 };
 
 const styles = StyleSheet.create({
+  cluster: {
+    alignItems: 'center',
+    borderRadius: 100,
+    borderWidth: 3,
+    elevation: 5,
+    justifyContent: 'center',
+    shadowColor: colors.black,
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+  },
+  clusterText: {
+    color: colors.white,
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
   container: {
     flex: 1,
   },
   map: {
-    width: width,
     height: height,
-  },
-  cluster: {
-    borderRadius: 100,
-    borderWidth: 3,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  clusterText: {
-    color: colors.background,
-    fontWeight: 'bold',
-    textAlign: 'center',
-  },
-  userLocationMarker: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    backgroundColor: colors.primary,
-    borderWidth: 3,
-    borderColor: colors.background,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-    alignItems: 'center',
-    justifyContent: 'center',
+    width: width,
   },
   userLocationInner: {
-    width: 8,
-    height: 8,
+    backgroundColor: colors.white,
     borderRadius: 4,
-    backgroundColor: colors.background,
+    height: 8,
+    width: 8,
+  },
+  userLocationMarker: {
+    alignItems: 'center',
+    backgroundColor: colors.primary,
+    borderColor: colors.white,
+    borderRadius: 10,
+    borderWidth: 3,
+    elevation: 5,
+    height: 20,
+    justifyContent: 'center',
+    shadowColor: colors.black,
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    width: 20,
   },
 });
 

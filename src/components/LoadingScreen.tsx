@@ -19,15 +19,15 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({
 
 const styles = StyleSheet.create({
   loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: colors.lightBg,
+    flex: 1,
+    justifyContent: 'center',
   },
   loadingText: {
-    marginTop: 16,
-    fontSize: 16,
     color: colors.primary,
+    fontSize: 16,
     fontWeight: '500',
+    marginTop: 16,
   },
 });

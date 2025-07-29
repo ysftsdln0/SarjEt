@@ -79,7 +79,7 @@ export const StationCallout: React.FC<StationCalloutProps> = ({
   const getConnectionTypes = () => {
     if (!station.Connections || station.Connections.length === 0) return 'Bilinmiyor';
     return station.Connections
-      .map((conn: any) => conn.ConnectionType?.Title || 'Standart')
+      .map((conn: { ConnectionType?: { Title?: string } }) => conn.ConnectionType?.Title || 'Standart')
       .filter((value: string, index: number, self: string[]) => self.indexOf(value) === index) // Tekrarları kaldır
       .join(', ');
   };
@@ -211,84 +211,41 @@ export const StationCallout: React.FC<StationCalloutProps> = ({
 };
 
 const styles = StyleSheet.create({
-  markerContainer: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 3,
-    borderColor: colors.white,
-    shadowColor: colors.black,
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
+  actionRow: {
+    borderTopColor: colors.gray300,
+    borderTopWidth: 1,
+    marginTop: 12,
+    paddingTop: 8,
   },
-  markerInner: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    justifyContent: 'center',
-    alignItems: 'center',
+  addressRow: {
+    alignItems: 'flex-start',
+    flexDirection: 'row',
+    marginBottom: 8,
+    marginTop: 4,
+  },
+  addressText: {
+    color: colors.gray700,
+    flex: 1,
+    fontSize: 13,
+    lineHeight: 18,
+    marginLeft: 8,
   },
   calloutContainer: {
-    padding: 16,
-    minWidth: 280,
     maxWidth: 320,
+    minWidth: 280,
+    padding: 16,
   },
   calloutHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: 12,
-  },
-  calloutTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: colors.lightText,
-    flex: 1,
-    marginRight: 8,
-  },
-  distanceBadge: {
-    backgroundColor: colors.secondary,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  distanceText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: colors.white,
-  },
-  powerStatusRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
     marginBottom: 12,
-    paddingBottom: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.gray300,
-  },
-  powerInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
   },
   calloutPower: {
+    color: colors.lightText,
     fontSize: 14,
     fontWeight: '600',
-    color: colors.lightText,
     marginLeft: 4,
-  },
-  statusInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  statusDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    marginRight: 6,
   },
   calloutStatus: {
     fontSize: 14,
@@ -300,62 +257,105 @@ const styles = StyleSheet.create({
   calloutStatusBusy: {
     color: colors.accent2,
   },
-  infoRow: {
-    flexDirection: 'row',
+  calloutTitle: {
+    color: colors.lightText,
+    flex: 1,
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginRight: 8,
+  },
+  detailButton: {
     alignItems: 'center',
+    backgroundColor: `${colors.secondary}20`,
+    borderColor: colors.secondary,
+    borderRadius: 8,
+    borderWidth: 1,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  detailButtonText: {
+    color: colors.secondary,
+    fontSize: 14,
+    fontWeight: '600',
+    marginRight: 4,
+  },
+  distanceBadge: {
+    backgroundColor: colors.secondary,
+    borderRadius: 12,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+  },
+  distanceText: {
+    color: colors.white,
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  infoRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
     marginBottom: 8,
   },
   infoText: {
-    fontSize: 13,
     color: colors.gray700,
-    marginLeft: 8,
     flex: 1,
+    fontSize: 13,
+    marginLeft: 8,
   },
-  addressRow: {
+  markerContainer: {
+    alignItems: 'center',
+    borderColor: colors.white,
+    borderWidth: 3,
+    elevation: 5,
+    justifyContent: 'center',
+    shadowColor: colors.black,
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+  },
+  markerInner: {
+    alignItems: 'center',
+    borderRadius: 14,
+    height: 28,
+    justifyContent: 'center',
+    width: 28,
+  },
+  powerInfo: {
+    alignItems: 'center',
     flexDirection: 'row',
-    alignItems: 'flex-start',
-    marginBottom: 8,
-    marginTop: 4,
   },
-  addressText: {
-    fontSize: 13,
-    color: colors.gray700,
-    marginLeft: 8,
-    flex: 1,
-    lineHeight: 18,
+  powerStatusRow: {
+    alignItems: 'center',
+    borderBottomColor: colors.gray300,
+    borderBottomWidth: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+    paddingBottom: 8,
+  },
+  statusDot: {
+    borderRadius: 4,
+    height: 8,
+    marginRight: 6,
+    width: 8,
+  },
+  statusInfo: {
+    alignItems: 'center',
+    flexDirection: 'row',
   },
   updateRow: {
-    flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 8,
+    flexDirection: 'row',
     marginBottom: 8,
+    marginTop: 8,
   },
   updateText: {
-    fontSize: 11,
     color: colors.gray500,
+    fontSize: 11,
     marginLeft: 4,
-  },
-  actionRow: {
-    marginTop: 12,
-    paddingTop: 8,
-    borderTopWidth: 1,
-    borderTopColor: colors.gray300,
-  },
-  detailButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: `${colors.secondary}20`,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: colors.secondary,
-  },
-  detailButtonText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: colors.secondary,
-    marginRight: 4,
   },
 });

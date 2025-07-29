@@ -11,7 +11,6 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import colors from '../constants/colors';
-import { useScrollToTop } from '@react-navigation/native';
 
 interface ProfileModalProps {
   visible: boolean;
@@ -187,26 +186,26 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.darkBg,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.gray600,
-  },
   closeButton: {
     padding: 8,
   },
+  container: {
+    backgroundColor: colors.darkBg,
+    flex: 1,
+  },
+  header: {
+    alignItems: 'center',
+    borderBottomColor: colors.gray600,
+    borderBottomWidth: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+  },
   headerTitle: {
+    color: colors.darkText,
     fontSize: 20,
     fontWeight: 'bold',
-    color: colors.darkText,
   },
   headerSpacer: {
     width: 40,
@@ -219,41 +218,41 @@ const styles = StyleSheet.create({
     marginTop: 24,
   },
   sectionTitle: {
+    color: colors.darkText,
     fontSize: 18,
     fontWeight: 'bold',
-    color: colors.darkText,
     marginBottom: 16,
   },
   userInfo: {
-    flexDirection: 'row',
     alignItems: 'center',
+    flexDirection: 'row',
   },
   avatar: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: colors.primary,
-    justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: colors.primary,
+    borderRadius: 40,
+    height: 80,
+    justifyContent: 'center',
     marginRight: 16,
+    width: 80,
   },
   userDetails: {
     flex: 1,
   },
   userName: {
+    color: colors.darkText,
     fontSize: 20,
     fontWeight: 'bold',
-    color: colors.darkText,
     marginBottom: 4,
   },
   userEmail: {
-    fontSize: 14,
     color: colors.gray400,
+    fontSize: 14,
     marginBottom: 4,
   },
   userLocation: {
-    fontSize: 12,
     color: colors.primary,
+    fontSize: 12,
   },
   statsGrid: {
     flexDirection: 'row',
@@ -261,82 +260,82 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   statCard: {
-    flex: 1,
+    alignItems: 'center',
     backgroundColor: colors.darkCard,
     borderRadius: 12,
-    padding: 16,
-    alignItems: 'center',
+    flex: 1,
     marginHorizontal: 6,
+    padding: 16,
   },
   statNumber: {
+    color: colors.primary,
     fontSize: 24,
     fontWeight: 'bold',
-    color: colors.primary,
     marginBottom: 4,
   },
   statLabel: {
-    fontSize: 12,
     color: colors.gray400,
+    fontSize: 12,
     textAlign: 'center',
   },
   settingItem: {
-    flexDirection: 'row',
     alignItems: 'center',
+    borderBottomColor: colors.gray600,
+    borderBottomWidth: 1,
+    flexDirection: 'row',
     justifyContent: 'space-between',
     paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.gray600,
   },
   settingLeft: {
-    flexDirection: 'row',
     alignItems: 'center',
+    flexDirection: 'row',
   },
   settingText: {
-    fontSize: 16,
     color: colors.darkText,
+    fontSize: 16,
     marginLeft: 12,
   },
   menuItem: {
-    flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 16,
-    borderBottomWidth: 1,
     borderBottomColor: colors.gray600,
+    borderBottomWidth: 1,
+    flexDirection: 'row',
+    paddingVertical: 16,
   },
   menuText: {
+    color: colors.darkText,
     flex: 1,
     fontSize: 16,
-    color: colors.darkText,
     marginLeft: 12,
   },
   logoutButton: {
-    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
     backgroundColor: colors.darkCard,
     borderRadius: 12,
-    paddingVertical: 16,
+    flexDirection: 'row',
+    justifyContent: 'center',
     marginTop: 8,
+    paddingVertical: 16,
   },
   logoutText: {
+    color: colors.error,
     fontSize: 16,
     fontWeight: '600',
-    color: colors.error,
     marginLeft: 8,
   },
   footer: {
     alignItems: 'center',
-    paddingVertical: 24,
     marginTop: 24,
+    paddingVertical: 24,
   },
   appVersion: {
-    fontSize: 14,
     color: colors.gray400,
+    fontSize: 14,
     marginBottom: 4,
   },
   copyright: {
-    fontSize: 12,
     color: colors.gray500,
+    fontSize: 12,
     textAlign: 'center',
   },
   // Light theme styles

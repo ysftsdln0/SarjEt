@@ -9,16 +9,13 @@ import {
   SafeAreaView,
   StatusBar,
   Linking,
-  Dimensions,
 } from 'react-native';
 
 import Animated, { 
   FadeInDown, 
-  FadeInUp, 
   SlideInRight,
   useSharedValue,
   useAnimatedStyle,
-  ReduceMotion,
 } from 'react-native-reanimated';
 import { MotiView } from 'moti';
 import { Ionicons, MaterialIcons, FontAwesome5 } from '@expo/vector-icons';
@@ -28,15 +25,16 @@ import { LocationService } from '../services/locationService';
 import { AnimationUtils } from '../utils/animationUtils';
 import colors from '../constants/colors';
 
-const { width } = Dimensions.get('window');
-
 interface StationDetailScreenProps {
   route: {
     params: {
       station: ChargingStation;
     };
   };
-  navigation: any;
+  navigation: {
+    goBack: () => void;
+    navigate: (screen: string, params?: object) => void;
+  };
 }
 
 export const StationDetailScreen: React.FC<StationDetailScreenProps> = ({
@@ -212,7 +210,7 @@ export const StationDetailScreen: React.FC<StationDetailScreenProps> = ({
                     styles.statusIndicator,
                     {
                       backgroundColor: connection.StatusType.IsOperational
-                        ? '#fca311'
+                        ? colors.stationDetail_accent
                         : '#000000',
                     },
                   ]}
@@ -493,68 +491,68 @@ export const StationDetailScreen: React.FC<StationDetailScreenProps> = ({
 const styles = StyleSheet.create({
   // Base Styles
   container: {
-    flex: 1,
-    backgroundColor: '#fff', // Tamamen beyaz arka plan
+    backgroundColor: colors.white,
+    flex: 1, // Tamamen beyaz arka plan
   },
   darkContainer: {
-    backgroundColor: '#fff', // Koyu modda da beyaz (örneklerde koyu mod yok)
+    backgroundColor: colors.white, // Koyu modda da beyaz (örneklerde koyu mod yok)
   },
   // Header Styles
   header: {
-    flexDirection: 'row',
     alignItems: 'center',
+    backgroundColor: colors.white,
+    borderBottomColor: colors.stationDetail_mediumGray,
+    borderBottomWidth: 1,
+    elevation: 0,
+    flexDirection: 'row',
     justifyContent: 'space-between',
     paddingHorizontal: 16,
     paddingVertical: 16,
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e5e5e5',
-    elevation: 0,
     shadowOpacity: 0,
   },
   darkHeader: {
-    backgroundColor: '#fff',
+    backgroundColor: colors.white,
   },
   backButton: {
-    padding: 8,
+    backgroundColor: colors.stationDetail_lightGray,
     borderRadius: 20,
-    backgroundColor: '#f5f5f5',
+    padding: 8,
   },
   headerTitle: {
+    color: colors.stationDetail_darkBlue,
+    flex: 1,
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#14213d',
     textAlign: 'center',
-    flex: 1,
   },
   favoriteButton: {
-    padding: 8,
+    backgroundColor: colors.stationDetail_lightGray,
     borderRadius: 20,
-    backgroundColor: '#f5f5f5',
+    padding: 8,
   },
   // Content Styles
   content: {
+    backgroundColor: colors.white,
     flex: 1,
     padding: 0,
-    backgroundColor: '#fff',
   },
   darkContent: {
-    backgroundColor: '#fff',
+    backgroundColor: colors.white,
   },
   // Hero Card
   heroCard: {
-    backgroundColor: '#fff',
+    backgroundColor: colors.white,
     borderRadius: 0,
-    padding: 0,
-    marginBottom: 0,
-    shadowOpacity: 0,
-    elevation: 0,
     borderWidth: 0,
+    elevation: 0,
+    marginBottom: 0,
+    padding: 0,
     position: 'relative',
+    shadowOpacity: 0,
   },
   darkCard: {
-    backgroundColor: '#fff',
-    borderColor: '#fff',
+    backgroundColor: colors.white,
+    borderColor: colors.white,
   },
   statusBadge: {
     display: 'none', // Sadeleştirme için kaldırıldı
@@ -563,45 +561,45 @@ const styles = StyleSheet.create({
     display: 'none',
   },
   stationName: {
+    color: colors.stationDetail_darkBlue,
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#14213d',
-    marginBottom: 4,
     lineHeight: 34,
+    marginBottom: 4,
   },
   darkText: {
-    color: '#14213d',
+    color: colors.stationDetail_darkBlue,
   },
   locationRow: {
-    flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
-    gap: 8,
-    backgroundColor: '#f5f5f5',
-    padding: 8,
+    backgroundColor: colors.stationDetail_lightGray,
     borderRadius: 8,
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 8,
+    padding: 8,
   },
   address: {
-    fontSize: 16,
-    color: '#14213d',
-    lineHeight: 24,
+    color: colors.stationDetail_darkBlue,
     flex: 1,
+    fontSize: 16,
+    lineHeight: 24,
   },
   darkSubText: {
-    color: '#b0b0b0',
+    color: colors.stationDetail_textGray,
   },
   distanceRow: {
-    flexDirection: 'row',
     alignItems: 'center',
+    backgroundColor: colors.stationDetail_lightGray,
+    borderRadius: 8,
+    flexDirection: 'row',
     gap: 8,
     marginTop: 8,
-    backgroundColor: '#f5f5f5',
     padding: 8,
-    borderRadius: 8,
   },
   distance: {
+    color: colors.stationDetail_darkBlue,
     fontSize: 16,
-    color: '#14213d',
     fontWeight: '600',
   },
   freeTag: {
@@ -612,229 +610,229 @@ const styles = StyleSheet.create({
   },
   // Stats Grid
   statsGrid: {
-    backgroundColor: '#fff',
-    borderRadius: 0,
-    padding: 0,
-    marginBottom: 0,
-    flexDirection: 'row',
     alignItems: 'center',
-    shadowOpacity: 0,
-    elevation: 0,
+    backgroundColor: colors.white,
+    borderRadius: 0,
     borderWidth: 0,
+    elevation: 0,
+    flexDirection: 'row',
+    marginBottom: 0,
+    padding: 0,
+    shadowOpacity: 0,
   },
   statItem: {
-    flex: 1,
     alignItems: 'center',
+    flex: 1,
     gap: 8,
   },
   statValue: {
+    color: colors.stationDetail_darkBlue,
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#14213d',
   },
   statLabel: {
+    color: colors.stationDetail_textGray,
     fontSize: 13,
-    color: '#b0b0b0',
     fontWeight: '500',
     textAlign: 'center',
   },
   statDivider: {
-    width: 1,
-    height: 40,
-    backgroundColor: '#e5e5e5',
-    marginHorizontal: 8,
+    backgroundColor: colors.stationDetail_mediumGray,
     borderRadius: 1,
+    height: 40,
+    marginHorizontal: 8,
+    width: 1,
   },
   darkDivider: {
-    backgroundColor: '#e5e5e5',
+    backgroundColor: colors.stationDetail_mediumGray,
   },
   // Info Cards
   infoCard: {
-    backgroundColor: '#fff',
+    backgroundColor: colors.white,
     borderRadius: 0,
-    padding: 0,
-    marginBottom: 0,
-    shadowOpacity: 0,
-    elevation: 0,
     borderWidth: 0,
+    elevation: 0,
+    marginBottom: 0,
+    padding: 0,
+    shadowOpacity: 0,
   },
   cardHeader: {
-    flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
-    gap: 8,
-    paddingBottom: 0,
     borderBottomWidth: 0,
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 8,
+    paddingBottom: 0,
   },
   cardTitle: {
+    color: colors.stationDetail_darkBlue,
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#14213d',
   },
   // Operator Styles
   operatorName: {
+    color: colors.stationDetail_darkBlue,
     fontSize: 16,
-    color: '#14213d',
-    marginBottom: 8,
     fontWeight: '500',
+    marginBottom: 8,
   },
   linkButton: {
-    flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    paddingVertical: 4,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: colors.stationDetail_lightGray,
     borderRadius: 8,
+    flexDirection: 'row',
+    gap: 8,
     marginBottom: 8,
+    paddingVertical: 4,
   },
   link: {
+    color: colors.stationDetail_link,
     fontSize: 13,
-    color: '#039BE5',
     fontWeight: '500',
   },
   phoneButton: {
-    backgroundColor: '#039BE5',
-    padding: 10,
-    borderRadius: 8,
-    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    marginTop: 8,
-    shadowOpacity: 0,
+    backgroundColor: colors.stationDetail_link,
+    borderRadius: 8,
     elevation: 0,
+    flexDirection: 'row',
+    gap: 8,
+    justifyContent: 'center',
+    marginTop: 8,
+    padding: 10,
+    shadowOpacity: 0,
   },
   darkPhoneButton: {
-    backgroundColor: '#039BE5',
+    backgroundColor: colors.stationDetail_link,
   },
   phoneButtonText: {
+    color: colors.white,
     fontSize: 15,
-    color: '#fff',
     fontWeight: '500',
   },
   // Connection Styles
   connectionItem: {
-    backgroundColor: '#f5f5f5',
-    padding: 10,
-    borderRadius: 8,
-    marginBottom: 8,
+    backgroundColor: colors.stationDetail_lightGray,
     borderLeftWidth: 0,
-    shadowOpacity: 0,
+    borderRadius: 8,
     elevation: 0,
+    marginBottom: 8,
+    padding: 10,
+    shadowOpacity: 0,
   },
   darkConnectionItem: {
-    backgroundColor: '#f5f5f5',
+    backgroundColor: colors.stationDetail_lightGray,
   },
   connectionHeader: {
+    alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
     marginBottom: 4,
   },
   connectionType: {
+    color: colors.stationDetail_darkBlue,
     fontSize: 15,
     fontWeight: 'bold',
-    color: '#14213d',
   },
   powerBadge: {
-    backgroundColor: '#039BE5',
+    backgroundColor: colors.stationDetail_link,
+    borderRadius: 8,
     paddingHorizontal: 8,
     paddingVertical: 2,
-    borderRadius: 8,
   },
   connectionPower: {
+    color: colors.white,
     fontSize: 12,
     fontWeight: 'bold',
-    color: '#fff',
   },
   connectionQuantity: {
+    color: colors.stationDetail_textGray,
     fontSize: 12,
-    color: '#b0b0b0',
-    marginBottom: 4,
     fontWeight: '500',
+    marginBottom: 4,
   },
   connectionStatus: {
-    flexDirection: 'row',
     alignItems: 'center',
+    flexDirection: 'row',
     gap: 6,
   },
   connectionStatusText: {
+    color: colors.stationDetail_darkBlue,
     fontSize: 12,
-    color: '#14213d',
     fontWeight: '500',
   },
   // Usage Styles
   usageType: {
+    color: colors.stationDetail_darkBlue,
     fontSize: 14,
-    color: '#14213d',
-    marginBottom: 4,
     fontWeight: '500',
+    marginBottom: 4,
   },
   commentBox: {
-    backgroundColor: '#f5f5f5',
-    padding: 10,
+    alignItems: 'flex-start',
+    backgroundColor: colors.stationDetail_lightGray,
     borderRadius: 8,
     flexDirection: 'row',
     gap: 8,
-    alignItems: 'flex-start',
+    padding: 10,
   },
   darkCommentBox: {
-    backgroundColor: '#f5f5f5',
+    backgroundColor: colors.stationDetail_lightGray,
   },
   comments: {
-    fontSize: 13,
-    color: '#14213d',
-    lineHeight: 18,
+    color: colors.stationDetail_darkBlue,
     flex: 1,
+    fontSize: 13,
     fontWeight: '400',
+    lineHeight: 18,
   },
   // Date Styles
   dateRow: {
-    flexDirection: 'row',
     alignItems: 'center',
+    backgroundColor: colors.stationDetail_lightGray,
+    borderRadius: 8,
+    flexDirection: 'row',
     gap: 8,
     marginBottom: 4,
-    backgroundColor: '#f5f5f5',
     padding: 8,
-    borderRadius: 8,
   },
   dateInfo: {
+    color: colors.stationDetail_textGray,
     fontSize: 12,
-    color: '#b0b0b0',
     fontWeight: '400',
   },
   // Action Button
   directionsButton: {
-    backgroundColor: '#039BE5',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
+    backgroundColor: colors.stationDetail_link,
     borderRadius: 8,
-    marginBottom: 16,
-    shadowOpacity: 0,
-    elevation: 0,
     borderWidth: 0,
+    elevation: 0,
+    marginBottom: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    shadowOpacity: 0,
   },
   darkDirectionsButton: {
-    backgroundColor: '#039BE5',
-    shadowColor: '#039BE5',
+    backgroundColor: colors.stationDetail_link,
+    shadowColor: colors.stationDetail_link,
   },
   buttonContent: {
-    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: 'row',
     gap: 8,
+    justifyContent: 'center',
   },
   directionsButtonText: {
-    color: '#fff',
+    color: colors.white,
     fontSize: 16,
     fontWeight: 'bold',
   },
   noDataText: {
+    color: colors.stationDetail_textGray,
     fontSize: 14,
-    color: '#b0b0b0',
-    textAlign: 'center',
-    opacity: 1,
-    fontWeight: '400',
     fontStyle: 'italic',
+    fontWeight: '400',
+    opacity: 1,
+    textAlign: 'center',
   },
 });

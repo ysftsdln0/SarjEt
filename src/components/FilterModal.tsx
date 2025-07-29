@@ -299,129 +299,129 @@ export const FilterModal: React.FC<FilterModalProps> = ({
 };
 
 const getStyles = (isDarkMode: boolean) => StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: isDarkMode ? colors.darkBg : colors.lightBg,
-  },
-  header: {
-    flexDirection: 'row',
+  applyButton: {
     alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingTop: 60,
-    paddingBottom: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: isDarkMode ? colors.gray600 : colors.gray300,
+    backgroundColor: colors.primary,
+    borderRadius: 12,
+    paddingVertical: 16,
   },
-  closeButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: isDarkMode ? colors.darkCard : colors.lightCard,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: isDarkMode ? colors.darkText : colors.lightText,
-  },
-  resetButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 8,
-    backgroundColor: isDarkMode ? colors.darkCard : colors.lightCard,
-  },
-  resetText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: colors.primary,
-  },
-  content: {
-    flex: 1,
-    paddingHorizontal: 20,
-  },
-  section: {
-    marginVertical: 20,
-  },
-  sectionTitle: {
+  applyButtonText: {
+    color: colors.white,
     fontSize: 16,
     fontWeight: 'bold',
-    color: isDarkMode ? colors.darkText : colors.lightText,
-    marginBottom: 12,
-  },
-  optionButton: {
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    backgroundColor: isDarkMode ? colors.darkCard : colors.lightCard,
-    marginBottom: 8,
-  },
-  optionButtonActive: {
-    backgroundColor: colors.primary,
-  },
-  optionText: {
-    fontSize: 14,
-    color: isDarkMode ? colors.gray400 : colors.gray600,
-    fontWeight: '500',
-  },
-  optionTextActive: {
-    color: colors.white,
-    fontWeight: '600',
-  },
-  switchRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: isDarkMode ? colors.gray600 : colors.gray300,
-  },
-  switchLabel: {
-    fontSize: 14,
-    color: isDarkMode ? colors.darkText : colors.lightText,
-    flex: 1,
-  },
-  chipContainer: {
-    marginBottom: 8,
   },
   chip: {
+    backgroundColor: isDarkMode ? colors.darkCard : colors.lightCard,
+    borderColor: isDarkMode ? colors.gray600 : colors.gray300,
+    borderRadius: 20,
+    borderWidth: 1,
+    marginRight: 8,
     paddingHorizontal: 16,
     paddingVertical: 8,
-    borderRadius: 20,
-    backgroundColor: isDarkMode ? colors.darkCard : colors.lightCard,
-    marginRight: 8,
-    borderWidth: 1,
-    borderColor: isDarkMode ? colors.gray600 : colors.gray300,
   },
   chipActive: {
     backgroundColor: colors.primary,
     borderColor: colors.primary,
   },
+  chipContainer: {
+    marginBottom: 8,
+  },
   chipText: {
-    fontSize: 12,
     color: isDarkMode ? colors.gray400 : colors.gray600,
+    fontSize: 12,
     fontWeight: '500',
   },
   chipTextActive: {
     color: colors.white,
     fontWeight: '600',
   },
+  closeButton: {
+    alignItems: 'center',
+    backgroundColor: isDarkMode ? colors.darkCard : colors.lightCard,
+    borderRadius: 20,
+    height: 40,
+    justifyContent: 'center',
+    width: 40,
+  },
+  container: {
+    backgroundColor: isDarkMode ? colors.darkBg : colors.lightBg,
+    flex: 1,
+  },
+  content: {
+    flex: 1,
+    paddingHorizontal: 20,
+  },
   footer: {
+    borderTopColor: isDarkMode ? colors.gray600 : colors.gray300,
+    borderTopWidth: 1,
     paddingHorizontal: 20,
     paddingVertical: 20,
-    borderTopWidth: 1,
-    borderTopColor: isDarkMode ? colors.gray600 : colors.gray300,
   },
-  applyButton: {
-    backgroundColor: colors.primary,
-    paddingVertical: 16,
-    borderRadius: 12,
+  header: {
     alignItems: 'center',
+    borderBottomColor: isDarkMode ? colors.gray600 : colors.gray300,
+    borderBottomWidth: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingBottom: 20,
+    paddingHorizontal: 20,
+    paddingTop: 60,
   },
-  applyButtonText: {
+  optionButton: {
+    backgroundColor: isDarkMode ? colors.darkCard : colors.lightCard,
+    borderRadius: 8,
+    marginBottom: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
+  optionButtonActive: {
+    backgroundColor: colors.primary,
+  },
+  optionText: {
+    color: isDarkMode ? colors.gray400 : colors.gray600,
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  optionTextActive: {
+    color: colors.white,
+    fontWeight: '600',
+  },
+  resetButton: {
+    backgroundColor: isDarkMode ? colors.darkCard : colors.lightCard,
+    borderRadius: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+  },
+  resetText: {
+    color: colors.primary,
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  section: {
+    marginVertical: 20,
+  },
+  sectionTitle: {
+    color: isDarkMode ? colors.darkText : colors.lightText,
     fontSize: 16,
     fontWeight: 'bold',
-    color: colors.white,
+    marginBottom: 12,
+  },
+  switchLabel: {
+    color: isDarkMode ? colors.darkText : colors.lightText,
+    flex: 1,
+    fontSize: 14,
+  },
+  switchRow: {
+    alignItems: 'center',
+    borderBottomColor: isDarkMode ? colors.gray600 : colors.gray300,
+    borderBottomWidth: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: 12,
+  },
+  title: {
+    color: isDarkMode ? colors.darkText : colors.lightText,
+    fontSize: 18,
+    fontWeight: 'bold',
   },
 });
