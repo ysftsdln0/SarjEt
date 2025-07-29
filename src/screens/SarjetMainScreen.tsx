@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -11,13 +11,12 @@ import {
 } from 'react-native';
 import colors from '../constants/colors';
 import { Ionicons } from '@expo/vector-icons';
-import MapView, { Marker, Callout, PROVIDER_GOOGLE, Region } from 'react-native-maps';
-import SuperCluster from 'supercluster';
+import { Region } from 'react-native-maps';
 import { ChargingStation, UserLocation } from '../types';
 import { Header } from '../components/Header';
 import { SearchBar } from '../components/SearchBar';
 import { SegmentedControl } from '../components/SegmentedControl';
-import { StationMarker, StationCallout } from '../components/StationMarker';
+import { ClusteredMapView } from '../components/ClusteredMapView';
 import { LoadingScreen } from '../components/LoadingScreen';
 import { StationList } from '../components/StationList';
 import { ProfileModal } from '../components/ProfileModal';
@@ -45,82 +44,12 @@ const SarjetMainScreen: React.FC<SarjetMainScreenProps> = () => {
     maxDistance: 1000 // Türkiye geneli için 1000km
   });
   const [isDarkMode, setIsDarkMode] = useState(true);
-  const [mapRegion, setMapRegion] = useState<Region | null>(null);
-
-  // Performance optimization refs
-  const regionUpdateTimeout = useRef<NodeJS.Timeout | null>(null);
 
   // Debounced region update function
   const debouncedUpdateRegion = useCallback((region: Region) => {
-    if (regionUpdateTimeout.current) {
-      clearTimeout(regionUpdateTimeout.current);
-    }
-    
-    regionUpdateTimeout.current = setTimeout(() => {
-      setMapRegion(region);
-    }, 150); // 150ms debounce
+    // Bu fonksiyon map region değişikliklerini handle eder
+    console.log('Map region updated:', region);
   }, []);
-
-  // SuperCluster instance'ı oluştur ve stations yüklendiğinde veri yükle
-  const superCluster = useMemo(() => {
-    const cluster = new SuperCluster({
-      radius: 80, // Radius'u biraz düşürdük performans için
-      maxZoom: 14,
-      minZoom: 0,
-      extent: 512,
-      nodeSize: 64
-    });
-    return cluster;
-  }, []);
-
-  // Stations'ları GeoJSON formatına çevir ve SuperCluster'a yükle
-  const stationsAsGeoJSON = useMemo(() => {
-    const geoJsonStations = stations
-      .filter(station => 
-        station.AddressInfo && 
-        typeof station.AddressInfo.Latitude === 'number' && 
-        typeof station.AddressInfo.Longitude === 'number'
-      )
-      .map(station => ({
-        type: 'Feature' as const,
-        properties: {
-          cluster: false,
-          stationId: station.ID,
-          station: station
-        },
-        geometry: {
-          type: 'Point' as const,
-          coordinates: [station.AddressInfo.Longitude, station.AddressInfo.Latitude]
-        }
-      }));
-
-    // SuperCluster'a veriyi yükle (sadece stations değiştiğinde)
-    if (geoJsonStations.length > 0) {
-      superCluster.load(geoJsonStations);
-    }
-    
-    return geoJsonStations;
-  }, [stations, superCluster]);
-
-  // Clusters'ları hesapla - sadece mapRegion değiştiğinde, SuperCluster.load() çağrılmaz
-  const clusters = useMemo(() => {
-    if (!mapRegion || stationsAsGeoJSON.length === 0) return [];
-    
-    try {
-      const bbox: [number, number, number, number] = [
-        mapRegion.longitude - mapRegion.longitudeDelta,
-        mapRegion.latitude - mapRegion.latitudeDelta,
-        mapRegion.longitude + mapRegion.longitudeDelta,
-        mapRegion.latitude + mapRegion.latitudeDelta,
-      ];
-      
-      const zoom = Math.round(Math.log(360 / mapRegion.longitudeDelta) / Math.LN2);
-      return superCluster.getClusters(bbox, Math.min(zoom, 14));
-    } catch (error) {
-      console.warn('Clustering error:', error);
-      return stationsAsGeoJSON;
-    }
-  }, [stationsAsGeoJSON, mapRegion, superCluster]);
 
   // Kullanıcı konumunu al
   const getUserLocation = async () => {
@@ -325,15 +254,6 @@ const SarjetMainScreen: React.FC<SarjetMainScreenProps> = () => {
     }
   }, [userLocation, locationLoading]);
 
-  // Cleanup timeout on unmount
-  useEffect(() => {
-    return () => {
-      if (regionUpdateTimeout.current) {
-        clearTimeout(regionUpdateTimeout.current);
-      }
-    };
-  }, []);
-
   // Yenile fonksiyonu
   const handleRefresh = async () => {
     setRefreshing(true);
@@ -415,90 +335,6 @@ const SarjetMainScreen: React.FC<SarjetMainScreenProps> = () => {
     await handleRefresh();
   };
 
-  // Memoized cluster markers for better performance
-  const clusterMarkers = useMemo(() => {
-    return clusters.map((cluster: unknown, index) => {
-      // Type assertion for cluster object
-      const clusterData = cluster as {
-        geometry: { coordinates: number[] };
-        properties: { cluster?: boolean; point_count?: number; station?: ChargingStation };
-        id?: number;
-      };
-      
-      const [longitude, latitude] = clusterData.geometry.coordinates;
-      const { cluster: isCluster, point_count: pointCount } = clusterData.properties;
-
-      if (isCluster) {
-        // Render cluster
-        const size = Math.min(60, 30 + Math.log(pointCount || 1) * 5);
-        return (
-          <Marker
-            key={`cluster-${clusterData.id || index}`}
-            coordinate={{ latitude, longitude }}
-            onPress={() => {
-              // Cluster'a tıklandığında zoom yap
-              if (clusterData.id && mapRegion) {
-                const expansionZoom = Math.min(superCluster.getClusterExpansionZoom(clusterData.id), 14);
-                const currentZoom = Math.round(Math.log(360 / mapRegion.longitudeDelta) / Math.LN2);
-                const zoomDiff = expansionZoom - currentZoom;
-                const zoomFactor = Math.pow(2, zoomDiff);
-                
-                setMapRegion({
-                  latitude,
-                  longitude,
-                  latitudeDelta: mapRegion.latitudeDelta / zoomFactor,
-                  longitudeDelta: mapRegion.longitudeDelta / zoomFactor,
-                });
-              }
-            }}
-          >
-            <View style={[
-              styles.clusterContainer,
-              {
-                width: size,
-                height: size,
-                borderRadius: size / 2,
-              },
-              (pointCount || 0) > 10 ? styles.clusterLarge : 
-              (pointCount || 0) > 5 ? styles.clusterMedium : styles.clusterSmall
-            ]}>
-              <Text style={[
-                styles.clusterText, 
-                (pointCount || 0) > 99 ? styles.clusterTextLarge : styles.clusterTextNormal
-              ]}>
-                {(pointCount || 0) > 99 ? '99+' : (pointCount || 0)}
-              </Text>
-            </View>
-          </Marker>
-        );
-      } else {
-        // Render individual station
-        const station = clusterData.properties.station;
-        if (!station) return null;
-        
-        return (
-          <Marker
-            key={`station-${station.ID}`}
-            coordinate={{ latitude, longitude }}
-            onPress={() => handleStationPress(station)}
-          >
-            <StationMarker isAvailable={isStationAvailable(station)} />
-            
-            <Callout style={styles.callout}>
-              <StationCallout
-                title={station.AddressInfo.Title}
-                powerKW={getStationPowerKW(station)}
-                status={getStationStatus(station)}
-                isAvailable={isStationAvailable(station)}
-                station={station}
-              />
-            </Callout>
-          </Marker>
-        );
-      }
-    });
-  }, [clusters, mapRegion, superCluster]);
-
   const renderMapView = () => {
     if (loading || locationLoading) {
       return <LoadingScreen message="Şarj istasyonları yükleniyor..." />;
@@ -508,32 +344,22 @@ const SarjetMainScreen: React.FC<SarjetMainScreenProps> = () => {
       return <LoadingScreen message="Konum bilgisi alınıyor..." />;
     }
 
-    if (!mapRegion) {
-      // İlk kez map region'ı set et
-      const initialMapRegion = {
-        latitude: userLocation.latitude,
-        longitude: userLocation.longitude,
-        latitudeDelta: 0.1,
-        longitudeDelta: 0.1,
-      };
-      setMapRegion(initialMapRegion);
-      return null;
-    }
+    const initialRegion = {
+      latitude: userLocation.latitude,
+      longitude: userLocation.longitude,
+      latitudeDelta: 0.1,
+      longitudeDelta: 0.1,
+    };
 
     return (
-      <MapView
-        provider={Platform.OS === 'android' ? PROVIDER_GOOGLE : undefined}
-        style={styles.map}
-        region={mapRegion}
-        showsUserLocation={true}
-        showsMyLocationButton={false}
-        showsCompass={false}
-        showsScale={false}
-        mapType="standard"
-        onRegionChangeComplete={debouncedUpdateRegion}
-      >
-        {clusterMarkers}
-      </MapView>
+      <ClusteredMapView
+        stations={stations}
+        userLocation={userLocation}
+        initialRegion={initialRegion}
+        onStationPress={handleStationPress}
+        onRegionChange={debouncedUpdateRegion}
+        isDarkMode={isDarkMode}
+      />
     );
   };
 
@@ -608,43 +434,6 @@ const SarjetMainScreen: React.FC<SarjetMainScreenProps> = () => {
 };
 
 const styles = StyleSheet.create({
-  callout: {
-    width: 320,
-  },
-  clusterContainer: {
-    alignItems: 'center',
-    borderColor: colors.white,
-    borderWidth: 2,
-    elevation: 5,
-    justifyContent: 'center',
-    shadowColor: colors.black,
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.3,
-    shadowRadius: 3,
-  },
-  clusterLarge: {
-    backgroundColor: colors.error,
-  },
-  clusterMedium: {
-    backgroundColor: colors.warning,
-  },
-  clusterSmall: {
-    backgroundColor: colors.primary,
-  },
-  clusterText: {
-    color: colors.white,
-    fontWeight: 'bold',
-    textAlign: 'center',
-  },
-  clusterTextLarge: {
-    fontSize: 12,
-  },
-  clusterTextNormal: {
-    fontSize: 14,
-  },
   container: {
     backgroundColor: colors.darkBg,
     flex: 1,
@@ -675,9 +464,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 4.65,
     width: 56,
-  },
-  map: {
-    flex: 1,
   },
   mapContainer: {
     backgroundColor: colors.darkCard,
