@@ -35,20 +35,24 @@ export const ClusteredMapView: React.FC<ClusteredMapViewProps> = ({
   const [popupVisible, setPopupVisible] = useState(false);
 
   const handleStationPress = useCallback((station: ChargingStation) => {
+    console.log('[ClusteredMapView] Station pressed:', station.AddressInfo?.Title);
     setSelectedStation(station);
     setPopupVisible(true);
     onStationPress?.(station);
+    console.log('[ClusteredMapView] Popup set to visible');
   }, [onStationPress]);
 
   const handlePopupClose = useCallback(() => {
+    console.log('[ClusteredMapView] Closing popup');
     setPopupVisible(false);
     setSelectedStation(null);
   }, []);
 
   const handleNavigateToStation = useCallback((station: ChargingStation) => {
+    console.log('[ClusteredMapView] Navigate to station:', station.AddressInfo?.Title);
     handlePopupClose();
     // Here you can implement navigation to the station details or maps app
-    console.log('Navigate to station:', station.AddressInfo?.Title);
+    console.log('[ClusteredMapView] Navigate completed');
   }, []);
 
   // Custom cluster marker renderer
@@ -117,8 +121,14 @@ export const ClusteredMapView: React.FC<ClusteredMapViewProps> = ({
 
   // Custom station marker renderer
   const renderMarker = useCallback((station: ChargingStation) => {
-    if (!station.AddressInfo) return null;
+    if (!station.AddressInfo || 
+        typeof station.AddressInfo.Latitude !== 'number' || 
+        typeof station.AddressInfo.Longitude !== 'number') {
+      console.log('[ClusteredMapView] Skipping invalid station:', station.ID);
+      return null;
+    }
 
+    console.log('[ClusteredMapView] Rendering marker for:', station.AddressInfo.Title);
     const isAvailable = station.StatusType?.IsOperational !== false;
 
     return (
@@ -193,7 +203,12 @@ export const ClusteredMapView: React.FC<ClusteredMapViewProps> = ({
         customMapStyle={isDarkMode ? darkMapStyle : []}
       >
         {/* Render individual station markers when not clustered */}
-        {stations.map(renderMarker)}
+        {stations.filter(station => 
+          station && 
+          station.AddressInfo && 
+          typeof station.AddressInfo.Latitude === 'number' && 
+          typeof station.AddressInfo.Longitude === 'number'
+        ).map(renderMarker)}
         
         {/* Render user location */}
         {renderUserLocation()}

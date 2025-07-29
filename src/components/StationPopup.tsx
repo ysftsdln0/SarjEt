@@ -26,11 +26,16 @@ export const StationPopup: React.FC<StationPopupProps> = ({
   onClose,
   onNavigate,
 }) => {
+  console.log('[StationPopup] Component rendered with props - visible:', visible, 'station:', station?.AddressInfo?.Title);
+  
   const fadeAnim = React.useRef(new Animated.Value(0)).current;
   const slideAnim = React.useRef(new Animated.Value(100)).current;
 
   React.useEffect(() => {
+    console.log('[StationPopup] State changed - visible:', visible, 'station:', station?.AddressInfo?.Title);
+    
     if (visible && station) {
+      console.log('[StationPopup] Showing popup for station:', station.AddressInfo?.Title);
       Animated.parallel([
         Animated.timing(fadeAnim, {
           toValue: 1,
@@ -44,6 +49,7 @@ export const StationPopup: React.FC<StationPopupProps> = ({
         }),
       ]).start();
     } else {
+      console.log('[StationPopup] Hiding popup');
       Animated.parallel([
         Animated.timing(fadeAnim, {
           toValue: 0,
@@ -100,10 +106,24 @@ export const StationPopup: React.FC<StationPopupProps> = ({
   };
 
   const handleNavigate = () => {
-    if (onNavigate) {
-      onNavigate(station);
+    try {
+      console.log('[StationPopup] Navigate button pressed for:', station?.AddressInfo?.Title);
+      if (onNavigate && station) {
+        onNavigate(station);
+      } else {
+        console.warn('[StationPopup] onNavigate not provided or station is null');
+      }
+    } catch (error) {
+      console.error('[StationPopup] Error in handleNavigate:', error);
     }
   };
+
+  if (!station || !visible) {
+    console.log('[StationPopup] Not rendering - station:', !!station, 'visible:', visible);
+    return null;
+  }
+
+  console.log('[StationPopup] Rendering popup for:', station.AddressInfo?.Title);
 
   return (
     <Animated.View 
@@ -193,9 +213,15 @@ export const StationPopup: React.FC<StationPopupProps> = ({
         </View>
 
         {/* Action Button */}
-        <TouchableOpacity style={styles.actionButton} onPress={handleNavigate}>
-          <Text style={styles.actionButtonText}>İstasyona Git</Text>
-          <Ionicons name="chevron-forward" size={20} color={colors.white} />
+        <TouchableOpacity 
+          style={styles.actionButton} 
+          onPress={() => {
+            console.log('[StationPopup] Simple close button pressed');
+            onClose();
+          }}
+        >
+          <Text style={styles.actionButtonText}>Kapat</Text>
+          <Ionicons name="close" size={20} color={colors.white} />
         </TouchableOpacity>
       </Animated.View>
     </Animated.View>
@@ -220,7 +246,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     right: 0,
     top: 0,
-    zIndex: 1000,
+    zIndex: 9999, // z-index'i artırdım
   },
   popup: {
     backgroundColor: colors.white,
@@ -237,6 +263,9 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     width: width,
+    // Geçici test için daha görünür hale getirelim
+    borderWidth: 3,
+    borderColor: colors.primary,
   },
   headerContent: {
     alignItems: 'flex-start',

@@ -13,10 +13,14 @@ LogBox.ignoreLogs([
 ]);
 
 export default function App() {
+  console.log('🚀 [App] Starting SarjEt Application');
+  
   useEffect(() => {
+    console.log('📱 [App] useEffect called - initializing animation utilities');
     // Initialize animation utilities
     AnimationUtils.initialize();
   }, []);
 
+  console.log('📱 [App] App component rendered');
   return <AppNavigator />;
 }

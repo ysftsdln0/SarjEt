@@ -31,6 +31,8 @@ import { FilterService } from '../services/filterService';
 interface SarjetMainScreenProps {}
 
 const SarjetMainScreen: React.FC<SarjetMainScreenProps> = () => {
+  console.log('[SarjetMainScreen] Component initialized');
+  
   const [searchQuery, setSearchQuery] = useState('');
   const [stations, setStations] = useState<ChargingStation[]>([]);
   const [allStations, setAllStations] = useState<ChargingStation[]>([]);
@@ -49,6 +51,8 @@ const SarjetMainScreen: React.FC<SarjetMainScreenProps> = () => {
   const [mapRegion, setMapRegion] = useState<Region | null>(null);
   const [selectedStation, setSelectedStation] = useState<ChargingStation | null>(null);
   const [popupVisible, setPopupVisible] = useState(false);
+
+  console.log('[SarjetMainScreen] State initialized - stations:', stations.length);
 
   // Performance optimization refs
   const regionUpdateTimeout = useRef<NodeJS.Timeout | null>(null);
@@ -78,6 +82,7 @@ const SarjetMainScreen: React.FC<SarjetMainScreenProps> = () => {
 
   // Stations'ları GeoJSON formatına çevir ve SuperCluster'a yükle
   const stationsAsGeoJSON = useMemo(() => {
+    console.log('[SarjetMainScreen] Converting', stations.length, 'stations to GeoJSON');
     const geoJsonStations = stations
       .filter(station => 
         station.AddressInfo && 
@@ -97,8 +102,11 @@ const SarjetMainScreen: React.FC<SarjetMainScreenProps> = () => {
         }
       }));
 
+    console.log('[SarjetMainScreen] Filtered to', geoJsonStations.length, 'valid stations');
+
     // SuperCluster'a veriyi yükle (sadece stations değiştiğinde)
     if (geoJsonStations.length > 0) {
+      console.log('[SarjetMainScreen] Loading stations into SuperCluster');
       superCluster.load(geoJsonStations);
     }
     
@@ -107,7 +115,12 @@ const SarjetMainScreen: React.FC<SarjetMainScreenProps> = () => {
 
   // Clusters'ları hesapla - sadece mapRegion değiştiğinde, SuperCluster.load() çağrılmaz
   const clusters = useMemo(() => {
-    if (!mapRegion || stationsAsGeoJSON.length === 0) return [];
+    if (!mapRegion || stationsAsGeoJSON.length === 0) {
+      console.log('[SarjetMainScreen] No clusters: mapRegion=', !!mapRegion, 'stations=', stationsAsGeoJSON.length);
+      return [];
+    }
+    
+    console.log('[SarjetMainScreen] Calculating clusters for', stationsAsGeoJSON.length, 'stations');
     
     try {
       const bbox: [number, number, number, number] = [
@@ -118,9 +131,11 @@ const SarjetMainScreen: React.FC<SarjetMainScreenProps> = () => {
       ];
       
       const zoom = Math.round(Math.log(360 / mapRegion.longitudeDelta) / Math.LN2);
-      return superCluster.getClusters(bbox, Math.min(zoom, 14));
+      const clusterResult = superCluster.getClusters(bbox, Math.min(zoom, 14));
+      console.log('[SarjetMainScreen] Generated', clusterResult.length, 'clusters at zoom', zoom);
+      return clusterResult;
     } catch (error) {
-      console.warn('Clustering error:', error);
+      console.warn('[SarjetMainScreen] Clustering error:', error);
       return stationsAsGeoJSON;
     }
   }, [stationsAsGeoJSON, mapRegion, superCluster]);
@@ -352,22 +367,36 @@ const SarjetMainScreen: React.FC<SarjetMainScreenProps> = () => {
   };
 
   const handleStationPress = (station: ChargingStation) => {
-    console.log('Station pressed:', station.AddressInfo.Title);
+    console.log('[SarjetMainScreen] Station pressed:', station.AddressInfo?.Title, 'ID:', station.ID);
     setSelectedStation(station);
     setPopupVisible(true);
+    console.log('[SarjetMainScreen] Popup set to visible, selected station:', !!station);
   };
 
   const handlePopupClose = () => {
+    console.log('[SarjetMainScreen] Closing popup');
     setPopupVisible(false);
     setSelectedStation(null);
   };
 
   const handleNavigateToStation = (station: ChargingStation) => {
-    handlePopupClose();
-    // Here you can implement navigation to the station details or maps app
-    console.log('Navigate to station:', station.AddressInfo?.Title);
-    // For example, you could open the station in a mapping app:
-    // Linking.openURL(`https://maps.google.com/?q=${station.AddressInfo.Latitude},${station.AddressInfo.Longitude}`);
+    try {
+      console.log('[SarjetMainScreen] Navigate to station:', station.AddressInfo?.Title);
+      handlePopupClose();
+      
+      // Şimdilik sadece popup'ı kapatıyoruz, navigation implement etmiyoruz
+      console.log('[SarjetMainScreen] Navigate to station completed safely');
+      
+      // TODO: Buraya navigation implementasyonu eklenecek
+      // örnek: navigation.navigate('StationDetail', { station });
+      // ya da harita uygulamasını açmak için:
+      // import { Linking } from 'react-native';
+      // Linking.openURL(`https://maps.google.com/?q=${station.AddressInfo.Latitude},${station.AddressInfo.Longitude}`);
+      
+    } catch (error) {
+      console.error('[SarjetMainScreen] Error in handleNavigateToStation:', error);
+      handlePopupClose(); // Hata durumunda da popup'ı kapat
+    }
   };
 
   const handleCitySearch = async () => {
@@ -483,13 +512,22 @@ const SarjetMainScreen: React.FC<SarjetMainScreenProps> = () => {
       } else {
         // Render individual station
         const station = clusterData.properties.station;
-        if (!station) return null;
+        if (!station || !station.AddressInfo || 
+            typeof latitude !== 'number' || typeof longitude !== 'number') {
+          console.log('[SarjetMainScreen] Skipping invalid station:', station?.ID, 'coords:', latitude, longitude);
+          return null;
+        }
+        
+        console.log('[SarjetMainScreen] Rendering station marker:', station.AddressInfo?.Title, 'at', latitude, longitude);
         
         return (
           <Marker
             key={`station-${station.ID}`}
             coordinate={{ latitude, longitude }}
-            onPress={() => handleStationPress(station)}
+            onPress={() => {
+              console.log('[SarjetMainScreen] Marker pressed for station:', station.AddressInfo?.Title);
+              handleStationPress(station);
+            }}
           >
             <StationMarker isAvailable={isStationAvailable(station)} />
           </Marker>
