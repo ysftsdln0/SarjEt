@@ -1,4 +1,4 @@
-import React, { useRef, useCallback } from 'react';
+import React, { useRef, useCallback, useState } from 'react';
 import { View, Text, StyleSheet, Dimensions } from 'react-native';
 import MapView, { 
   Marker, 
@@ -8,6 +8,7 @@ import MapView, {
 import MapViewClustering from 'react-native-map-clustering';
 import { ChargingStation, UserLocation } from '../types';
 import { StationMarker } from './StationMarker';
+import { StationPopup } from './StationPopup';
 import colors from '../constants/colors';
 
 interface ClusteredMapViewProps {
@@ -30,6 +31,25 @@ export const ClusteredMapView: React.FC<ClusteredMapViewProps> = ({
   isDarkMode = false
 }) => {
   const mapRef = useRef<MapView>(null);
+  const [selectedStation, setSelectedStation] = useState<ChargingStation | null>(null);
+  const [popupVisible, setPopupVisible] = useState(false);
+
+  const handleStationPress = useCallback((station: ChargingStation) => {
+    setSelectedStation(station);
+    setPopupVisible(true);
+    onStationPress?.(station);
+  }, [onStationPress]);
+
+  const handlePopupClose = useCallback(() => {
+    setPopupVisible(false);
+    setSelectedStation(null);
+  }, []);
+
+  const handleNavigateToStation = useCallback((station: ChargingStation) => {
+    handlePopupClose();
+    // Here you can implement navigation to the station details or maps app
+    console.log('Navigate to station:', station.AddressInfo?.Title);
+  }, []);
 
   // Custom cluster marker renderer
   const renderCluster = useCallback((cluster: { id: string; geometry: { coordinates: [number, number] }; properties: { point_count: number } }) => {
@@ -98,22 +118,22 @@ export const ClusteredMapView: React.FC<ClusteredMapViewProps> = ({
   // Custom station marker renderer
   const renderMarker = useCallback((station: ChargingStation) => {
     if (!station.AddressInfo) return null;
-    const lat = Number(station.AddressInfo.Latitude);
-    const lng = Number(station.AddressInfo.Longitude);
-    if (isNaN(lat) || isNaN(lng)) return null;
+
+    const isAvailable = station.StatusType?.IsOperational !== false;
+
     return (
       <Marker
         key={`station-${station.ID}`}
         coordinate={{
-          latitude: lat,
-          longitude: lng,
+          latitude: station.AddressInfo.Latitude,
+          longitude: station.AddressInfo.Longitude,
         }}
-        onPress={() => onStationPress(station)}
+        onPress={() => handleStationPress(station)}
       >
-        <StationMarker />
+        <StationMarker isAvailable={isAvailable} />
       </Marker>
     );
-  }, [onStationPress]);
+  }, [handleStationPress]);
 
   // User location marker
   const renderUserLocation = useCallback(() => {
@@ -173,11 +193,19 @@ export const ClusteredMapView: React.FC<ClusteredMapViewProps> = ({
         customMapStyle={isDarkMode ? darkMapStyle : []}
       >
         {/* Render individual station markers when not clustered */}
-        {stations.map(renderMarker).filter(Boolean)}
+        {stations.map(renderMarker)}
         
         {/* Render user location */}
         {renderUserLocation()}
       </MapViewClustering>
+
+      {/* Station Popup */}
+      <StationPopup
+        station={selectedStation}
+        visible={popupVisible}
+        onClose={handlePopupClose}
+        onNavigate={handleNavigateToStation}
+      />
     </View>
   );
 };
