@@ -3,7 +3,7 @@ import { ChargingStation } from '../types';
 import { mockChargingStations, checkNetworkConnection } from '../data/mockData';
 
 // React Native için IP adresi kullanıyoruz (localhost simülatörde çalışmaz)
-const BACKEND_URL = 'http://192.168.5.54:3000/api/stations';
+const BACKEND_URL = 'http://192.168.1.141:3000/api/stations';
 
 // SarjEt Backend servisi - OpenChargeMap cache sistemi kullanıyor
 export class ChargingStationService {

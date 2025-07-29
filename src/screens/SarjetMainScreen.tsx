@@ -24,11 +24,15 @@ import { FilterModal, FilterOptions } from '../components/FilterModal';
 import { chargingStationService } from '../services/chargingStationService';
 import { LocationService } from '../services/locationService';
 import { FilterService } from '../services/filterService';
+import { useNavigation } from '@react-navigation/native';
+import type { StackNavigationProp } from '@react-navigation/stack';
+import type { RootStackParamList } from '../types';
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 interface SarjetMainScreenProps {}
 
-const SarjetMainScreen: React.FC<SarjetMainScreenProps> = () => {
+const SarjetMainScreen: React.FC<SarjetMainScreenProps> = (props) => {
+  const navigation = useNavigation<StackNavigationProp<RootStackParamList, 'Home'>>();
   const [searchQuery, setSearchQuery] = useState('');
   const [stations, setStations] = useState<ChargingStation[]>([]);
   const [allStations, setAllStations] = useState<ChargingStation[]>([]);
@@ -277,8 +281,7 @@ const SarjetMainScreen: React.FC<SarjetMainScreenProps> = () => {
   };
 
   const handleStationPress = (station: ChargingStation) => {
-    console.log('Station pressed:', station.AddressInfo.Title);
-    // Navigation to detail screen can be implemented here
+    navigation.navigate('StationDetail', { station });
   };
 
   const handleCitySearch = async () => {

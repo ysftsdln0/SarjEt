@@ -98,11 +98,20 @@ export const ClusteredMapView: React.FC<ClusteredMapViewProps> = ({
   // Custom station marker renderer
   const renderMarker = useCallback((station: ChargingStation) => {
     if (!station.AddressInfo) return null;
-
+    const lat = Number(station.AddressInfo.Latitude);
+    const lng = Number(station.AddressInfo.Longitude);
+    if (isNaN(lat) || isNaN(lng)) return null;
     return (
-      <StationMarker
+      <Marker
         key={`station-${station.ID}`}
-      />
+        coordinate={{
+          latitude: lat,
+          longitude: lng,
+        }}
+        onPress={() => onStationPress(station)}
+      >
+        <StationMarker />
+      </Marker>
     );
   }, [onStationPress]);
 
@@ -164,7 +173,7 @@ export const ClusteredMapView: React.FC<ClusteredMapViewProps> = ({
         customMapStyle={isDarkMode ? darkMapStyle : []}
       >
         {/* Render individual station markers when not clustered */}
-        {stations.map(renderMarker)}
+        {stations.map(renderMarker).filter(Boolean)}
         
         {/* Render user location */}
         {renderUserLocation()}
