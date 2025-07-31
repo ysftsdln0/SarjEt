@@ -28,6 +28,7 @@ export const colors = {
   warning: '#FFB703', // Accent1
   
   // Gray Scale
+  gray50: '#F9FAFB',
   gray100: '#F8F9FA',
   gray200: '#E9ECEF',
   gray300: '#DEE2E6',
@@ -37,6 +38,18 @@ export const colors = {
   gray700: '#495057',
   gray800: '#343A40',
   gray900: '#212529',
+  
+  // Additional colors for components
+  green50: '#F0FDF4',
+  green500: '#22C55E',
+  orange50: '#FFF7ED',
+  orange500: '#F97316',
+  orange700: '#C2410C',
+  blue50: '#EFF6FF',
+  blue100: '#DBEAFE',
+  blue600: '#2563EB',
+  blue700: '#1D4ED8',
+  red500: '#EF4444',
   
   // Semi-transparent colors for overlays
   overlay: 'rgba(0, 0, 0, 0.5)',

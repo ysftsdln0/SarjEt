@@ -6,138 +6,82 @@ import {
   TouchableOpacity,
   Animated,
   Dimensions,
+  ScrollView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ChargingStation } from '../types';
 import colors from '../constants/colors';
 
+const { width, height: SCREEN_HEIGHT } = Dimensions.get('window');
+
 interface StationPopupProps {
   station: ChargingStation | null;
   visible: boolean;
+  slideAnim: Animated.Value;
   onClose: () => void;
   onNavigate?: (station: ChargingStation) => void;
 }
 
-const { width } = Dimensions.get('window');
-
-export const StationPopup: React.FC<StationPopupProps> = ({
+const StationPopup: React.FC<StationPopupProps> = ({
   station,
   visible,
+  slideAnim,
   onClose,
   onNavigate,
 }) => {
-  console.log('[StationPopup] Component rendered with props - visible:', visible, 'station:', station?.AddressInfo?.Title);
-  
-  const fadeAnim = React.useRef(new Animated.Value(0)).current;
-  const slideAnim = React.useRef(new Animated.Value(100)).current;
+  if (!visible || !station) return null;
 
-  React.useEffect(() => {
-    console.log('[StationPopup] State changed - visible:', visible, 'station:', station?.AddressInfo?.Title);
-    
-    if (visible && station) {
-      console.log('[StationPopup] Showing popup for station:', station.AddressInfo?.Title);
-      Animated.parallel([
-        Animated.timing(fadeAnim, {
-          toValue: 1,
-          duration: 200,
-          useNativeDriver: true,
-        }),
-        Animated.timing(slideAnim, {
-          toValue: 0,
-          duration: 250,
-          useNativeDriver: true,
-        }),
-      ]).start();
-    } else {
-      console.log('[StationPopup] Hiding popup');
-      Animated.parallel([
-        Animated.timing(fadeAnim, {
-          toValue: 0,
-          duration: 150,
-          useNativeDriver: true,
-        }),
-        Animated.timing(slideAnim, {
-          toValue: 100,
-          duration: 200,
-          useNativeDriver: true,
-        }),
-      ]).start();
+  const getStationStatusColor = () => {
+    const statusId = station.StatusTypeID;
+    switch (statusId) {
+      case 50: return colors.green500; // Operational
+      case 30: return colors.orange500; // Temporarily Unavailable
+      case 20: return colors.red500; // Planned
+      default: return colors.gray500;
     }
-  }, [visible, station, fadeAnim, slideAnim]);
-
-  if (!station || !visible) return null;
-
-  const getStationPowerKW = (): number => {
-    if (!station.Connections || station.Connections.length === 0) return 0;
-    const maxPower = Math.max(
-      ...station.Connections.map((conn: { PowerKW?: number }) => conn.PowerKW || 0)
-    );
-    return maxPower;
   };
 
-  const getStationStatus = (): string => {
-    return station.StatusType?.Title || 'Bilinmiyor';
+  const getStationStatusText = () => {
+    return station.StatusType?.Title || 'Durumu Bilinmiyor';
   };
 
-  const isStationAvailable = (): boolean => {
-    return station.StatusType?.IsOperational !== false;
-  };
-
-  const getConnectionTypes = (): string => {
-    if (!station.Connections || station.Connections.length === 0) return 'Bilinmiyor';
-    return station.Connections
-      .map((conn: { ConnectionType?: { Title?: string } }) => conn.ConnectionType?.Title || 'Standart')
-      .filter((value: string, index: number, self: string[]) => 
-        self.indexOf(value) === index
-      )
-      .join(', ');
-  };
-
-  const getOperatorName = (): string => {
-    return station.OperatorInfo?.Title || 'Bilinmiyor';
-  };
-
-  const getDistance = (): string => {
-    const distance = station.AddressInfo?.Distance;
-    if (distance && distance < 1) {
-      return `${Math.round(distance * 1000)}m`;
+  const getStationPowerKW = () => {
+    if (station.Connections && station.Connections.length > 0) {
+      const maxPower = Math.max(...station.Connections.map((conn: any) => conn.PowerKW || 0));
+      return maxPower > 0 ? maxPower : 'Bilinmiyor';
     }
-    return distance ? `${distance.toFixed(1)}km` : '';
+    return 'Bilinmiyor';
   };
 
-  const handleNavigate = () => {
+  const getDistance = () => {
+    // Bu fonksiyon gerçek lokasyon hesaplaması ile değiştirilmeli
+    return null; // Şimdilik null döndürüyor
+  };
+
+  const getUsageTypeText = () => {
+    return station.UsageType?.Title || 'Genel Kullanım';
+  };
+
+  const getConnectionCount = () => {
+    return station.Connections?.length || 0;
+  };
+
+  const formatDate = (dateString: string) => {
+    if (!dateString) return 'Bilgi yok';
     try {
-      console.log('[StationPopup] Navigate button pressed for:', station?.AddressInfo?.Title);
-      if (onNavigate && station) {
-        onNavigate(station);
-      } else {
-        console.warn('[StationPopup] onNavigate not provided or station is null');
-      }
-    } catch (error) {
-      console.error('[StationPopup] Error in handleNavigate:', error);
+      const date = new Date(dateString);
+      return date.toLocaleDateString('tr-TR');
+    } catch {
+      return 'Bilgi yok';
     }
   };
-
-  if (!station || !visible) {
-    console.log('[StationPopup] Not rendering - station:', !!station, 'visible:', visible);
-    return null;
-  }
-
-  console.log('[StationPopup] Rendering popup for:', station.AddressInfo?.Title);
 
   return (
-    <Animated.View 
-      style={[
-        styles.overlay,
-        {
-          opacity: fadeAnim,
-        }
-      ]}
-    >
+    <View style={styles.overlay}>
       <TouchableOpacity 
         style={styles.backdrop} 
-        activeOpacity={1} 
         onPress={onClose}
+        activeOpacity={1}
       />
       
       <Animated.View 
@@ -160,71 +104,169 @@ export const StationPopup: React.FC<StationPopupProps> = ({
           </View>
         </View>
 
-        {/* Status and Power */}
-        <View style={styles.statusRow}>
-          <View style={styles.statusInfo}>
-            <View 
-              style={[
-                styles.statusDot, 
-                { backgroundColor: isStationAvailable() ? colors.success : colors.error }
-              ]} 
-            />
-            <Text style={[
-              styles.statusText,
-              { color: isStationAvailable() ? colors.success : colors.error }
-            ]}>
-              {getStationStatus()}
-            </Text>
-          </View>
-          
-          <View style={styles.powerInfo}>
-            <Ionicons name="flash" size={16} color={colors.secondary} />
-            <Text style={styles.powerText}>{getStationPowerKW()} kW</Text>
-          </View>
-          
-          {getDistance() ? (
-            <View style={styles.distanceBadge}>
-              <Text style={styles.distanceText}>{getDistance()}</Text>
-            </View>
-          ) : null}
-        </View>
-
-        {/* Details */}
-        <View style={styles.details}>
-          {/* Address */}
-          <View style={styles.detailRow}>
-            <Ionicons name="location-outline" size={16} color={colors.gray600} />
-            <Text style={styles.detailText}>
-              {station.AddressInfo?.AddressLine1 || station.AddressInfo?.Town || 'Adres bilgisi yok'}
-            </Text>
-          </View>
-
-          {/* Connection Types */}
-          <View style={styles.detailRow}>
-            <Ionicons name="flash-outline" size={16} color={colors.gray600} />
-            <Text style={styles.detailText}>{getConnectionTypes()}</Text>
-          </View>
-
-          {/* Operator */}
-          <View style={styles.detailRow}>
-            <Ionicons name="business-outline" size={16} color={colors.gray600} />
-            <Text style={styles.detailText}>{getOperatorName()}</Text>
-          </View>
-        </View>
-
-        {/* Action Button */}
-        <TouchableOpacity 
-          style={styles.actionButton} 
-          onPress={() => {
-            console.log('[StationPopup] Simple close button pressed');
-            onClose();
-          }}
+        {/* Scrollable Content */}
+        <ScrollView 
+          style={styles.scrollContent}
+          contentContainerStyle={styles.scrollContentContainer}
+          showsVerticalScrollIndicator={false}
         >
-          <Text style={styles.actionButtonText}>Kapat</Text>
-          <Ionicons name="close" size={20} color={colors.white} />
-        </TouchableOpacity>
+          {/* Status and Power */}
+          <View style={styles.statusContainer}>
+            <View style={[styles.statusBadge, { backgroundColor: getStationStatusColor() }]}>
+              <Text style={styles.statusText}>{getStationStatusText()}</Text>
+            </View>
+            <View style={styles.powerContainer}>
+              <Text style={styles.powerLabel}>Max Güç:</Text>
+              <Text style={styles.powerText}>{getStationPowerKW()} kW</Text>
+            </View>
+            
+            {getDistance() ? (
+              <View style={styles.distanceBadge}>
+                <Text style={styles.distanceText}>{getDistance()}</Text>
+              </View>
+            ) : null}
+          </View>
+
+          {/* Details */}
+          <View style={styles.details}>
+            {/* Address */}
+            <View style={styles.detailRow}>
+              <Ionicons name="location-outline" size={16} color={colors.gray600} />
+              <View style={styles.detailTextContainer}>
+                <Text style={styles.detailText}>
+                  {station.AddressInfo?.AddressLine1 || station.AddressInfo?.Town || 'Adres bilgisi yok'}
+                </Text>
+                {station.AddressInfo?.StateOrProvince && (
+                  <Text style={styles.detailSubText}>
+                    {station.AddressInfo.StateOrProvince}
+                  </Text>
+                )}
+              </View>
+            </View>
+
+            {/* Connection Count */}
+            <View style={styles.detailRow}>
+              <Ionicons name="flash-outline" size={16} color={colors.gray600} />
+              <Text style={styles.detailText}>
+                {getConnectionCount()} şarj noktası
+              </Text>
+            </View>
+
+            {/* Usage Type */}
+            <View style={styles.detailRow}>
+              <Ionicons name="people-outline" size={16} color={colors.gray600} />
+              <Text style={styles.detailText}>
+                {getUsageTypeText()}
+              </Text>
+            </View>
+
+            {/* Connection Details */}
+            {station.Connections && station.Connections.length > 0 && (
+              <View style={styles.connectionsSection}>
+                <Text style={styles.sectionTitle}>Şarj Bağlantıları</Text>
+                {station.Connections.slice(0, 3).map((connection: any, index: number) => (
+                  <View key={index} style={styles.connectionRow}>
+                    <View style={styles.connectionInfo}>
+                      <Text style={styles.connectionType}>
+                        {connection.ConnectionType?.Title || 'Standart'}
+                      </Text>
+                      <Text style={styles.connectionPower}>
+                        {connection.PowerKW ? `${connection.PowerKW} kW` : 'Güç bilgisi yok'}
+                      </Text>
+                    </View>
+                    <View style={styles.connectionLevel}>
+                      <Text style={styles.levelText}>
+                        {connection.Level?.Title || 'Seviye 2'}
+                      </Text>
+                    </View>
+                  </View>
+                ))}
+                {station.Connections.length > 3 && (
+                  <Text style={styles.moreConnectionsText}>
+                    +{station.Connections.length - 3} daha fazla bağlantı
+                  </Text>
+                )}
+              </View>
+            )}
+
+            {/* Operator Information */}
+            {station.OperatorInfo && (
+              <View style={styles.operatorSection}>
+                <Text style={styles.sectionTitle}>İşletmeci Bilgisi</Text>
+                <View style={styles.operatorRow}>
+                  <Ionicons name="business-outline" size={16} color={colors.gray600} />
+                  <Text style={styles.operatorText}>
+                    {station.OperatorInfo.Title}
+                  </Text>
+                </View>
+                {station.OperatorInfo.WebsiteURL && (
+                  <View style={styles.operatorRow}>
+                    <Ionicons name="globe-outline" size={16} color={colors.gray600} />
+                    <Text style={styles.operatorWebsite}>
+                      Website
+                    </Text>
+                  </View>
+                )}
+              </View>
+            )}
+
+            {/* Usage Cost */}
+            {station.GeneralComments && station.GeneralComments.includes('cost') && (
+              <View style={styles.costSection}>
+                <Text style={styles.sectionTitle}>Kullanım Maliyeti</Text>
+                <Text style={styles.costText}>
+                  Ücret bilgisi için işletmeci ile iletişime geçiniz
+                </Text>
+              </View>
+            )}
+
+            {/* Verification Info */}
+            <View style={styles.verificationSection}>
+              <Text style={styles.sectionTitle}>Doğrulama Bilgisi</Text>
+              {station.DateLastStatusUpdate && (
+                <View style={styles.verificationRow}>
+                  <Ionicons name="time-outline" size={16} color={colors.gray600} />
+                  <Text style={styles.verificationText}>
+                    Son güncelleme: {formatDate(station.DateLastStatusUpdate)}
+                  </Text>
+                </View>
+              )}
+              {station.DateLastVerified && (
+                <View style={styles.verificationRow}>
+                  <Ionicons name="checkmark-circle-outline" size={16} color={colors.gray600} />
+                  <Text style={styles.verificationText}>
+                    Son doğrulama: {formatDate(station.DateLastVerified)}
+                  </Text>
+                </View>
+              )}
+            </View>
+
+            {/* Comments */}
+            {station.GeneralComments && (
+              <View style={styles.commentsSection}>
+                <Text style={styles.sectionTitle}>Yorumlar</Text>
+                <Text style={styles.commentsText}>
+                  {station.GeneralComments}
+                </Text>
+              </View>
+            )}
+          </View>
+
+          {/* Action Buttons */}
+          <View style={styles.actionButtons}>
+            <TouchableOpacity style={styles.primaryButton} onPress={() => onNavigate?.(station)}>
+              <Ionicons name="navigate-outline" size={20} color={colors.white} />
+              <Text style={styles.primaryButtonText}>Yol Tarifi Al</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity style={styles.secondaryButton} onPress={onClose}>
+              <Ionicons name="information-circle-outline" size={20} color={colors.primary} />
+              <Text style={styles.secondaryButtonText}>Detaylar</Text>
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
       </Animated.View>
-    </Animated.View>
+    </View>
   );
 };
 
@@ -235,8 +277,9 @@ const styles = StyleSheet.create({
   header: {
     borderBottomColor: colors.gray200,
     borderBottomWidth: 1,
-    paddingHorizontal: 20,
-    paddingVertical: 16,
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    paddingBottom: 8,
   },
   overlay: {
     backgroundColor: colors.overlay,
@@ -246,15 +289,16 @@ const styles = StyleSheet.create({
     position: 'absolute',
     right: 0,
     top: 0,
-    zIndex: 9999, // z-index'i artırdım
+    zIndex: 9999,
   },
   popup: {
     backgroundColor: colors.white,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     elevation: 10,
-    maxHeight: '50%',
-    paddingBottom: 34, // Safe area padding
+    minHeight: SCREEN_HEIGHT * 0.6,
+    maxHeight: SCREEN_HEIGHT * 0.85,
+    paddingBottom: 34,
     shadowColor: colors.black,
     shadowOffset: {
       width: 0,
@@ -263,99 +307,245 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     width: width,
-    // Geçici test için daha görünür hale getirelim
-    borderWidth: 3,
-    borderColor: colors.primary,
+  },
+  scrollContent: {
+    flex: 1,
+    paddingHorizontal: 12,
+    paddingBottom: 16,
+  },
+  scrollContentContainer: {
+    paddingBottom: 20,
   },
   headerContent: {
-    alignItems: 'flex-start',
     flexDirection: 'row',
     justifyContent: 'space-between',
+    alignItems: 'flex-start',
   },
   stationTitle: {
-    color: colors.lightText,
-    flex: 1,
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: '600',
+    color: colors.gray900,
+    flex: 1,
     marginRight: 12,
   },
   closeButton: {
     padding: 4,
   },
-  statusRow: {
-    alignItems: 'center',
-    backgroundColor: colors.gray100,
+  statusContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-  },
-  statusInfo: {
     alignItems: 'center',
-    flexDirection: 'row',
+    marginVertical: 8,
+    flexWrap: 'wrap',
+    gap: 8,
   },
-  statusDot: {
-    borderRadius: 4,
-    height: 8,
-    marginRight: 6,
-    width: 8,
+  statusBadge: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
   },
   statusText: {
-    color: colors.lightText,
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  powerInfo: {
-    alignItems: 'center',
-    flexDirection: 'row',
-  },
-  powerText: {
-    color: colors.secondary,
-    fontSize: 14,
-    fontWeight: '600',
-    marginLeft: 4,
-  },
-  distanceBadge: {
-    backgroundColor: colors.primary,
-    borderRadius: 12,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-  },
-  distanceText: {
     color: colors.white,
     fontSize: 12,
     fontWeight: '600',
   },
+  powerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.gray100,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 12,
+  },
+  powerLabel: {
+    fontSize: 12,
+    color: colors.gray600,
+    marginRight: 4,
+  },
+  powerText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: colors.gray900,
+  },
+  distanceBadge: {
+    backgroundColor: colors.blue100,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 12,
+  },
+  distanceText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: colors.blue700,
+  },
   details: {
-    paddingHorizontal: 20,
-    paddingVertical: 16,
+    paddingBottom: 8,
   },
   detailRow: {
-    alignItems: 'flex-start',
     flexDirection: 'row',
-    marginBottom: 12,
+    alignItems: 'flex-start',
+    marginBottom: 6,
+  },
+  detailTextContainer: {
+    flex: 1,
+    marginLeft: 8,
   },
   detailText: {
-    color: colors.gray700,
-    flex: 1,
     fontSize: 14,
+    color: colors.gray700,
     lineHeight: 20,
-    marginLeft: 12,
   },
-  actionButton: {
-    alignItems: 'center',
-    backgroundColor: colors.primary,
+  detailSubText: {
+    fontSize: 12,
+    color: colors.gray500,
+    marginTop: 2,
+  },
+  connectionsSection: {
+    marginTop: 16,
+    padding: 16,
+    backgroundColor: colors.gray50,
     borderRadius: 12,
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginBottom: 16,
-    marginHorizontal: 20,
-    paddingVertical: 14,
   },
-  actionButtonText: {
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: colors.gray900,
+    marginBottom: 12,
+  },
+  connectionRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.gray200,
+  },
+  connectionInfo: {
+    flex: 1,
+  },
+  connectionType: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: colors.gray900,
+  },
+  connectionPower: {
+    fontSize: 12,
+    color: colors.gray600,
+    marginTop: 2,
+  },
+  connectionLevel: {
+    backgroundColor: colors.blue100,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+  },
+  levelText: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: colors.blue700,
+  },
+  moreConnectionsText: {
+    fontSize: 12,
+    color: colors.gray500,
+    fontStyle: 'italic',
+    marginTop: 8,
+  },
+  operatorSection: {
+    marginTop: 16,
+    padding: 16,
+    backgroundColor: colors.gray50,
+    borderRadius: 12,
+  },
+  operatorRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  operatorText: {
+    fontSize: 14,
+    color: colors.gray700,
+    marginLeft: 8,
+  },
+  operatorWebsite: {
+    fontSize: 14,
+    color: colors.blue600,
+    marginLeft: 8,
+    textDecorationLine: 'underline',
+  },
+  costSection: {
+    marginTop: 16,
+    padding: 16,
+    backgroundColor: colors.orange50,
+    borderRadius: 12,
+  },
+  costText: {
+    fontSize: 14,
+    color: colors.orange700,
+    fontWeight: '500',
+  },
+  verificationSection: {
+    marginTop: 16,
+    padding: 16,
+    backgroundColor: colors.green50,
+    borderRadius: 12,
+  },
+  verificationRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  verificationText: {
+    fontSize: 12,
+    color: colors.gray600,
+    marginLeft: 8,
+  },
+  commentsSection: {
+    marginTop: 16,
+    padding: 16,
+    backgroundColor: colors.blue50,
+    borderRadius: 12,
+  },
+  commentsText: {
+    fontSize: 14,
+    color: colors.gray700,
+    lineHeight: 20,
+  },
+  actionButtons: {
+    flexDirection: 'row',
+    gap: 12,
+    paddingVertical: 16,
+  },
+  primaryButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.primary,
+    paddingVertical: 12,
+    borderRadius: 12,
+    gap: 8,
+  },
+  primaryButtonText: {
     color: colors.white,
     fontSize: 16,
     fontWeight: '600',
-    marginRight: 8,
+  },
+  secondaryButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.white,
+    paddingVertical: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: colors.primary,
+    gap: 8,
+  },
+  secondaryButtonText: {
+    color: colors.primary,
+    fontSize: 16,
+    fontWeight: '600',
   },
 });
+
+export default StationPopup;

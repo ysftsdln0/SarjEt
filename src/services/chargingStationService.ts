@@ -2,8 +2,15 @@ import axios from 'axios';
 import { ChargingStation } from '../types';
 import { mockChargingStations, checkNetworkConnection } from '../data/mockData';
 
-// React Native için IP adresi kullanıyoruz (localhost simülatörde çalışmaz)
-const BACKEND_URL = 'http://192.168.15.133:3000/api/stations';
+// Environment variable'dan backend URL'i al
+const BACKEND_BASE_URL = process.env.EXPO_PUBLIC_BACKEND_URL || 'http://192.168.15.133:3000';
+const BACKEND_URL = `${BACKEND_BASE_URL}/api/stations`;
+
+console.log('[ChargingStationService] Backend configuration:', {
+  baseUrl: BACKEND_BASE_URL,
+  fullUrl: BACKEND_URL,
+  envVar: process.env.EXPO_PUBLIC_BACKEND_URL
+});
 
 // SarjEt Backend servisi - OpenChargeMap cache sistemi kullanıyor
 export class ChargingStationService {
