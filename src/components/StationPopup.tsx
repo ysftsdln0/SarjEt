@@ -147,7 +147,7 @@ const StationPopup: React.FC<StationPopupProps> = ({
             {/* Connection Count */}
             <View style={styles.detailRow}>
               <Ionicons name="flash-outline" size={16} color={colors.gray600} />
-              <Text style={styles.detailText}>
+              <Text style={[styles.detailText, { marginLeft: 4 }]}>
                 {getConnectionCount()} şarj noktası
               </Text>
             </View>
@@ -155,7 +155,7 @@ const StationPopup: React.FC<StationPopupProps> = ({
             {/* Usage Type */}
             <View style={styles.detailRow}>
               <Ionicons name="people-outline" size={16} color={colors.gray600} />
-              <Text style={styles.detailText}>
+              <Text style={[styles.detailText, { marginLeft: 4 }]}>
                 {getUsageTypeText()}
               </Text>
             </View>
@@ -387,7 +387,7 @@ const styles = StyleSheet.create({
   },
   detailTextContainer: {
     flex: 1,
-    marginLeft: 8,
+    marginLeft: 4,
   },
   detailText: {
     fontSize: 14,
@@ -463,12 +463,12 @@ const styles = StyleSheet.create({
   operatorText: {
     fontSize: 14,
     color: colors.gray700,
-    marginLeft: 8,
+    marginLeft: 4,
   },
   operatorWebsite: {
     fontSize: 14,
     color: colors.blue600,
-    marginLeft: 8,
+    marginLeft: 4,
     textDecorationLine: 'underline',
   },
   costSection: {
@@ -496,7 +496,7 @@ const styles = StyleSheet.create({
   verificationText: {
     fontSize: 12,
     color: colors.gray600,
-    marginLeft: 8,
+    marginLeft: 4,
   },
   commentsSection: {
     marginTop: 16,
