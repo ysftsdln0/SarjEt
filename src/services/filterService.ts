@@ -279,6 +279,25 @@ export class FilterService {
   }
 
   /**
+   * İstasyonları arama metnine göre filtreler
+   */
+  static searchStations(stations: ChargingStation[], query: string): ChargingStation[] {
+    if (!query.trim()) {
+      return stations; // Arama boşsa tüm istasyonları döndür
+    }
+
+    const searchText = query.toLowerCase();
+    return stations.filter(station => {
+      return (
+        station.AddressInfo?.Title?.toLowerCase().includes(searchText) ||
+        station.AddressInfo?.Town?.toLowerCase().includes(searchText) ||
+        station.AddressInfo?.StateOrProvince?.toLowerCase().includes(searchText) ||
+        station.OperatorInfo?.Title?.toLowerCase().includes(searchText)
+      );
+    });
+  }
+
+  /**
    * Default filtre seçenekleri
    */
   static getDefaultFilters(): FilterOptions {

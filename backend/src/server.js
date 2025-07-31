@@ -20,6 +20,7 @@ const userRoutes = require('./routes/users');
 const errorHandler = require('./middleware/errorHandler');
 const authMiddleware = require('./middleware/auth');
 const logger = require('./utils/logger');
+const { getLocalIPAddress, getNetworkInterfaces } = require('./utils/networkUtils');
 
 // Initialize Express app
 const app = express();
@@ -62,11 +63,47 @@ app.use((req, res, next) => {
 
 // Health check endpoint
 app.get('/health', (req, res) => {
+  const localIP = getLocalIPAddress();
+  const networkInfo = getNetworkInterfaces();
+  
   res.json({
     status: 'OK',
     timestamp: new Date().toISOString(),
     version: process.env.npm_package_version || '1.0.0',
-    environment: process.env.NODE_ENV || 'development'
+    environment: process.env.NODE_ENV || 'development',
+    network: {
+      localIP: localIP,
+      hostname: require('os').hostname(),
+      platform: require('os').platform(),
+      interfaces: networkInfo
+    },
+    endpoints: {
+      local: `http://localhost:${PORT}`,
+      network: `http://${localIP}:${PORT}`,
+      api: `http://${localIP}:${PORT}/api`
+    }
+  });
+});
+
+// Network info endpoint for frontend
+app.get('/api/network-info', (req, res) => {
+  const localIP = getLocalIPAddress();
+  
+  logger.info('Network info requested', {
+    requestIP: req.ip,
+    userAgent: req.get('User-Agent'),
+    localIP: localIP
+  });
+  
+  res.json({
+    success: true,
+    data: {
+      backendIP: localIP,
+      backendPort: PORT,
+      baseURL: `http://${localIP}:${PORT}`,
+      apiURL: `http://${localIP}:${PORT}/api`,
+      timestamp: new Date().toISOString()
+    }
   });
 });
 
@@ -104,9 +141,26 @@ process.on('SIGTERM', async () => {
 
 // Start server
 app.listen(PORT, () => {
+  const localIP = getLocalIPAddress();
+  const networkInterfaces = getNetworkInterfaces();
+  
   logger.info(`🚀 SarjEt Backend API running on port ${PORT}`);
   logger.info(`📋 Environment: ${process.env.NODE_ENV || 'development'}`);
+  logger.info(`🌐 Local IP Address: ${localIP}`);
   logger.info(`🔗 Health check: http://localhost:${PORT}/health`);
+  logger.info(`🔗 External access: http://${localIP}:${PORT}/health`);
+  
+  // Network interfaces detayları
+  logger.info('📡 Available Network Interfaces:', { 
+    interfaces: networkInterfaces,
+    primaryIP: localIP
+  });
+  
+  // Frontend bağlantı bilgileri
+  logger.info(`📱 Frontend connection URLs:`);
+  logger.info(`   - Local: http://localhost:${PORT}`);
+  logger.info(`   - Network: http://${localIP}:${PORT}`);
+  logger.info(`   - API Base: http://${localIP}:${PORT}/api`);
 });
 
 module.exports = app;

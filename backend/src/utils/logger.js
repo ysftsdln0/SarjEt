@@ -1,14 +1,36 @@
 const winston = require('winston');
 const path = require('path');
+const { getLocalIPAddress, getHostname, getPlatform } = require('./networkUtils');
 
-// Define log format
+// Get system information
+const LOCAL_IP = getLocalIPAddress();
+const HOSTNAME = getHostname();
+const PLATFORM = getPlatform();
+
+// Define log format with IP information
 const logFormat = winston.format.combine(
   winston.format.timestamp({
     format: 'YYYY-MM-DD HH:mm:ss'
   }),
   winston.format.errors({ stack: true }),
-  winston.format.json(),
-  winston.format.prettyPrint()
+  winston.format.printf(({ timestamp, level, message, service, ...meta }) => {
+    const systemInfo = {
+      localIP: LOCAL_IP,
+      hostname: HOSTNAME,
+      platform: PLATFORM
+    };
+    
+    const logEntry = {
+      timestamp,
+      level,
+      message,
+      service,
+      system: systemInfo,
+      ...meta
+    };
+    
+    return JSON.stringify(logEntry, null, 2);
+  })
 );
 
 // Define log levels and colors
@@ -47,9 +69,14 @@ if (process.env.NODE_ENV !== 'production') {
   logger.add(new winston.transports.Console({
     format: winston.format.combine(
       winston.format.colorize(),
-      winston.format.simple(),
+      winston.format.timestamp({
+        format: 'HH:mm:ss'
+      }),
       winston.format.printf(({ timestamp, level, message, service, ...meta }) => {
-        return `${timestamp} [${service}] ${level}: ${message} ${Object.keys(meta).length ? JSON.stringify(meta, null, 2) : ''}`;
+        const ipInfo = `[${LOCAL_IP}]`;
+        const serviceInfo = service ? `[${service}]` : '';
+        const metaInfo = Object.keys(meta).length ? ` ${JSON.stringify(meta)}` : '';
+        return `${timestamp} ${ipInfo} ${serviceInfo} ${level}: ${message}${metaInfo}`;
       })
     )
   }));
