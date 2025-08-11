@@ -5,11 +5,16 @@ const os = require('os');
  * @returns {string} Local IP adresi
  */
 function getLocalIPAddress() {
+  // 1) Env üzerinden override imkanı
+  if (process.env.BACKEND_IP && process.env.BACKEND_IP.trim()) {
+    return process.env.BACKEND_IP.trim();
+  }
+
   const interfaces = os.networkInterfaces();
-  
+
   // Öncelikli arayüz isimleri (genellikle ana bağlantı)
   const priorityInterfaces = ['en0', 'eth0', 'wlan0', 'Wi-Fi', 'Ethernet'];
-  
+
   // Önce priority interfaces'lerde ara
   for (const interfaceName of priorityInterfaces) {
     if (interfaces[interfaceName]) {
@@ -21,7 +26,7 @@ function getLocalIPAddress() {
       }
     }
   }
-  
+
   // Priority interfaces'lerde bulunamazsa, tüm interfaces'lerde ara
   for (const interfaceName in interfaces) {
     for (const iface of interfaces[interfaceName]) {
@@ -31,7 +36,7 @@ function getLocalIPAddress() {
       }
     }
   }
-  
+
   // Hiçbir external IP bulunamazsa localhost döndür
   return '127.0.0.1';
 }

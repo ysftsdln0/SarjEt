@@ -16,6 +16,13 @@ class ChargingStationService {
     
     this.stations = new Map();
     this.isLoaded = false;
+
+    // Yakın istasyon sonuçları için bellek içi cache (TTL: 10 dakika)
+    this.nearbyCache = new Map(); // key -> { data, expiresAt }
+    this.nearbyCacheTtlMs = 10 * 60 * 1000;
+
+    // Son güncelleme zamanı
+    this.lastUpdated = null;
     
     this.init();
   }
@@ -66,6 +73,15 @@ class ChargingStationService {
       stations.forEach(station => {
         this.stations.set(station.ID, station);
       });
+
+      // Metadata'dan lastUpdated'ı oku
+      try {
+        const metadataRaw = await fs.readFile(this.metadataFile, 'utf8');
+        const metadata = JSON.parse(metadataRaw);
+        this.lastUpdated = metadata.lastUpdated || null;
+      } catch {
+        this.lastUpdated = null;
+      }
       
       this.isLoaded = true;
       logger.info(`Loaded ${this.stations.size} stations from cache`);
@@ -108,6 +124,9 @@ class ChargingStationService {
       processedStations.forEach(station => {
         this.stations.set(station.ID, station);
       });
+
+      // Yakın istasyon cache'ini temizle (veri güncellendi)
+      this.nearbyCache.clear();
 
       this.isLoaded = true;
       logger.info(`Successfully cached ${processedStations.length} charging stations`);
@@ -180,6 +199,9 @@ class ChargingStationService {
         version: '1.0.0'
       };
       await fs.writeFile(this.metadataFile, JSON.stringify(metadata, null, 2));
+
+      // Hafızada lastUpdated'ı güncelle
+      this.lastUpdated = metadata.lastUpdated;
       
       logger.info('Successfully saved stations to cache');
     } catch (error) {
@@ -187,8 +209,23 @@ class ChargingStationService {
     }
   }
 
+  // Yakın istasyonlar için cache key üret
+  _buildNearbyCacheKey(latitude, longitude, radiusKm, limit) {
+    const round = (n) => Math.round(n * 1000) / 1000; // ~110m çözünürlük
+    return `${round(latitude)}:${round(longitude)}:r${radiusKm}:l${limit}`;
+  }
+
   // Koordinatlara göre yakın istasyonları bul
   findNearbyStations(latitude, longitude, radiusKm = 50, limit = 20) {
+    const cacheKey = this._buildNearbyCacheKey(latitude, longitude, radiusKm, limit);
+    const now = Date.now();
+
+    // Cache kontrolü
+    const cached = this.nearbyCache.get(cacheKey);
+    if (cached && cached.expiresAt > now) {
+      return cached.data;
+    }
+
     const nearby = [];
     
     for (const station of this.stations.values()) {
@@ -210,9 +247,17 @@ class ChargingStationService {
     }
     
     // Mesafeye göre sırala ve limit uygula
-    return nearby
+    const result = nearby
       .sort((a, b) => a.distance - b.distance)
       .slice(0, limit);
+
+    // Cache'e yaz
+    this.nearbyCache.set(cacheKey, {
+      data: result,
+      expiresAt: now + this.nearbyCacheTtlMs,
+    });
+
+    return result;
   }
 
   // Şehre göre istasyonları bul
@@ -271,7 +316,7 @@ class ChargingStationService {
       totalCities: cities.size,
       totalOperators: operators.size,
       totalConnections,
-      lastUpdate: this.isLoaded ? new Date().toISOString() : null
+      lastUpdate: this.lastUpdated ? new Date(this.lastUpdated).toISOString() : null
     };
   }
 

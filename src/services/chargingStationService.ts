@@ -2,15 +2,42 @@ import axios from 'axios';
 import { ChargingStation } from '../types';
 import { mockChargingStations, checkNetworkConnection } from '../data/mockData';
 
-// Environment variable'dan backend URL'i al
-const BACKEND_BASE_URL = process.env.EXPO_PUBLIC_BACKEND_URL || 'http://192.168.15.133:3000';
+// Environment variable'dan backend URL'i al (zorunlu). Varsayılan sabit IP fallback kaldırıldı.
+const BACKEND_BASE_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
+if (!BACKEND_BASE_URL) {
+  // Geliştirme sırasında uyarı ver; prod'da hataya düşürmek tercih edilebilir
+  if (__DEV__) {
+    // eslint-disable-next-line no-console
+    console.warn('[ChargingStationService] EXPO_PUBLIC_BACKEND_URL tanımlı değil. Lütfen .env dosyanıza ekleyin.');
+  }
+}
 const BACKEND_URL = `${BACKEND_BASE_URL}/api/stations`;
 
-console.log('[ChargingStationService] Backend configuration:', {
-  baseUrl: BACKEND_BASE_URL,
-  fullUrl: BACKEND_URL,
-  envVar: process.env.EXPO_PUBLIC_BACKEND_URL
-});
+if (__DEV__) {
+  // eslint-disable-next-line no-console
+  console.log('[ChargingStationService] Backend configuration:', {
+    baseUrl: BACKEND_BASE_URL,
+    fullUrl: BACKEND_URL,
+    hasEnv: !!BACKEND_BASE_URL,
+  });
+}
+
+// StatusTypeID -> StatusType eşleme yardımcıları
+function mapStatusType(statusTypeId?: number): { IsOperational: boolean; IsUserSelectable: boolean; Title: string } | undefined {
+  if (statusTypeId === undefined || statusTypeId === null) return undefined;
+  switch (statusTypeId) {
+    case 50: 
+      return { IsOperational: true, IsUserSelectable: true, Title: 'Operational' };
+    case 75: 
+      return { IsOperational: true, IsUserSelectable: true, Title: 'Operational - Charging' };
+    case 30: 
+      return { IsOperational: false, IsUserSelectable: true, Title: 'Temporarily Unavailable' };
+    case 20: 
+      return { IsOperational: false, IsUserSelectable: false, Title: 'Planned' };
+    default:
+      return { IsOperational: statusTypeId >= 50, IsUserSelectable: true, Title: 'Unknown' };
+  }
+}
 
 // SarjEt Backend servisi - OpenChargeMap cache sistemi kullanıyor
 export class ChargingStationService {
@@ -52,29 +79,25 @@ export class ChargingStationService {
     // Önce bağlantıyı kontrol et
     const isConnected = await this.checkConnection();
     
-    if (!isConnected) {
-      console.warn('İnternet bağlantısı yok, demo veriler kullanılıyor');
+    if (!isConnected || !BACKEND_BASE_URL) {
+      if (__DEV__) {
+        // eslint-disable-next-line no-console
+        console.warn('İnternet bağlantısı yok veya BACKEND URL tanımlı değil, demo veriler kullanılıyor');
+      }
       return this.getMockStations(latitude, longitude, actualRadius, actualLimit);
     }
 
     try {
-      console.log('Backend API çağrısı:', {
-        url: `${BACKEND_URL}/nearby`,
-        params: {
-          latitude,
-          longitude,
-          radius: actualRadius,
-          limit: actualLimit
-        }
-      });
+      if (__DEV__) {
+        // eslint-disable-next-line no-console
+        console.log('Backend API çağrısı:', {
+          url: `${BACKEND_URL}/nearby`,
+          params: { latitude, longitude, radius: actualRadius, limit: actualLimit }
+        });
+      }
 
       const response = await axios.get(`${BACKEND_URL}/nearby`, {
-        params: {
-          latitude,
-          longitude,
-          radius: actualRadius,
-          limit: actualLimit
-        },
+        params: { latitude, longitude, radius: actualRadius, limit: actualLimit },
         timeout: 10000 // 10 saniye timeout
       });
 
@@ -84,11 +107,14 @@ export class ChargingStationService {
         throw new Error('Backend API hatası');
       }
     } catch (error: any) {
-      console.error('Backend bağlantı hatası, demo veriler kullanılıyor:', {
-        error: error.message,
-        status: error.response?.status,
-        data: error.response?.data
-      });
+      if (__DEV__) {
+        // eslint-disable-next-line no-console
+        console.error('Backend bağlantı hatası, demo veriler kullanılıyor:', {
+          error: error.message,
+          status: error.response?.status,
+          data: error.response?.data
+        });
+      }
       this.isOffline = true;
       return this.getMockStations(latitude, longitude, actualRadius, actualLimit);
     }
@@ -100,8 +126,11 @@ export class ChargingStationService {
   async getAllStationsInTurkey(maxResults: number = 100): Promise<ChargingStation[]> {
     const isConnected = await this.checkConnection();
     
-    if (!isConnected) {
-      console.warn('İnternet bağlantısı yok, demo veriler kullanılıyor');
+    if (!isConnected || !BACKEND_BASE_URL) {
+      if (__DEV__) {
+        // eslint-disable-next-line no-console
+        console.warn('İnternet bağlantısı yok veya BACKEND URL tanımlı değil, demo veriler kullanılıyor');
+      }
       return mockChargingStations.slice(0, maxResults);
     }
 
@@ -111,16 +140,22 @@ export class ChargingStationService {
       // Backend maksimum radius 500km, bu yüzden 450km ile sınırlıyoruz
       const maxRadius = 450;
       
-      console.log('getAllStationsInTurkey çağrılıyor:', {
-        requestedLimit: maxResults,
-        actualLimit: actualLimit,
-        coordinates: { lat: 39.9334, lng: 32.8597, radius: maxRadius }
-      });
+      if (__DEV__) {
+        // eslint-disable-next-line no-console
+        console.log('getAllStationsInTurkey çağrılıyor:', {
+          requestedLimit: maxResults,
+          actualLimit: actualLimit,
+          coordinates: { lat: 39.9334, lng: 32.8597, radius: maxRadius }
+        });
+      }
       
       // Türkiye merkezinden geniş radius ile arama (backend maksimum 500km altında)
       return await this.getNearbyStations(39.9334, 32.8597, maxRadius, actualLimit);
     } catch (error) {
-      console.error('Tüm istasyonlar alınamadı, demo veriler kullanılıyor:', error);
+      if (__DEV__) {
+        // eslint-disable-next-line no-console
+        console.error('Tüm istasyonlar alınamadı, demo veriler kullanılıyor:', error);
+      }
       return mockChargingStations.slice(0, maxResults);
     }
   }
@@ -152,16 +187,17 @@ export class ChargingStationService {
         CountryID: station.AddressInfo.CountryID,
         Latitude: station.AddressInfo.Latitude,
         Longitude: station.AddressInfo.Longitude,
-        Distance: station.distance || 0 // Backend'den gelen distance bilgisi
+        Distance: station.distance || station.AddressInfo.Distance || 0 // Backend distance varsa kullan
       },
       Connections: station.Connections || [],
       NumberOfPoints: station.NumberOfPoints || 1,
       StatusTypeID: station.StatusTypeID,
+      StatusType: mapStatusType(station.StatusTypeID),
       GeneralComments: station.GeneralComments,
       UserComments: station.UserComments || [],
       MediaItems: station.MediaItems || [],
       IsRecentlyVerified: station.IsRecentlyVerified || false,
-      DateLastVerified: station.DateLastVerified
+      DateLastVerified: station.DateLastVerified,
     }));
   }
 
@@ -174,17 +210,17 @@ export class ChargingStationService {
   ): Promise<ChargingStation[]> {
     const isConnected = await this.checkConnection();
     
-    if (!isConnected) {
-      console.warn('İnternet bağlantısı yok, demo veriler kullanılıyor');
+    if (!isConnected || !BACKEND_BASE_URL) {
+      if (__DEV__) {
+        // eslint-disable-next-line no-console
+        console.warn('İnternet bağlantısı yok veya BACKEND URL tanımlı değil, demo veriler kullanılıyor');
+      }
       return this.getMockStationsByCity(city, limit);
     }
 
     try {
       const response = await axios.get(`${BACKEND_URL}/city`, {
-        params: {
-          city,
-          limit
-        },
+        params: { city, limit },
         timeout: 10000
       });
 
@@ -194,17 +230,21 @@ export class ChargingStationService {
         throw new Error('Backend API hatası');
       }
     } catch (error) {
-      console.error('Backend bağlantı hatası, demo veriler kullanılıyor:', error);
+      if (__DEV__) {
+        // eslint-disable-next-line no-console
+        console.error('Backend bağlantı hatası, demo veriler kullanılıyor:', error);
+      }
       this.isOffline = true;
       return this.getMockStationsByCity(city, limit);
     }
   }
 
   /**
-   * Çalışır durumda olan istasyonları filtreler
+   * Çalışır durumda olan istasyonları filtreler (>22kW)
    */
   filterOperational(stations: ChargingStation[]): ChargingStation[] {
     return stations.filter(station => 
+      (station.StatusType?.IsOperational ?? false) || // StatusType varsa kullan
       station.StatusTypeID === 50 || // Operational
       station.StatusTypeID === 75    // Operational - Charging
     );
@@ -226,12 +266,13 @@ export class ChargingStationService {
    */
   async getCacheStatus(): Promise<any> {
     try {
-      const response = await axios.get(`${BACKEND_URL}/cache/status`, {
-        timeout: 5000
-      });
+      const response = await axios.get(`${BACKEND_URL}/cache/status`, { timeout: 5000 });
       return response.data;
     } catch (error) {
-      console.error('Cache status alınamadı:', error);
+      if (__DEV__) {
+        // eslint-disable-next-line no-console
+        console.error('Cache status alınamadı:', error);
+      }
       return null;
     }
   }
@@ -241,12 +282,13 @@ export class ChargingStationService {
    */
   async refreshCache(): Promise<any> {
     try {
-      const response = await axios.post(`${BACKEND_URL}/cache/refresh`, {}, {
-        timeout: 30000 // Cache refresh uzun sürebilir
-      });
+      const response = await axios.post(`${BACKEND_URL}/cache/refresh`, {}, { timeout: 30000 });
       return response.data;
     } catch (error) {
-      console.error('Cache refresh hatası:', error);
+      if (__DEV__) {
+        // eslint-disable-next-line no-console
+        console.error('Cache refresh hatası:', error);
+      }
       return null;
     }
   }
@@ -271,11 +313,12 @@ export class ChargingStationService {
       
       return {
         ...station,
+        StatusType: mapStatusType(station.StatusTypeID) || station.StatusType,
         AddressInfo: {
           ...station.AddressInfo,
           Distance: distance
         }
-      };
+      } as ChargingStation;
     });
 
     return stationsWithDistance
@@ -289,6 +332,7 @@ export class ChargingStationService {
    */
   private getMockStationsByCity(city: string, limit: number): ChargingStation[] {
     return mockChargingStations
+      .map(s => ({ ...s, StatusType: mapStatusType(s.StatusTypeID) || s.StatusType }))
       .filter((station: any) => 
         station.AddressInfo.Town?.toLowerCase().includes(city.toLowerCase()) ||
         station.AddressInfo.StateOrProvince?.toLowerCase().includes(city.toLowerCase())
