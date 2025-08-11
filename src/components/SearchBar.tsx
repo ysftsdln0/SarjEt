@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, TextInput, TouchableOpacity, Text, StyleSheet } from 'react-native';
+import { View, TextInput, TouchableOpacity, Text, StyleSheet, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import colors from '../constants/colors';
 
@@ -11,6 +11,8 @@ interface SearchBarProps {
   placeholder?: string;
   filterCount?: number;
   isDarkMode?: boolean;
+  onFilterPress?: (filterType: string) => void;
+  activeFilters?: string[];
 }
 
 export const SearchBar: React.FC<SearchBarProps> = ({
@@ -18,117 +20,151 @@ export const SearchBar: React.FC<SearchBarProps> = ({
   onChangeText,
   onSearch,
   onShowFilters,
-  placeholder = 'Search by city or district...',
+  placeholder = 'Konum veya İstasyon ara',
   filterCount = 0,
-  isDarkMode = true,
+  isDarkMode = false,
+  onFilterPress,
+  activeFilters = [],
 }) => {
+  const filterOptions = [
+    { key: 'AC', label: 'AC', icon: 'flash-outline' },
+    { key: 'DC', label: 'DC', icon: 'flash' },
+    { key: 'GREEN', label: 'Yeşil Enerji', icon: 'leaf-outline' },
+    { key: 'RATING', label: 'Puan', icon: 'star-outline', hasDropdown: true },
+  ];
+
   return (
-    <View style={[styles.searchSection, !isDarkMode && styles.lightSearchSection]}>
-      <View style={[styles.searchContainer, !isDarkMode && styles.lightSearchContainer]}>
-        <TextInput
-          style={[styles.searchInput, !isDarkMode && styles.lightSearchInput]}
-          placeholder={placeholder}
-          placeholderTextColor={isDarkMode ? colors.gray500 : colors.gray400}
-          value={value}
-          onChangeText={onChangeText}
-          onSubmitEditing={onSearch}
-        />
-        <TouchableOpacity style={styles.searchButton} onPress={onSearch}>
-          <Ionicons name="search" size={20} color={colors.white} />
-        </TouchableOpacity>
-        
-        {onShowFilters && (
-          <TouchableOpacity style={[styles.filterButton, !isDarkMode && styles.lightFilterButton]} onPress={onShowFilters}>
+    <View style={styles.searchSection}>
+      {/* Ana Arama Çubuğu - Resimdeki gibi */}
+      <View style={styles.searchContainer}>
+        <View style={styles.searchInputContainer}>
+          <Ionicons 
+            name="search" 
+            size={20} 
+            color={colors.gray500} 
+            style={styles.searchIcon}
+          />
+          <TextInput
+            style={styles.searchInput}
+            placeholder={placeholder}
+            placeholderTextColor={colors.gray500}
+            value={value}
+            onChangeText={onChangeText}
+            onSubmitEditing={onSearch}
+          />
+        </View>
+      </View>
+
+      {/* Filtre Butonları - Resimdeki gibi yatay */}
+      <ScrollView 
+        horizontal 
+        showsHorizontalScrollIndicator={false}
+        style={styles.filterScrollContainer}
+        contentContainerStyle={styles.filterButtonsContainer}
+      >
+        {filterOptions.map((filter) => (
+          <TouchableOpacity
+            key={filter.key}
+            style={[
+              styles.filterChip,
+              activeFilters.includes(filter.key) && styles.filterChipActive,
+            ]}
+            onPress={() => onFilterPress?.(filter.key)}
+          >
             <Ionicons 
-              name="options" 
-              size={20} 
-              color={isDarkMode ? colors.white : colors.lightText} 
+              name={filter.icon as any} 
+              size={16} 
+              color={activeFilters.includes(filter.key) 
+                ? colors.white 
+                : colors.gray600
+              } 
             />
-            {filterCount > 0 && (
-              <View style={styles.filterBadge}>
-                <Text style={styles.filterBadgeText}>{filterCount}</Text>
-              </View>
+            <Text style={[
+              styles.filterChipText,
+              activeFilters.includes(filter.key) && styles.filterChipTextActive,
+            ]}>
+              {filter.label}
+            </Text>
+            {filter.hasDropdown && (
+              <Ionicons 
+                name="chevron-down" 
+                size={14} 
+                color={activeFilters.includes(filter.key) 
+                  ? colors.white 
+                  : colors.gray600
+                } 
+                style={styles.dropdownIcon}
+              />
             )}
           </TouchableOpacity>
-        )}
-      </View>
+        ))}
+      </ScrollView>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  filterBadge: {
-    alignItems: 'center',
-    backgroundColor: colors.accent2,
-    borderRadius: 10,
-    height: 20,
-    justifyContent: 'center',
-    position: 'absolute',
-    right: -2,
-    top: -2,
-    width: 20,
-  },
-  filterBadgeText: {
-    color: colors.white,
-    fontSize: 12,
-    fontWeight: 'bold',
-  },
-  filterButton: {
-    alignItems: 'center',
-    backgroundColor: colors.darkCard,
-    borderRadius: 24,
-    height: 48,
-    justifyContent: 'center',
-    position: 'relative',
-    width: 48,
-  },
-  filtersButton: {
-    alignSelf: 'flex-start',
-  },
-  filtersText: {
-    color: colors.primary,
-    fontSize: 16,
-    fontWeight: '500',
-  },
-  lightFilterButton: {
-    backgroundColor: colors.lightCard,
-  },
-  lightSearchContainer: {
-    // Container için light mode değişikliği gerekmiyor
-  },
-  lightSearchInput: {
-    backgroundColor: colors.lightCard,
-    color: colors.lightText,
-  },
-  lightSearchSection: {
-    backgroundColor: colors.lightBg,
-  },
-  searchButton: {
-    alignItems: 'center',
-    backgroundColor: colors.primary,
-    borderRadius: 24,
-    height: 48,
-    justifyContent: 'center',
-    marginRight: 8,
-    width: 48,
-  },
-  searchContainer: {
-    alignItems: 'center',
-    flexDirection: 'row',
-  },
-  searchInput: {
-    backgroundColor: colors.lightCard,
-    borderRadius: 24,
-    color: colors.lightText,
-    flex: 1,
-    fontSize: 16,
-    height: 48,
-    marginRight: 12,
-    paddingHorizontal: 20,
-  },
   searchSection: {
-    backgroundColor: colors.darkBg,
+    backgroundColor: colors.white,
+    paddingTop: 16,
     paddingBottom: 16,
     paddingHorizontal: 20,
+  },
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  searchInputContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.searchBarBg,
+    borderRadius: 28,
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+  },
+  searchIcon: {
+    marginRight: 12,
+  },
+  searchInput: {
+    flex: 1,
+    color: colors.black,
+    fontSize: 16,
+    padding: 0,
+  },
+  filterScrollContainer: {
+    marginBottom: 8,
+  },
+  filterButtonsContainer: {
+    paddingRight: 20,
+  },
+  filterChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.filterChipBg,
+    borderRadius: 24,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    marginRight: 12,
+    borderWidth: 1,
+    borderColor: colors.gray200,
+  },
+  filterChipActive: {
+    backgroundColor: colors.filterChipActive,
+    borderColor: colors.filterChipActive,
+  },
+  filterChipText: {
+    color: colors.gray600,
+    fontSize: 14,
+    fontWeight: '500',
+    marginLeft: 6,
+  },
+  filterChipTextActive: {
+    color: colors.white,
+    fontWeight: '600',
+  },
+  dropdownIcon: {
+    marginLeft: 6,
   },
 });

@@ -7,11 +7,13 @@ import colors from '../constants/colors';
 interface StationMarkerProps {
   isAvailable?: boolean;
   size?: 'small' | 'medium' | 'large';
+  station?: ChargingStation;
 }
 
 export const StationMarker: React.FC<StationMarkerProps> = ({
   isAvailable = true,
   size = 'medium',
+  station,
 }) => {
   const getMarkerSize = () => {
     switch (size) {
@@ -35,14 +37,52 @@ export const StationMarker: React.FC<StationMarkerProps> = ({
     }
   };
 
+  const getConnectionTypes = () => {
+    if (!station?.Connections || station.Connections.length === 0) return [];
+    
+    const types = station.Connections
+      .map(conn => conn.ConnectionType?.Title)
+      .filter(Boolean);
+    
+    return [...new Set(types)];
+  };
+
+  const hasDC = getConnectionTypes().some(type => 
+    type?.toLowerCase().includes('ccs') || 
+    type?.toLowerCase().includes('chademo') ||
+    type?.toLowerCase().includes('dc')
+  );
+
+  const hasAC = getConnectionTypes().some(type => 
+    type?.toLowerCase().includes('type 2') || 
+    type?.toLowerCase().includes('type 1') ||
+    type?.toLowerCase().includes('ac')
+  );
+
   const markerSize = getMarkerSize();
   const iconSize = getIconSize();
-  const backgroundColor = isAvailable ? colors.secondary : colors.accent2;
+  
+  // Marker rengi: DC varsa mavi, AC varsa turuncu, ikisi de varsa mavi
+  const backgroundColor = hasDC ? colors.primary : colors.accent1;
+  const borderColor = isAvailable ? colors.white : colors.gray400;
 
   return (
-    <View style={[styles.markerContainer, markerSize, { backgroundColor }]}>
+    <View style={[styles.markerContainer, markerSize, { backgroundColor, borderColor }]}>
       <View style={[styles.markerInner, { backgroundColor }]}>
-        <Ionicons name="flash" size={iconSize} color={colors.white} />
+        {/* DC/AC göstergesi */}
+        <View style={styles.connectionIndicator}>
+          {hasDC && (
+            <Text style={styles.connectionText}>DC</Text>
+          )}
+          {hasAC && (
+            <Text style={styles.connectionText}>AC</Text>
+          )}
+        </View>
+        
+        {/* Şarj simgesi */}
+        <View style={styles.chargingIcon}>
+          <Ionicons name="flash" size={iconSize - 4} color={colors.white} />
+        </View>
       </View>
     </View>
   );
@@ -211,6 +251,44 @@ export const StationCallout: React.FC<StationCalloutProps> = ({
 };
 
 const styles = StyleSheet.create({
+  markerContainer: {
+    alignItems: 'center',
+    borderWidth: 3,
+    elevation: 5,
+    justifyContent: 'center',
+    shadowColor: colors.black,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+  },
+  markerInner: {
+    alignItems: 'center',
+    borderRadius: 14,
+    height: 28,
+    justifyContent: 'center',
+    width: 28,
+    position: 'relative',
+  },
+  connectionIndicator: {
+    position: 'absolute',
+    top: -2,
+    right: -2,
+    flexDirection: 'row',
+    gap: 1,
+  },
+  connectionText: {
+    color: colors.white,
+    fontSize: 8,
+    fontWeight: 'bold',
+    backgroundColor: colors.black + '80',
+    paddingHorizontal: 2,
+    paddingVertical: 1,
+    borderRadius: 2,
+  },
+  chargingIcon: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   actionRow: {
     borderTopColor: colors.gray300,
     borderTopWidth: 1,
@@ -302,27 +380,6 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 13,
     marginLeft: 8,
-  },
-  markerContainer: {
-    alignItems: 'center',
-    borderColor: colors.white,
-    borderWidth: 3,
-    elevation: 5,
-    justifyContent: 'center',
-    shadowColor: colors.black,
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-  },
-  markerInner: {
-    alignItems: 'center',
-    borderRadius: 14,
-    height: 28,
-    justifyContent: 'center',
-    width: 28,
   },
   powerInfo: {
     alignItems: 'center',

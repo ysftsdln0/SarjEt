@@ -10,7 +10,6 @@ import MapView, {
 import MapViewClustering from 'react-native-map-clustering';
 import { ChargingStation } from '../types';
 import { StationMarker } from './StationMarker';
-import { StationPopup } from './StationPopup';
 import colors from '../constants/colors';
 
 // Define the shape of the data item that MapViewClustering expects
@@ -42,7 +41,6 @@ export const ClusteredMapView: React.FC<ClusteredMapViewProps> = ({
   isDarkMode = false
 }) => {
   const mapRef = useRef<MapView>(null);
-  const [selectedStation, setSelectedStation] = useState<ChargingStation | null>(null);
 
   // Memoize and transform station data to prevent re-calculations and to filter invalid data.
   // This is a critical step for performance and stability.
@@ -65,19 +63,8 @@ export const ClusteredMapView: React.FC<ClusteredMapViewProps> = ({
   }, [stations]);
 
   const handleStationPress = useCallback((station: ChargingStation) => {
-    setSelectedStation(station);
     onStationPress?.(station);
   }, [onStationPress]);
-
-  const handlePopupClose = useCallback(() => {
-    setSelectedStation(null);
-  }, []);
-
-  const onMapPress = (event: MapPressEvent) => {
-    if (event.nativeEvent.action !== 'marker-press') {
-      handlePopupClose();
-    }
-  };
 
   // Renders a single station marker.
   const renderMarker = useCallback((item: MapDataItem) => (
@@ -87,7 +74,10 @@ export const ClusteredMapView: React.FC<ClusteredMapViewProps> = ({
       onPress={() => handleStationPress(item)}
       tracksViewChanges={false}
     >
-      <StationMarker isAvailable={item.StatusType?.IsOperational !== false} />
+      <StationMarker 
+        isAvailable={item.StatusType?.IsOperational !== false} 
+        station={item}
+      />
     </Marker>
   ), [handleStationPress]);
 
@@ -97,10 +87,10 @@ export const ClusteredMapView: React.FC<ClusteredMapViewProps> = ({
     const pointCount = properties.point_count;
 
     const getClusterStyle = (count: number) => {
-      if (count >= 100) return { size: 70, color: colors.error };
-      if (count >= 50) return { size: 60, color: colors.warning };
+      if (count >= 100) return { size: 70, color: colors.primary };
+      if (count >= 50) return { size: 60, color: colors.primary };
       if (count >= 20) return { size: 50, color: colors.primary };
-      return { size: 40, color: colors.success };
+      return { size: 40, color: colors.primary };
     };
     const { size, color } = getClusterStyle(pointCount);
 
@@ -128,20 +118,15 @@ export const ClusteredMapView: React.FC<ClusteredMapViewProps> = ({
         provider={PROVIDER_GOOGLE}
         initialRegion={initialRegion}
         onRegionChangeComplete={onRegionChange}
-        onPress={onMapPress}
+        onPress={() => {}} // Empty handler to prevent errors
         renderMarker={renderMarker}
         renderCluster={renderCluster}
-        showsMyLocationButton={true}
+        showsMyLocationButton={false}
         showsCompass={true}
-        customMapStyle={isDarkMode ? darkMapStyle : []}
+        customMapStyle={lightMapStyle} // Resimdeki gibi light mode
         radius={60}
-      />
-
-      <StationPopup
-        station={selectedStation}
-        visible={!!selectedStation}
-        onClose={handlePopupClose}
-        onNavigate={() => {}}
+        minZoom={10}
+        maxZoom={20}
       />
     </View>
   );
@@ -168,23 +153,24 @@ const styles = StyleSheet.create({
   },
   clusterText: {
     color: colors.white,
-    fontWeight: 'bold',
     fontSize: 14,
+    fontWeight: 'bold',
   },
 });
 
-const darkMapStyle = [
-  { elementType: 'geometry', stylers: [{ color: '#242f3e' }] },
-  { elementType: 'labels.text.stroke', stylers: [{ color: '#242f3e' }] },
+// Resimdeki gibi light mode harita stili
+const lightMapStyle = [
+  { elementType: 'geometry', stylers: [{ color: '#f5f5f5' }] },
+  { elementType: 'labels.text.stroke', stylers: [{ color: '#ffffff' }] },
   { elementType: 'labels.text.fill', stylers: [{ color: '#746855' }] },
   { featureType: 'administrative.locality', elementType: 'labels.text.fill', stylers: [{ color: '#d59563' }] },
   { featureType: 'poi', elementType: 'labels.text.fill', stylers: [{ color: '#d59563' }] },
-  { featureType: 'poi.park', elementType: 'geometry', stylers: [{ color: '#263c3f' }] },
+  { featureType: 'poi.park', elementType: 'geometry', stylers: [{ color: '#e5e5e5' }] },
   { featureType: 'poi.park', elementType: 'labels.text.fill', stylers: [{ color: '#6b9a76' }] },
-  { featureType: 'road', elementType: 'geometry', stylers: [{ color: '#38414e' }] },
+  { featureType: 'road', elementType: 'geometry', stylers: [{ color: '#ffffff' }] },
   { featureType: 'road', elementType: 'geometry.stroke', stylers: [{ color: '#212a37' }] },
   { featureType: 'road', elementType: 'labels.text.fill', stylers: [{ color: '#9ca5b3' }] },
-  { featureType: 'road.highway', elementType: 'geometry', stylers: [{ color: '#746855' }] },
+  { featureType: 'road.highway', elementType: 'geometry', stylers: [{ color: '#f3d19c' }] },
   { featureType: 'road.highway', elementType: 'geometry.stroke', stylers: [{ color: '#1f2835' }] },
   { featureType: 'road.highway', elementType: 'labels.text.fill', stylers: [{ color: '#f3d19c' }] },
   { featureType: 'transit', elementType: 'geometry', stylers: [{ color: '#2f3948' }] },

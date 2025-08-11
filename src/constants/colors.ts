@@ -1,17 +1,17 @@
-// Şarjet App Color Palette
+// Şarjet App Color Palette - Resimdeki tasarıma uygun
 export const colors = {
-  // Primary Colors
-  primary: '#00B4D8',
-  secondary: '#52B788',
+  // Primary Colors - Mavi tonlar
+  primary: '#007AFF',
+  secondary: '#5AC8FA',
   
   // Accent Colors
   accent1: '#FFB703',
   accent2: '#FF5C8A',
   
-  // Light Mode
-  lightBg: '#F8F9FA',
-  lightCard: '#FFFFFF',
-  lightText: '#212529',
+  // Light Mode - Ana tema (resimdeki gibi)
+  lightBg: '#FFFFFF',
+  lightCard: '#F8F9FA',
+  lightText: '#000000',
   
   // Dark Mode
   darkBg: '#0D1B2A',
@@ -22,22 +22,22 @@ export const colors = {
   white: '#FFFFFF',
   black: '#000000',
   
-  // Status Colors (derived from accent colors)
-  success: '#52B788', // Secondary
-  error: '#FF5C8A',   // Accent2
-  warning: '#FFB703', // Accent1
+  // Status Colors
+  success: '#34C759',
+  error: '#FF3B30',
+  warning: '#FF9500',
   
-  // Gray Scale
+  // Gray Scale - Resimdeki tasarıma uygun
   gray50: '#F9FAFB',
-  gray100: '#F8F9FA',
-  gray200: '#E9ECEF',
-  gray300: '#DEE2E6',
-  gray400: '#CED4DA',
-  gray500: '#ADB5BD',
-  gray600: '#6C757D',
-  gray700: '#495057',
-  gray800: '#343A40',
-  gray900: '#212529',
+  gray100: '#F2F2F7',
+  gray200: '#E5E5EA',
+  gray300: '#D1D1D6',
+  gray400: '#C7C7CC',
+  gray500: '#AEAEB2',
+  gray600: '#8E8E93',
+  gray700: '#636366',
+  gray800: '#48484A',
+  gray900: '#1C1C1E',
   
   // Additional colors for components
   green50: '#F0FDF4',
@@ -62,6 +62,15 @@ export const colors = {
   stationDetail_mediumGray: '#e5e5e5',
   stationDetail_textGray: '#b0b0b0',
   stationDetail_link: '#039BE5',
+  
+  // Resimdeki tasarım için özel renkler
+  mapBackground: '#F2F2F7',
+  searchBarBg: '#F2F2F7',
+  filterChipBg: '#F2F2F7',
+  filterChipActive: '#007AFF',
+  stationCardBg: '#FFFFFF',
+  tabActive: '#007AFF',
+  tabInactive: '#8E8E93',
 };
 
 export default colors;

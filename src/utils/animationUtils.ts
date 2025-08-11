@@ -1,101 +1,156 @@
-import { AccessibilityInfo } from 'react-native';
-import { withTiming, withSpring, ReduceMotion } from 'react-native-reanimated';
+import { Animated, Easing } from 'react-native';
 
-/**
- * Animation utility functions that respect user's reduced motion preferences
- */
-export class AnimationUtils {
-  private static isReducedMotionEnabled: boolean | null = null;
+// Smooth fade in/out animasyonları
+export const fadeIn = (value: Animated.Value, duration: number = 300) => {
+  value.setValue(0);
+  Animated.timing(value, {
+    toValue: 1,
+    duration,
+    useNativeDriver: true,
+    easing: Easing.out(Easing.cubic),
+  }).start();
+};
 
-  /**
-   * Check if reduced motion is enabled on the device
-   */
-  static async checkReducedMotionEnabled(): Promise<boolean> {
-    try {
-      const isEnabled = await AccessibilityInfo.isReduceMotionEnabled();
-      this.isReducedMotionEnabled = isEnabled;
-      return isEnabled;
-    } catch (error) {
-      console.warn('Could not check reduced motion setting:', error);
-      return false;
-    }
-  }
+export const fadeOut = (value: Animated.Value, duration: number = 300) => {
+  Animated.timing(value, {
+    toValue: 0,
+    duration,
+    useNativeDriver: true,
+    easing: Easing.in(Easing.cubic),
+  }).start();
+};
 
-  /**
-   * Get cached reduced motion setting or check it
-   */
-  static async getReducedMotionSetting(): Promise<boolean> {
-    if (this.isReducedMotionEnabled === null) {
-      return await this.checkReducedMotionEnabled();
-    }
-    return this.isReducedMotionEnabled;
-  }
+// Slide animasyonları
+export const slideUp = (value: Animated.Value, duration: number = 300) => {
+  value.setValue(100);
+  Animated.timing(value, {
+    toValue: 0,
+    duration,
+    useNativeDriver: true,
+    easing: Easing.out(Easing.cubic),
+  }).start();
+};
 
-  /**
-   * Create a spring animation that respects reduced motion settings
-   */
-  static createSpringAnimation(
-    toValue: number,
-    config: {
-      duration?: number;
-      dampingRatio?: number;
-      stiffness?: number;
-    } = {}
-  ) {
-    return withSpring(toValue, {
-      duration: config.duration,
-      dampingRatio: config.dampingRatio,
-      stiffness: config.stiffness,
-      reduceMotion: ReduceMotion.System, // Respect system settings
-    });
-  }
+export const slideDown = (value: Animated.Value, duration: number = 300) => {
+  Animated.timing(value, {
+    toValue: 100,
+    duration,
+    useNativeDriver: true,
+    easing: Easing.in(Easing.cubic),
+  }).start();
+};
 
-  /**
-   * Create a timing animation that respects reduced motion settings
-   */
-  static createTimingAnimation(
-    toValue: number,
-    config: {
-      duration?: number;
-      easing?: any;
-    } = {}
-  ) {
-    return withTiming(toValue, {
-      duration: config.duration || 300,
-      ...config,
-      reduceMotion: ReduceMotion.System, // Respect system settings
-    });
-  }
+// Scale animasyonları
+export const scaleIn = (value: Animated.Value, duration: number = 200) => {
+  value.setValue(0.8);
+  Animated.timing(value, {
+    toValue: 1,
+    duration,
+    useNativeDriver: true,
+    easing: Easing.out(Easing.back(1.2)),
+  }).start();
+};
 
-  /**
-   * Get animation duration based on reduced motion setting
-   */
-  static getAnimationDuration(normalDuration: number, reducedDuration: number = 0): number {
-    return this.isReducedMotionEnabled ? reducedDuration : normalDuration;
-  }
+export const scaleOut = (value: Animated.Value, duration: number = 200) => {
+  Animated.timing(value, {
+    toValue: 0.8,
+    duration,
+    useNativeDriver: true,
+    easing: Easing.in(Easing.back(1.2)),
+  }).start();
+};
 
-  /**
-   * Get animation config for Moti components
-   */
-  static getMotiAnimationConfig(isReducedMotion?: boolean) {
-    const reduced = isReducedMotion ?? this.isReducedMotionEnabled ?? false;
-    
-    return {
-      duration: reduced ? 0 : 600,
-      type: reduced ? 'timing' as const : 'spring' as const,
-      delay: reduced ? 0 : undefined,
-    };
-  }
+// Bounce animasyonu
+export const bounce = (value: Animated.Value) => {
+  value.setValue(1);
+  Animated.sequence([
+    Animated.timing(value, {
+      toValue: 1.2,
+      duration: 100,
+      useNativeDriver: true,
+      easing: Easing.out(Easing.cubic),
+    }),
+    Animated.timing(value, {
+      toValue: 1,
+      duration: 100,
+      useNativeDriver: true,
+      easing: Easing.in(Easing.cubic),
+    }),
+  ]).start();
+};
 
-  /**
-   * Initialize animation utils - call this in your app startup
-   */
-  static async initialize(): Promise<void> {
-    await this.checkReducedMotionEnabled();
-    
-    // Listen for changes in accessibility settings
-    AccessibilityInfo.addEventListener('reduceMotionChanged', (isEnabled) => {
-      this.isReducedMotionEnabled = isEnabled;
-    });
-  }
-}
+// Pulse animasyonu
+export const pulse = (value: Animated.Value) => {
+  value.setValue(1);
+  Animated.loop(
+    Animated.sequence([
+      Animated.timing(value, {
+        toValue: 1.1,
+        duration: 1000,
+        useNativeDriver: true,
+        easing: Easing.inOut(Easing.ease),
+      }),
+      Animated.timing(value, {
+        toValue: 1,
+        duration: 1000,
+        useNativeDriver: true,
+        easing: Easing.inOut(Easing.ease),
+      }),
+    ])
+  ).start();
+};
+
+// Shake animasyonu
+export const shake = (value: Animated.Value) => {
+  value.setValue(0);
+  Animated.sequence([
+    Animated.timing(value, { toValue: 10, duration: 100, useNativeDriver: true }),
+    Animated.timing(value, { toValue: -10, duration: 100, useNativeDriver: true }),
+    Animated.timing(value, { toValue: 10, duration: 100, useNativeDriver: true }),
+    Animated.timing(value, { toValue: 0, duration: 100, useNativeDriver: true }),
+  ]).start();
+};
+
+// Marker popup animasyonu
+export const markerPopup = (value: Animated.Value) => {
+  value.setValue(0);
+  Animated.sequence([
+    Animated.timing(value, {
+      toValue: 1.2,
+      duration: 200,
+      useNativeDriver: true,
+      easing: Easing.out(Easing.back(1.2)),
+    }),
+    Animated.timing(value, {
+      toValue: 1,
+      duration: 100,
+      useNativeDriver: true,
+      easing: Easing.in(Easing.cubic),
+    }),
+  ]).start();
+};
+
+// Card slide animasyonu
+export const cardSlide = (value: Animated.Value, direction: 'left' | 'right' = 'right') => {
+  const startValue = direction === 'left' ? -100 : 100;
+  value.setValue(startValue);
+  Animated.timing(value, {
+    toValue: 0,
+    duration: 400,
+    useNativeDriver: true,
+    easing: Easing.out(Easing.cubic),
+  }).start();
+};
+
+// Loading spinner animasyonu
+export const spin = (value: Animated.Value) => {
+  value.setValue(0);
+  Animated.loop(
+    Animated.timing(value, {
+      toValue: 1,
+      duration: 1000,
+      useNativeDriver: true,
+      easing: Easing.linear,
+    })
+  ).start();
+};
