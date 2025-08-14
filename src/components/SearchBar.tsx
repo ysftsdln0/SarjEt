@@ -106,8 +106,8 @@ export const SearchBar: React.FC<SearchBarProps> = ({
 const styles = StyleSheet.create({
   searchSection: {
     backgroundColor: colors.white,
-    paddingTop: 16,
-    paddingBottom: 16,
+    paddingTop: 8,
+    paddingBottom: 8,
     paddingHorizontal: 20,
   },
   searchContainer: {
@@ -120,9 +120,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: colors.searchBarBg,
-    borderRadius: 28,
-    paddingHorizontal: 20,
-    paddingVertical: 16,
+    borderRadius: 24,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
   },
   searchIcon: {
     marginRight: 12,
@@ -143,9 +143,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: colors.filterChipBg,
-    borderRadius: 24,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
+    borderRadius: 20,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
     marginRight: 12,
     borderWidth: 1,
     borderColor: colors.gray200,

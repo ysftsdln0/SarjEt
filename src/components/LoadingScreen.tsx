@@ -37,9 +37,9 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({
 
     // Loading tipine göre animasyon başlat
     if (type === 'spinner') {
-      spin(spinAnim);
+      spin(spinAnim).start();
     } else if (type === 'pulse') {
-      pulse(pulseAnim);
+      pulse(pulseAnim).start();
     }
   }, []);
 

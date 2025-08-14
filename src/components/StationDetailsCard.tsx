@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
@@ -6,28 +6,37 @@ import {
   TouchableOpacity,
   ScrollView,
   Dimensions,
+  Animated,
 } from 'react-native';
+import { PanGestureHandler, State } from 'react-native-gesture-handler';
 import { Ionicons } from '@expo/vector-icons';
 import { ChargingStation } from '../types';
 import colors from '../constants/colors';
 
-const { width } = Dimensions.get('window');
+const { width, height } = Dimensions.get('window');
 
 interface StationDetailsCardProps {
   stations: ChargingStation[];
   onStationPress: (station: ChargingStation) => void;
   isDarkMode?: boolean;
+  onHeightChange?: (height: number) => void;
 }
 
-export const StationDetailsCard: React.FC<StationDetailsCardProps> = ({
+const StationDetailsCard: React.FC<StationDetailsCardProps> = ({
   stations,
   onStationPress,
   isDarkMode = false,
+  onHeightChange,
 }) => {
   const [activeTab, setActiveTab] = useState<'nearby' | 'favorites'>('nearby');
   const [selectedStation, setSelectedStation] = useState<ChargingStation | null>(
     stations.length > 0 ? stations[0] : null
   );
+
+  // Animation values
+  const translateY = useRef(new Animated.Value(0)).current;
+  const cardHeight = useRef(new Animated.Value(300)).current;
+  const isExpanded = useRef(false);
 
   const tabs = [
     { key: 'nearby', label: 'Yakındaki istasyonlar' },
@@ -65,12 +74,122 @@ export const StationDetailsCard: React.FC<StationDetailsCardProps> = ({
     return [...new Set(types)];
   };
 
-  return (
-    <View style={styles.container}>
-      {/* Üstteki çizgi - Resimdeki gibi */}
-      <View style={styles.dragIndicator} />
+  // Pan gesture handler
+  const onPanGestureEvent = Animated.event(
+    [{ nativeEvent: { translationY: translateY } }],
+    { useNativeDriver: false }
+  );
+
+  const onPanHandlerStateChange = (event: any) => {
+    if (event.nativeEvent.state === State.END) {
+      const { translationY, velocityY } = event.nativeEvent;
       
-      {/* Sekmeler */}
+      // Determine if should expand or collapse based on velocity and distance
+      const shouldExpand = velocityY < -500 || (translationY < -50 && !isExpanded.current);
+      const shouldCollapse = velocityY > 500 || (translationY > 50 && isExpanded.current);
+      
+      if (shouldExpand && !isExpanded.current) {
+        expandCard();
+      } else if (shouldCollapse && isExpanded.current) {
+        collapseCard();
+      } else {
+        // Reset to current state
+        resetCard();
+      }
+      
+      translateY.setValue(0);
+    }
+  };
+
+  const expandCard = () => {
+    isExpanded.current = true;
+    Animated.parallel([
+      Animated.timing(cardHeight, {
+        toValue: height * 0.8, // 80% of screen height
+        duration: 300,
+        useNativeDriver: false,
+      }),
+      Animated.timing(translateY, {
+        toValue: -height * 0.3,
+        duration: 300,
+        useNativeDriver: false,
+      }),
+    ]).start();
+    
+    onHeightChange?.(height * 0.8);
+  };
+
+  const collapseCard = () => {
+    isExpanded.current = false;
+    Animated.parallel([
+      Animated.timing(cardHeight, {
+        toValue: 300,
+        duration: 300,
+        useNativeDriver: false,
+      }),
+      Animated.timing(translateY, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: false,
+      }),
+    ]).start();
+    
+    onHeightChange?.(300);
+  };
+
+  const resetCard = () => {
+    Animated.timing(translateY, {
+      toValue: 0,
+      duration: 200,
+      useNativeDriver: false,
+    }).start();
+  };
+
+  // Quick expand/collapse buttons
+  const handleQuickExpand = () => {
+    if (isExpanded.current) {
+      collapseCard();
+    } else {
+      expandCard();
+    }
+  };
+
+  return (
+    <Animated.View
+      style={[
+        styles.container,
+        {
+          transform: [{ translateY }],
+          height: cardHeight,
+        },
+      ]}
+    >
+      {/* Drag Indicator */}
+      <PanGestureHandler
+        onGestureEvent={onPanGestureEvent}
+        onHandlerStateChange={onPanHandlerStateChange}
+      >
+        <View style={styles.dragHandle}>
+          <View style={styles.dragIndicator} />
+          <View style={styles.quickActions}>
+            <TouchableOpacity 
+              style={styles.quickActionButton}
+              onPress={handleQuickExpand}
+            >
+              <Ionicons 
+                name={isExpanded.current ? 'chevron-down' : 'chevron-up'} 
+                size={20} 
+                color={colors.gray600} 
+              />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.quickActionButton}>
+              <Ionicons name="resize" size={20} color={colors.gray600} />
+            </TouchableOpacity>
+          </View>
+        </View>
+      </PanGestureHandler>
+      
+      {/* Tabs */}
       <View style={styles.tabsContainer}>
         {tabs.map((tab) => (
           <TouchableOpacity
@@ -91,10 +210,10 @@ export const StationDetailsCard: React.FC<StationDetailsCardProps> = ({
         ))}
       </View>
 
-      {/* İstasyon Detayları - Resimdeki gibi */}
+      {/* Station Details */}
       {selectedStation && (
         <View style={styles.stationDetails}>
-          {/* İstasyon Başlığı ve Logo */}
+          {/* Station Header and Logo */}
           <View style={styles.stationHeader}>
             <View style={styles.stationLogo}>
               <Text style={styles.logoText}>zes</Text>
@@ -109,7 +228,7 @@ export const StationDetailsCard: React.FC<StationDetailsCardProps> = ({
             </View>
           </View>
 
-          {/* Rating ve Mesafe - Resimdeki gibi */}
+          {/* Rating and Distance */}
           <View style={styles.stationMeta}>
             <View style={styles.ratingContainer}>
               <Text style={styles.ratingText}>4.5</Text>
@@ -143,7 +262,7 @@ export const StationDetailsCard: React.FC<StationDetailsCardProps> = ({
         </View>
       )}
 
-      {/* İstasyon Listesi */}
+      {/* Stations List */}
       <ScrollView 
         style={styles.stationsList}
         showsVerticalScrollIndicator={false}
@@ -151,7 +270,7 @@ export const StationDetailsCard: React.FC<StationDetailsCardProps> = ({
       >
         {stations.slice(0, 5).map((station, index) => (
           <TouchableOpacity
-            key={station.ID}
+            key={`station-${station.ID}-${index}`}
             style={[
               styles.stationItem,
               selectedStation?.ID === station.ID && styles.selectedStationItem,
@@ -182,7 +301,7 @@ export const StationDetailsCard: React.FC<StationDetailsCardProps> = ({
           </TouchableOpacity>
         ))}
       </ScrollView>
-    </View>
+    </Animated.View>
   );
 };
 
@@ -195,15 +314,39 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingBottom: 20,
     minHeight: 300,
-    maxHeight: 500,
+    maxHeight: height * 0.8,
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    zIndex: 1000,
+    shadowColor: colors.black,
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 10,
+  },
+  dragHandle: {
+    alignItems: 'center',
+    marginBottom: 20,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
   },
   dragIndicator: {
     width: 40,
     height: 4,
     backgroundColor: colors.gray300,
     borderRadius: 2,
-    alignSelf: 'center',
-    marginBottom: 20,
+    flex: 1,
+  },
+  quickActions: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  quickActionButton: {
+    padding: 8,
+    borderRadius: 20,
+    backgroundColor: colors.gray100,
   },
   tabsContainer: {
     flexDirection: 'row',
@@ -311,22 +454,6 @@ const styles = StyleSheet.create({
   favoriteButton: {
     padding: 8,
   },
-  connectionTypes: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  connectionTypeChip: {
-    backgroundColor: colors.gray100,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
-  },
-  connectionTypeText: {
-    fontSize: 12,
-    color: colors.gray700,
-    fontWeight: '500',
-  },
   stationsList: {
     flex: 1,
   },
@@ -387,4 +514,6 @@ const styles = StyleSheet.create({
   stationItemFavorite: {
     padding: 4,
   },
-}); 
+});
+
+export default StationDetailsCard; 

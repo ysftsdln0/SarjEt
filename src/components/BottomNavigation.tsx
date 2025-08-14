@@ -78,8 +78,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     backgroundColor: colors.white,
     paddingHorizontal: 20,
-    paddingVertical: 16,
-    paddingBottom: 34, // Safe area için
+    paddingVertical: 12,
+    paddingBottom: 28, // Safe area için
     borderTopWidth: 1,
     borderTopColor: colors.gray200,
     alignItems: 'center',
@@ -100,9 +100,9 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   centerButton: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
     backgroundColor: colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
@@ -111,6 +111,6 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
-    marginTop: -20, // Üstte çıkıntı yap
+    marginTop: -16, // Üstte çıkıntı yap
   },
 }); 

@@ -21,16 +21,16 @@ import { ProfileModal } from '../components/ProfileModal';
 import { FilterModal, FilterOptions } from '../components/FilterModal';
 import AdvancedFilterModal, { AdvancedFilterOptions } from '../components/AdvancedFilterModal';
 import RoutePlanning, { RouteInfo } from '../components/RoutePlanning';
-import SocialFeatures from '../components/SocialFeatures';
+
 import Toast, { ToastType } from '../components/Toast';
 import ThemeSettings from '../components/ThemeSettings';
+import StationReviewsModal from '../components/StationReviewsModal';
 import { chargingStationService } from '../services/chargingStationService';
 import { LocationService } from '../services/locationService';
 import { FilterService } from '../services/filterService';
 import NotificationService from '../services/NotificationService';
 import AnalyticsService from '../services/AnalyticsService';
-import { ClusteredMapView } from '../components/ClusteredMapView';
-import { StationDetailsCard } from '../components/StationDetailsCard';
+import ClusteredMapView from '../components/ClusteredMapView';
 import { BottomNavigation } from '../components/BottomNavigation';
 import { useTheme } from '../contexts/ThemeContext';
 import { 
@@ -61,8 +61,9 @@ const SarjetMainScreen: React.FC = () => {
   const [filterVisible, setFilterVisible] = useState(false);
   const [advancedFilterVisible, setAdvancedFilterVisible] = useState(false);
   const [routePlanningVisible, setRoutePlanningVisible] = useState(false);
-  const [socialFeaturesVisible, setSocialFeaturesVisible] = useState(false);
+
   const [themeSettingsVisible, setThemeSettingsVisible] = useState(false);
+  const [reviewsModalVisible, setReviewsModalVisible] = useState(false);
   
   const [filters, setFilters] = useState<FilterOptions>(FilterService.getDefaultFilters());
   const [advancedFilters, setAdvancedFilters] = useState<AdvancedFilterOptions>({
@@ -96,6 +97,9 @@ const SarjetMainScreen: React.FC = () => {
     type: 'info',
   });
 
+  // Responsive map height
+  const [mapHeight, setMapHeight] = useState(height);
+
   // Animations
   const fadeAnim = useRef(new Animated.Value(1)).current;
   const slideAnim = useRef(new Animated.Value(0)).current;
@@ -121,132 +125,122 @@ const SarjetMainScreen: React.FC = () => {
       }
       
       setUserLocation(location);
+      
       const region = {
         latitude: location.latitude,
         longitude: location.longitude,
-        latitudeDelta: 0.1,
-        longitudeDelta: 0.1,
+        latitudeDelta: 0.01,
+        longitudeDelta: 0.01,
       };
+      
       setInitialRegion(region);
     } catch (error) {
       console.error('Konum alınamadı:', error);
       showToast('Konum alınamadı. Varsayılan konum kullanılıyor.', 'warning');
+      
+      // Default location (Istanbul)
       const defaultLocation = { latitude: 41.0082, longitude: 28.9784 };
-      const defaultRegion = { ...defaultLocation, latitudeDelta: 0.1, longitudeDelta: 0.1 };
+      const defaultRegion = { ...defaultLocation, latitudeDelta: 0.01, longitudeDelta: 0.01 };
+      
       setUserLocation(defaultLocation);
       setInitialRegion(defaultRegion);
+    } finally {
+      setLoading(false);
     }
   }, []);
 
-  // Load stations from the backend service
-  const loadStations = useCallback(async (location: UserLocation) => {
+  // Load charging stations
+  const loadStations = useCallback(async () => {
+    if (!userLocation) return;
+    
     try {
       if (__DEV__) {
-        console.log('[SarjetMainScreen] Loading stations for location:', location);
+        console.log('[SarjetMainScreen] Loading stations for location:', userLocation);
       }
       
-      const fetchedStations = await chargingStationService.getNearbyStations(
-        location.latitude, 
-        location.longitude, 
-        450,
+      const nearbyStations = await chargingStationService.getNearbyStations(
+        userLocation.latitude,
+        userLocation.longitude,
         100
       );
       
-      const uniqueStations = fetchedStations.filter((station, index, self) => 
-        index === self.findIndex(s => s.ID === station.ID)
-      );
-
-      setAllStations(uniqueStations);
-      const filtered = FilterService.applyFilters(uniqueStations, filters);
-      setStations(filtered);
-
-      // Analytics: Stations loaded
-      AnalyticsService.trackUserBehavior(userId, sessionId, 'stations_loaded', {
-        count: uniqueStations.length,
-        location: location,
-      });
-
-      showToast(`${uniqueStations.length} istasyon bulundu`, 'success');
+      setAllStations(nearbyStations);
+      setStations(nearbyStations);
+      
+      if (__DEV__) {
+        console.log('[SarjetMainScreen] Loaded', nearbyStations.length, 'stations');
+      }
     } catch (error) {
-      console.error('İstasyon verileri yüklenirken hata:', error);
-      showToast('İstasyonlar yüklenemedi. Lütfen daha sonra tekrar deneyin.', 'error');
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
+      console.error('İstasyonlar yüklenemedi:', error);
+      showToast('İstasyonlar yüklenemedi', 'error');
     }
-  }, [filters]);
+  }, [userLocation]);
 
-  // Initial load effect
-  useEffect(() => {
-    initializeLocation();
-  }, [initializeLocation]);
-
-  // Effect to load stations when location is available
-  useEffect(() => {
-    if (initialRegion) {
-      loadStations({ latitude: initialRegion.latitude, longitude: initialRegion.longitude });
-    }
-  }, [initialRegion, loadStations]);
-
-  const handleRefresh = () => {
+  // Refresh data
+  const handleRefresh = useCallback(async () => {
     setRefreshing(true);
-    initializeLocation();
-  };
+    await loadStations();
+    setRefreshing(false);
+  }, [loadStations]);
 
-  const applyFilters = (newFilters: FilterOptions) => {
-    setFilters(newFilters);
+  // Apply filters
+  const applyFilters = useCallback((newFilters: FilterOptions) => {
     const filteredStations = FilterService.applyFilters(allStations, newFilters);
     setStations(filteredStations);
-    showToast('Filtreler uygulandı', 'success');
-  };
+    setFilters(newFilters);
+    setFilterVisible(false);
+  }, [allStations]);
 
-  const applyAdvancedFilters = (newAdvancedFilters: AdvancedFilterOptions) => {
-    setAdvancedFilters(newAdvancedFilters);
-    // TODO: Implement advanced filtering logic
-    showToast('Gelişmiş filtreler uygulandı', 'success');
-  };
-
-  const handleSearch = (query: string) => {
-    setSearchQuery(query);
-    const filtered = FilterService.applyFilters(allStations, filters);
-    const searched = FilterService.searchStations(filtered, query);
-    setStations(searched);
+  // Apply advanced filters
+  const applyAdvancedFilters = useCallback((newFilters: AdvancedFilterOptions) => {
+    setAdvancedFilters(newFilters);
+    setAdvancedFilterVisible(false);
     
-    // Analytics: Search performed
-    AnalyticsService.trackUserBehavior(userId, sessionId, 'search_performed', { query });
-  };
+    // Apply advanced filters logic here
+    showToast('Gelişmiş filtreler uygulandı', 'success');
+  }, []);
 
-  // Quick filter handling
-  const handleQuickFilterPress = (filterType: string) => {
+  // Handle search
+  const handleSearch = useCallback((query: string) => {
+    setSearchQuery(query);
+    
+    if (query.trim()) {
+      const filtered = allStations.filter(station =>
+        station.AddressInfo?.Title?.toLowerCase().includes(query.toLowerCase()) ||
+        station.AddressInfo?.AddressLine1?.toLowerCase().includes(query.toLowerCase())
+      );
+      setStations(filtered);
+    } else {
+      setStations(allStations);
+    }
+    
+    AnalyticsService.trackUserBehavior(userId, sessionId, 'search_performed', { query });
+  }, [allStations]);
+
+  // Handle quick filter press
+  const handleQuickFilterPress = useCallback((filter: string) => {
     setActiveQuickFilters(prev => {
-      if (prev.includes(filterType)) {
-        return prev.filter(f => f !== filterType);
+      if (prev.includes(filter)) {
+        return prev.filter(f => f !== filter);
       } else {
-        return [...prev, filterType];
+        return [...prev, filter];
       }
     });
     
-    // Analytics: Quick filter used
-    AnalyticsService.trackUserBehavior(userId, sessionId, 'quick_filter_used', { filterType });
-  };
+    AnalyticsService.trackUserBehavior(userId, sessionId, 'quick_filter_used', { filter });
+  }, []);
 
-  // Station marker press handler
-  const handleStationPress = (station: ChargingStation) => {
-    if (__DEV__) {
-      console.log('[SarjetMainScreen] Station marker pressed:', station.ID);
-    }
+  // Handle station press
+  const handleStationPress = useCallback((station: ChargingStation) => {
     setSelectedStation(station);
-    
-    // Analytics: Station viewed
+    setReviewsModalVisible(true);
     AnalyticsService.updateStationAnalytics(station.ID.toString(), 'view');
     AnalyticsService.trackUserBehavior(userId, sessionId, 'station_viewed', { stationId: station.ID });
-    
-    // Animation
-    bounce(fadeAnim);
-  };
+    bounce(fadeAnim).start();
+  }, []);
 
-  // Bottom navigation handling
-  const handleTabPress = (tab: string) => {
+  // Handle tab press
+  const handleTabPress = useCallback((tab: string) => {
     switch (tab) {
       case 'route':
         setRoutePlanningVisible(true);
@@ -260,50 +254,48 @@ const SarjetMainScreen: React.FC = () => {
       default:
         console.log('Tab pressed:', tab);
     }
-    
-    // Analytics: Tab navigation
     AnalyticsService.trackUserBehavior(userId, sessionId, 'tab_navigation', { tab });
-  };
+  }, []);
 
-  const handleCenterActionPress = () => {
+  // Handle center action press
+  const handleCenterActionPress = useCallback(() => {
     if (selectedStation) {
-      // Start charging
       showToast('Şarj işlemi başlatılıyor...', 'info');
-      
-      // Analytics: Charging started
-      AnalyticsService.trackUserBehavior(userId, sessionId, 'charging_started', { 
-        stationId: selectedStation.ID 
-      });
+      AnalyticsService.trackUserBehavior(userId, sessionId, 'charging_started', { stationId: selectedStation.ID });
     } else {
       showToast('Lütfen önce bir istasyon seçin', 'warning');
     }
-  };
+  }, [selectedStation]);
 
-  // Route planning
-  const handleRouteCreated = (route: RouteInfo) => {
+  // Handle route created
+  const handleRouteCreated = useCallback((route: RouteInfo) => {
     showToast('Rota oluşturuldu!', 'success');
-    
-    // Analytics: Route created
-    AnalyticsService.trackUserBehavior(userId, sessionId, 'route_created', { 
-      route: route 
-    });
-  };
+    AnalyticsService.trackUserBehavior(userId, sessionId, 'route_created', { route });
+  }, []);
 
-  // Toast helper
-  const showToast = (message: string, type: ToastType) => {
+  // Show toast
+  const showToast = useCallback((message: string, type: ToastType) => {
     setToast({ visible: true, message, type });
-  };
+  }, []);
 
-  // Social features
-  const handleSocialFeatures = () => {
-    if (selectedStation) {
-      setSocialFeaturesVisible(true);
-    } else {
-      showToast('Lütfen önce bir istasyon seçin', 'warning');
+
+
+  // Handle map height change
+  const handleMapHeightChange = useCallback((newHeight: number) => {
+    setMapHeight(newHeight);
+  }, []);
+
+  // Initialize on mount
+  useEffect(() => {
+    initializeLocation();
+  }, [initializeLocation]);
+
+  useEffect(() => {
+    if (userLocation) {
+      loadStations();
     }
-  };
+  }, [userLocation, loadStations]);
 
-  // If data is not ready, show a loading screen.
   if (!initialRegion) {
     return <LoadingScreen message="Konum bilgisi alınıyor..." type="spinner" />;
   }
@@ -329,69 +321,60 @@ const SarjetMainScreen: React.FC = () => {
         onChangeText={setSearchQuery}
         onSearch={() => handleSearch(searchQuery)}
         onShowFilters={() => setFilterVisible(true)}
-        placeholder="Konum veya İstasyon ara"
-        filterCount={FilterService.getActiveFilterCount(filters)}
         isDarkMode={isDarkMode}
-        onFilterPress={handleQuickFilterPress}
         activeFilters={activeQuickFilters}
+        onFilterPress={handleQuickFilterPress}
       />
       
-      {/* Map Area */}
+      {/* Map Container */}
       <Animated.View 
         style={[
-          styles.mapContainer,
-          { opacity: fadeAnim }
+          styles.mapContainer, 
+          { 
+            opacity: fadeAnim,
+            height: mapHeight,
+          }
         ]}
       >
         <ClusteredMapView
           stations={stations}
+          userLocation={userLocation}
           initialRegion={initialRegion}
           onStationPress={handleStationPress}
+          selectedStation={selectedStation}
           isDarkMode={isDarkMode}
         />
         
-        {/* Right side action buttons */}
+        {/* Map Action Buttons */}
         <View style={styles.mapActionButtons}>
           <TouchableOpacity 
-            style={styles.actionButton}
+            style={styles.actionButton} 
             onPress={() => setAdvancedFilterVisible(true)}
           >
             <Ionicons name="heart-outline" size={24} color={themeColors.textSecondary} />
           </TouchableOpacity>
           <TouchableOpacity 
-            style={styles.actionButton}
+            style={styles.actionButton} 
             onPress={() => setThemeSettingsVisible(true)}
           >
             <Ionicons name="layers-outline" size={24} color={themeColors.textSecondary} />
           </TouchableOpacity>
           <TouchableOpacity 
-            style={styles.actionButton}
+            style={styles.actionButton} 
             onPress={handleRefresh}
           >
             <Ionicons name="locate" size={24} color={themeColors.textSecondary} />
           </TouchableOpacity>
           <TouchableOpacity 
-            style={styles.actionButton}
+            style={styles.actionButton} 
             onPress={() => setRoutePlanningVisible(true)}
           >
             <Ionicons name="swap-horizontal" size={24} color={themeColors.textSecondary} />
           </TouchableOpacity>
-          <TouchableOpacity 
-            style={styles.actionButton}
-            onPress={handleSocialFeatures}
-          >
-            <Ionicons name="information-circle-outline" size={24} color={themeColors.textSecondary} />
-          </TouchableOpacity>
+
         </View>
       </Animated.View>
-
-      {/* Station Details Card */}
-      <StationDetailsCard
-        stations={stations}
-        onStationPress={handleStationPress}
-        isDarkMode={isDarkMode}
-      />
-
+      
       {/* Bottom Navigation */}
       <BottomNavigation
         activeTab="map"
@@ -399,17 +382,17 @@ const SarjetMainScreen: React.FC = () => {
         onCenterActionPress={handleCenterActionPress}
         isDarkMode={isDarkMode}
       />
-
+      
       {/* Modals */}
       <FilterModal
         visible={filterVisible}
         onClose={() => setFilterVisible(false)}
-        filters={filters}
         onApplyFilters={applyFilters}
+        filters={filters}
         stations={allStations}
         isDarkMode={isDarkMode}
       />
-
+      
       <AdvancedFilterModal
         visible={advancedFilterVisible}
         onClose={() => setAdvancedFilterVisible(false)}
@@ -417,7 +400,7 @@ const SarjetMainScreen: React.FC = () => {
         currentFilters={advancedFilters}
         stations={allStations}
       />
-
+      
       <RoutePlanning
         visible={routePlanningVisible}
         onClose={() => setRoutePlanningVisible(false)}
@@ -425,25 +408,28 @@ const SarjetMainScreen: React.FC = () => {
         userLocation={userLocation}
         stations={stations}
       />
+      
 
-      {selectedStation && (
-        <SocialFeatures
-          station={selectedStation}
-          onClose={() => setSocialFeaturesVisible(false)}
-        />
-      )}
-
+      
       <ThemeSettings
         visible={themeSettingsVisible}
         onClose={() => setThemeSettingsVisible(false)}
       />
-
-      <ProfileModal 
+      
+      <ProfileModal
         visible={profileVisible}
         onClose={() => setProfileVisible(false)}
         userLocation={userLocation}
         isDarkMode={isDarkMode}
         onToggleDarkMode={() => {}}
+      />
+      
+      {/* Station Reviews Modal */}
+      <StationReviewsModal
+        station={selectedStation}
+        visible={reviewsModalVisible}
+        onClose={() => setReviewsModalVisible(false)}
+        onHeightChange={handleMapHeightChange}
       />
     </SafeAreaView>
   );
@@ -452,6 +438,7 @@ const SarjetMainScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: colors.white,
   },
   mapContainer: {
     flex: 1,
@@ -459,10 +446,10 @@ const styles = StyleSheet.create({
   },
   mapActionButtons: {
     position: 'absolute',
-    right: 16,
-    top: '30%',
-    alignItems: 'center',
-    gap: 16,
+    right: 20,
+    top: '50%',
+    transform: [{ translateY: -100 }],
+    gap: 12,
   },
   actionButton: {
     width: 44,

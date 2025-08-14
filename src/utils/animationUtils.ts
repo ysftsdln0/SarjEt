@@ -1,156 +1,325 @@
 import { Animated, Easing } from 'react-native';
 
-// Smooth fade in/out animasyonları
-export const fadeIn = (value: Animated.Value, duration: number = 300) => {
-  value.setValue(0);
-  Animated.timing(value, {
+// Smooth easing functions
+const smoothEasing = Easing.bezier(0.25, 0.1, 0.25, 1);
+const bounceEasing = Easing.bezier(0.68, -0.55, 0.265, 1.55);
+const elasticEasing = Easing.bezier(0.175, 0.885, 0.32, 1.275);
+
+// Fade animations
+export const fadeIn = (value: Animated.Value, duration: number = 400) => {
+  return Animated.timing(value, {
     toValue: 1,
     duration,
+    easing: smoothEasing,
     useNativeDriver: true,
-    easing: Easing.out(Easing.cubic),
-  }).start();
+  });
 };
 
 export const fadeOut = (value: Animated.Value, duration: number = 300) => {
-  Animated.timing(value, {
+  return Animated.timing(value, {
     toValue: 0,
     duration,
+    easing: smoothEasing,
     useNativeDriver: true,
-    easing: Easing.in(Easing.cubic),
-  }).start();
+  });
 };
 
-// Slide animasyonları
-export const slideUp = (value: Animated.Value, duration: number = 300) => {
-  value.setValue(100);
-  Animated.timing(value, {
+// Slide animations with spring-like feel
+export const slideUp = (value: Animated.Value, duration: number = 500) => {
+  return Animated.spring(value, {
     toValue: 0,
-    duration,
     useNativeDriver: true,
-    easing: Easing.out(Easing.cubic),
-  }).start();
+    tension: 100,
+    friction: 8,
+    restDisplacementThreshold: 0.01,
+    restSpeedThreshold: 0.01,
+  });
 };
 
-export const slideDown = (value: Animated.Value, duration: number = 300) => {
-  Animated.timing(value, {
-    toValue: 100,
-    duration,
+export const slideDown = (value: Animated.Value, duration: number = 500) => {
+  return Animated.spring(value, {
+    toValue: 1,
     useNativeDriver: true,
-    easing: Easing.in(Easing.cubic),
-  }).start();
+    tension: 100,
+    friction: 8,
+    restDisplacementThreshold: 0.01,
+    restSpeedThreshold: 0.01,
+  });
 };
 
-// Scale animasyonları
-export const scaleIn = (value: Animated.Value, duration: number = 200) => {
-  value.setValue(0.8);
-  Animated.timing(value, {
+// Scale animations
+export const scaleIn = (value: Animated.Value, duration: number = 300) => {
+  return Animated.timing(value, {
     toValue: 1,
     duration,
+    easing: elasticEasing,
     useNativeDriver: true,
-    easing: Easing.out(Easing.back(1.2)),
-  }).start();
+  });
 };
 
 export const scaleOut = (value: Animated.Value, duration: number = 200) => {
-  Animated.timing(value, {
-    toValue: 0.8,
+  return Animated.timing(value, {
+    toValue: 0,
     duration,
+    easing: smoothEasing,
     useNativeDriver: true,
-    easing: Easing.in(Easing.back(1.2)),
-  }).start();
+  });
 };
 
-// Bounce animasyonu
+// Bounce animation with elastic feel
 export const bounce = (value: Animated.Value) => {
-  value.setValue(1);
-  Animated.sequence([
+  const sequence = Animated.sequence([
     Animated.timing(value, {
       toValue: 1.2,
-      duration: 100,
+      duration: 150,
+      easing: bounceEasing,
       useNativeDriver: true,
-      easing: Easing.out(Easing.cubic),
+    }),
+    Animated.timing(value, {
+      toValue: 0.9,
+      duration: 150,
+      easing: bounceEasing,
+      useNativeDriver: true,
+    }),
+    Animated.timing(value, {
+      toValue: 1.05,
+      duration: 100,
+      easing: bounceEasing,
+      useNativeDriver: true,
     }),
     Animated.timing(value, {
       toValue: 1,
       duration: 100,
+      easing: smoothEasing,
       useNativeDriver: true,
-      easing: Easing.in(Easing.cubic),
     }),
-  ]).start();
+  ]);
+  
+  return sequence;
 };
 
-// Pulse animasyonu
+// Pulse animation
 export const pulse = (value: Animated.Value) => {
-  value.setValue(1);
-  Animated.loop(
+  const pulseAnim = Animated.loop(
     Animated.sequence([
       Animated.timing(value, {
         toValue: 1.1,
-        duration: 1000,
+        duration: 800,
+        easing: smoothEasing,
         useNativeDriver: true,
-        easing: Easing.inOut(Easing.ease),
       }),
       Animated.timing(value, {
         toValue: 1,
-        duration: 1000,
+        duration: 800,
+        easing: smoothEasing,
         useNativeDriver: true,
-        easing: Easing.inOut(Easing.ease),
       }),
     ])
-  ).start();
+  );
+  
+  return pulseAnim;
 };
 
-// Shake animasyonu
+// Shake animation
 export const shake = (value: Animated.Value) => {
-  value.setValue(0);
-  Animated.sequence([
-    Animated.timing(value, { toValue: 10, duration: 100, useNativeDriver: true }),
-    Animated.timing(value, { toValue: -10, duration: 100, useNativeDriver: true }),
-    Animated.timing(value, { toValue: 10, duration: 100, useNativeDriver: true }),
-    Animated.timing(value, { toValue: 0, duration: 100, useNativeDriver: true }),
-  ]).start();
+  const shakeAnim = Animated.sequence([
+    Animated.timing(value, {
+      toValue: 10,
+      duration: 100,
+      easing: smoothEasing,
+      useNativeDriver: true,
+    }),
+    Animated.timing(value, {
+      toValue: -10,
+      duration: 100,
+      easing: smoothEasing,
+      useNativeDriver: true,
+    }),
+    Animated.timing(value, {
+      toValue: 10,
+      duration: 100,
+      easing: smoothEasing,
+      useNativeDriver: true,
+    }),
+    Animated.timing(value, {
+      toValue: -10,
+      duration: 100,
+      easing: smoothEasing,
+      useNativeDriver: true,
+    }),
+    Animated.timing(value, {
+      toValue: 0,
+      duration: 100,
+      easing: smoothEasing,
+      useNativeDriver: true,
+    }),
+  ]);
+  
+  return shakeAnim;
 };
 
-// Marker popup animasyonu
+// Marker popup animation
 export const markerPopup = (value: Animated.Value) => {
-  value.setValue(0);
-  Animated.sequence([
+  const popupAnim = Animated.sequence([
     Animated.timing(value, {
-      toValue: 1.2,
-      duration: 200,
+      toValue: 0,
+      duration: 0,
       useNativeDriver: true,
-      easing: Easing.out(Easing.back(1.2)),
+    }),
+    Animated.timing(value, {
+      toValue: 1.3,
+      duration: 200,
+      easing: elasticEasing,
+      useNativeDriver: true,
+    }),
+    Animated.timing(value, {
+      toValue: 1,
+      duration: 150,
+      easing: smoothEasing,
+      useNativeDriver: true,
+    }),
+  ]);
+  
+  return popupAnim;
+};
+
+// Card slide animation
+export const cardSlide = (value: Animated.Value, direction: 'left' | 'right' = 'right') => {
+  const startValue = direction === 'right' ? 100 : -100;
+  value.setValue(startValue);
+  
+  return Animated.spring(value, {
+    toValue: 0,
+    useNativeDriver: true,
+    tension: 120,
+    friction: 9,
+    restDisplacementThreshold: 0.01,
+    restSpeedThreshold: 0.01,
+  });
+};
+
+// Spin animation
+export const spin = (value: Animated.Value) => {
+  const spinAnim = Animated.loop(
+    Animated.timing(value, {
+      toValue: 1,
+      duration: 1000,
+      easing: Easing.linear,
+      useNativeDriver: true,
+    })
+  );
+  
+  return spinAnim;
+};
+
+// Stagger animation for multiple elements
+export const stagger = (values: Animated.Value[], delay: number = 100) => {
+  const animations = values.map((value, index) =>
+    Animated.timing(value, {
+      toValue: 1,
+      duration: 300,
+      delay: index * delay,
+      easing: smoothEasing,
+      useNativeDriver: true,
+    })
+  );
+  
+  return Animated.parallel(animations);
+};
+
+// Parallax effect
+export const parallax = (value: Animated.Value, scrollValue: Animated.Value, factor: number = 0.5) => {
+  return Animated.multiply(scrollValue, factor);
+};
+
+// Morph animation (smooth transition between shapes)
+export const morph = (value: Animated.Value, toValue: number, duration: number = 500) => {
+  return Animated.timing(value, {
+    toValue,
+    duration,
+    easing: smoothEasing,
+    useNativeDriver: true,
+  });
+};
+
+// Wave animation
+export const wave = (value: Animated.Value) => {
+  const waveAnim = Animated.loop(
+    Animated.sequence([
+      Animated.timing(value, {
+        toValue: 1.2,
+        duration: 600,
+        easing: smoothEasing,
+        useNativeDriver: true,
+      }),
+      Animated.timing(value, {
+        toValue: 0.8,
+        duration: 600,
+        easing: smoothEasing,
+        useNativeDriver: true,
+      }),
+    ])
+  );
+  
+  return waveAnim;
+};
+
+// Elastic bounce
+export const elasticBounce = (value: Animated.Value) => {
+  const elasticAnim = Animated.sequence([
+    Animated.timing(value, {
+      toValue: 1.4,
+      duration: 200,
+      easing: elasticEasing,
+      useNativeDriver: true,
+    }),
+    Animated.timing(value, {
+      toValue: 0.7,
+      duration: 200,
+      easing: elasticEasing,
+      useNativeDriver: true,
+    }),
+    Animated.timing(value, {
+      toValue: 1.1,
+      duration: 150,
+      easing: elasticEasing,
+      useNativeDriver: true,
+    }),
+    Animated.timing(value, {
+      toValue: 0.95,
+      duration: 150,
+      easing: elasticEasing,
+      useNativeDriver: true,
     }),
     Animated.timing(value, {
       toValue: 1,
       duration: 100,
+      easing: smoothEasing,
       useNativeDriver: true,
-      easing: Easing.in(Easing.cubic),
     }),
-  ]).start();
+  ]);
+  
+  return elasticAnim;
 };
 
-// Card slide animasyonu
-export const cardSlide = (value: Animated.Value, direction: 'left' | 'right' = 'right') => {
-  const startValue = direction === 'left' ? -100 : 100;
-  value.setValue(startValue);
-  Animated.timing(value, {
-    toValue: 0,
-    duration: 400,
-    useNativeDriver: true,
-    easing: Easing.out(Easing.cubic),
-  }).start();
-};
-
-// Loading spinner animasyonu
-export const spin = (value: Animated.Value) => {
-  value.setValue(0);
-  Animated.loop(
-    Animated.timing(value, {
-      toValue: 1,
-      duration: 1000,
-      useNativeDriver: true,
-      easing: Easing.linear,
-    })
-  ).start();
+// Floating animation
+export const float = (value: Animated.Value) => {
+  const floatAnim = Animated.loop(
+    Animated.sequence([
+      Animated.timing(value, {
+        toValue: 1.05,
+        duration: 1000,
+        easing: smoothEasing,
+        useNativeDriver: true,
+      }),
+      Animated.timing(value, {
+        toValue: 0.95,
+        duration: 1000,
+        easing: smoothEasing,
+        useNativeDriver: true,
+      }),
+    ])
+  );
+  
+  return floatAnim;
 };

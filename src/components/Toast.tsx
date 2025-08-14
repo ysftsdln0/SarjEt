@@ -38,8 +38,8 @@ const Toast: React.FC<ToastProps> = ({
   useEffect(() => {
     if (visible) {
       // Toast göster
-      fadeIn(fadeAnim);
-      slideUp(slideAnim);
+      fadeIn(fadeAnim).start();
+      slideUp(slideAnim).start();
       
       // Otomatik gizle
       const timer = setTimeout(() => {
@@ -51,8 +51,8 @@ const Toast: React.FC<ToastProps> = ({
   }, [visible]);
 
   const hideToast = () => {
-    fadeOut(fadeAnim);
-    slideDown(slideAnim);
+    fadeOut(fadeAnim).start();
+    slideDown(slideAnim).start();
     setTimeout(() => {
       onHide();
     }, 300);
