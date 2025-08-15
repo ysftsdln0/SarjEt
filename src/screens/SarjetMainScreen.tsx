@@ -44,7 +44,11 @@ import {
 
 const { width, height } = Dimensions.get('window');
 
-const SarjetMainScreen: React.FC = () => {
+const SarjetMainScreen: React.FC<{
+  authToken: string | null;
+  user: any;
+  onLogout: () => void;
+}> = ({ authToken, user, onLogout }) => {
   const { isDarkMode, colors: themeColors } = useTheme();
   
   const [stations, setStations] = useState<ChargingStation[]>([]);
@@ -422,6 +426,8 @@ const SarjetMainScreen: React.FC = () => {
         userLocation={userLocation}
         isDarkMode={isDarkMode}
         onToggleDarkMode={() => {}}
+        onLogout={onLogout}
+        user={user}
       />
       
       {/* Station Reviews Modal */}

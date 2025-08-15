@@ -18,6 +18,8 @@ interface ProfileModalProps {
   userLocation: { latitude: number; longitude: number } | null;
   isDarkMode: boolean;
   onToggleDarkMode: (isDark: boolean) => void;
+  onLogout: () => void;
+  user?: any;
 }
 
 export const ProfileModal: React.FC<ProfileModalProps> = ({
@@ -26,6 +28,8 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
   userLocation,
   isDarkMode,
   onToggleDarkMode,
+  onLogout,
+  user,
 }) => {
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [fastChargingOnly, setFastChargingOnly] = useState(false);
@@ -61,8 +65,12 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                 <Ionicons name="person" size={40} color={colors.white} />
               </View>
               <View style={styles.userDetails}>
-                <Text style={[styles.userName, !isDarkMode && styles.lightUserName]}>Şarjet Kullanıcısı</Text>
-                <Text style={[styles.userEmail, !isDarkMode && styles.lightUserEmail]}>kullanici@sarjet.com</Text>
+                <Text style={[styles.userName, !isDarkMode && styles.lightUserName]}>
+                  {user?.name || 'Şarjet Kullanıcısı'}
+                </Text>
+                <Text style={[styles.userEmail, !isDarkMode && styles.lightUserEmail]}>
+                  {user?.email || 'kullanici@sarjet.com'}
+                </Text>
                 {userLocation && (
                   <Text style={styles.userLocation}>
                     📍 {userLocation.latitude.toFixed(4)}, {userLocation.longitude.toFixed(4)}
@@ -71,6 +79,39 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
               </View>
             </View>
           </View>
+
+          {/* Araç Bilgileri */}
+          {user?.userVehicles && user.userVehicles.length > 0 && (
+            <View style={styles.section}>
+              <Text style={[styles.sectionTitle, !isDarkMode && styles.lightSectionTitle]}>Araçlarım</Text>
+              {user.userVehicles.map((vehicle: any, index: number) => (
+                <View key={index} style={[styles.vehicleCard, !isDarkMode && styles.lightVehicleCard]}>
+                  <View style={styles.vehicleInfo}>
+                    <Text style={[styles.vehicleName, !isDarkMode && styles.lightVehicleName]}>
+                      {vehicle.nickname || `${vehicle.variant.model.brand.name} ${vehicle.variant.model.name}`}
+                    </Text>
+                    <Text style={[styles.vehicleModel, !isDarkMode && styles.lightVehicleModel]}>
+                      {vehicle.variant.name} ({vehicle.variant.year})
+                    </Text>
+                    <Text style={[styles.vehicleSpecs, !isDarkMode && styles.lightVehicleSpecs]}>
+                      {vehicle.variant.batteryCapacity} kWh • {vehicle.variant.maxRange} km
+                    </Text>
+                  </View>
+                  <View style={styles.batteryIndicator}>
+                    <Text style={styles.batteryLevel}>{vehicle.currentBatteryLevel || 100}%</Text>
+                    <View style={styles.batteryBar}>
+                      <View 
+                        style={[
+                          styles.batteryFill, 
+                          { width: `${vehicle.currentBatteryLevel || 100}%` }
+                        ]} 
+                      />
+                    </View>
+                  </View>
+                </View>
+              ))}
+            </View>
+          )}
 
           {/* İstatistikler */}
           <View style={styles.section}>
@@ -166,11 +207,14 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
             </TouchableOpacity>
           </View>
 
-          {/* Çıkış Yap */}
+          {/* Çıkış Yap Butonu */}
           <View style={styles.section}>
-            <TouchableOpacity style={styles.logoutButton}>
-              <Ionicons name="log-out-outline" size={20} color="#FF5722" />
-              <Text style={styles.logoutText}>Çıkış Yap</Text>
+            <TouchableOpacity
+              style={styles.logoutButton}
+              onPress={onLogout}
+            >
+              <Ionicons name="log-out-outline" size={20} color={colors.error} />
+              <Text style={styles.logoutButtonText}>Çıkış Yap</Text>
             </TouchableOpacity>
           </View>
 
@@ -317,7 +361,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
     paddingVertical: 16,
   },
-  logoutText: {
+  logoutButtonText: {
     color: colors.error,
     fontSize: 16,
     fontWeight: '600',
@@ -367,6 +411,65 @@ const styles = StyleSheet.create({
     backgroundColor: colors.lightCard,
   },
   lightStatLabel: {
+    color: colors.gray600,
+  },
+  vehicleCard: {
+    alignItems: 'center',
+    backgroundColor: colors.darkCard,
+    borderRadius: 12,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+    padding: 16,
+  },
+  vehicleInfo: {
+    flex: 1,
+  },
+  vehicleName: {
+    color: colors.darkText,
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 2,
+  },
+  vehicleModel: {
+    color: colors.gray400,
+    fontSize: 12,
+    marginBottom: 2,
+  },
+  vehicleSpecs: {
+    color: colors.gray600,
+    fontSize: 12,
+  },
+  batteryIndicator: {
+    alignItems: 'flex-end',
+  },
+  batteryLevel: {
+    color: colors.darkText,
+    fontSize: 14,
+    fontWeight: 'bold',
+    marginBottom: 4,
+  },
+  batteryBar: {
+    backgroundColor: colors.gray500,
+    borderRadius: 5,
+    height: 8,
+    width: 50,
+  },
+  batteryFill: {
+    backgroundColor: colors.primary,
+    borderRadius: 5,
+    height: '100%',
+  },
+  lightVehicleCard: {
+    backgroundColor: colors.lightCard,
+  },
+  lightVehicleName: {
+    color: colors.lightText,
+  },
+  lightVehicleModel: {
+    color: colors.gray500,
+  },
+  lightVehicleSpecs: {
     color: colors.gray600,
   },
 });

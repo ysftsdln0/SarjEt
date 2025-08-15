@@ -18,7 +18,7 @@ const userRoutes = require('./routes/users');
 
 // Import middleware
 const errorHandler = require('./middleware/errorHandler');
-const authMiddleware = require('./middleware/auth');
+const { auth } = require('./middleware/auth');
 const logger = require('./utils/logger');
 const { getLocalIPAddress, getNetworkInterfaces } = require('./utils/networkUtils');
 
@@ -47,8 +47,10 @@ const limiter = rateLimit({
 app.use(compression()); // Compress responses
 app.use(helmet()); // Security headers
 app.use(cors({
-  origin: process.env.CORS_ORIGIN?.split(',') || ['http://localhost:19006'],
+  origin: ['http://localhost:19006', 'http://localhost:8081', 'http://localhost:8082', 'http://192.168.5.65:8081', 'http://192.168.5.65:8082'],
   credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 }));
 app.use(morgan('combined', { stream: { write: message => logger.info(message.trim()) } }));
 app.use(express.json({ limit: '10mb' }));
@@ -112,7 +114,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/stations', stationRoutes);
 app.use('/api/vehicles', vehicleRoutes);
 app.use('/api/routes', routeRoutes);
-app.use('/api/users', authMiddleware, userRoutes);
+app.use('/api/users', auth, userRoutes);
 
 // 404 handler
 app.use('*', (req, res) => {
