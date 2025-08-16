@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../constants/colors';
+import { getBaseUrl } from '../services/apiClient';
 
 const { width, height } = Dimensions.get('window');
 
@@ -39,7 +40,12 @@ const LoginScreen: React.FC<LoginScreenProps> = ({
     setLoading(true);
 
     try {
-      const response = await fetch('http://192.168.5.65:3000/api/auth/login', {
+      const base = await getBaseUrl();
+      if (!base) {
+        Alert.alert('Bağlantı Hatası', 'Backend URL ayarlı değil. EXPO_PUBLIC_BACKEND_URL ekleyin.');
+        return;
+      }
+      const response = await fetch(`${base}/api/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

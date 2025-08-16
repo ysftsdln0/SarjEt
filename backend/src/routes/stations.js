@@ -26,4 +26,12 @@ router.get('/', chargingStationController.getAllStations);
 // GET /api/stations/12345
 router.get('/:stationId', chargingStationController.getStationDetail);
 
+// İstasyon değerlendirmelerini getir
+// GET /api/stations/12345/reviews
+router.get('/:stationId/reviews', chargingStationController.getStationReviews);
+
+// İstasyon değerlendirmesi ekle
+// POST /api/stations/12345/reviews
+router.post('/:stationId/reviews', optionalAuth, chargingStationController.addStationReview);
+
 module.exports = router;

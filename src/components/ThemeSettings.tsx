@@ -11,6 +11,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../contexts/ThemeContext';
 import colors from '../constants/colors';
+import Toast from './Toast';
 
 interface ThemeSettingsProps {
   visible: boolean;
@@ -21,11 +22,23 @@ const ThemeSettings: React.FC<ThemeSettingsProps> = ({ visible, onClose }) => {
   const { isDarkMode, themeMode, setThemeMode, toggleTheme } = useTheme();
   const [fontSize, setFontSize] = useState<'small' | 'medium' | 'large'>('medium');
   const [compactLayout, setCompactLayout] = useState(false);
+  const [toast, setToast] = useState({ visible: false, message: '', type: 'info' as 'info' | 'success' | 'warning' | 'error' });
 
   if (!visible) return null;
 
   const handleThemeChange = (mode: 'light' | 'dark' | 'system') => {
     setThemeMode(mode);
+    const themeNames = {
+      light: 'Açık Tema',
+      dark: 'Koyu Tema',
+      system: 'Sistem Teması'
+    };
+    setToast({
+      visible: true,
+      message: `${themeNames[mode]} uygulandı`,
+      type: 'success'
+    });
+    setTimeout(() => setToast(prev => ({ ...prev, visible: false })), 2000);
   };
 
   const handleFontSizeChange = (size: 'small' | 'medium' | 'large') => {
@@ -172,7 +185,15 @@ const ThemeSettings: React.FC<ThemeSettingsProps> = ({ visible, onClose }) => {
             </Text>
             <TouchableOpacity
               style={[styles.quickToggle, { backgroundColor: colors.primary }]}
-              onPress={toggleTheme}
+              onPress={() => {
+                toggleTheme();
+                setToast({
+                  visible: true,
+                  message: `Tema ${isDarkMode ? 'açık' : 'koyu'} moda değiştirildi`,
+                  type: 'success'
+                });
+                setTimeout(() => setToast(prev => ({ ...prev, visible: false })), 2000);
+              }}
             >
               <Ionicons 
                 name={isDarkMode ? 'sunny' : 'moon'} 
@@ -186,6 +207,12 @@ const ThemeSettings: React.FC<ThemeSettingsProps> = ({ visible, onClose }) => {
           </View>
         </ScrollView>
       </View>
+      <Toast
+        visible={toast.visible}
+        message={toast.message}
+        type={toast.type}
+        onHide={() => setToast(prev => ({ ...prev, visible: false }))}
+      />
     </View>
   );
 };

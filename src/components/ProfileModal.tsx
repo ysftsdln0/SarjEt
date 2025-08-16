@@ -33,6 +33,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
 }) => {
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [fastChargingOnly, setFastChargingOnly] = useState(false);
+  const [activeTab, setActiveTab] = useState<'profile' | 'history'>('profile');
 
   const userStats = {
     stationsVisited: 12,
@@ -53,176 +54,221 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
           <TouchableOpacity onPress={onClose} style={styles.closeButton}>
             <Ionicons name="close" size={24} color={isDarkMode ? colors.darkText : colors.lightText} />
           </TouchableOpacity>
-          <Text style={[styles.headerTitle, !isDarkMode && styles.lightHeaderTitle]}>Profil</Text>
+          <Text style={[styles.headerTitle, !isDarkMode && styles.lightHeaderTitle]}>
+            {activeTab === 'profile' ? 'Profil' : 'Geçmiş'}
+          </Text>
           <View style={styles.headerSpacer} />
         </View>
 
-        <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-          {/* Kullanıcı Bilgileri */}
-          <View style={styles.section}>
-            <View style={styles.userInfo}>
-              <View style={styles.avatar}>
-                <Ionicons name="person" size={40} color={colors.white} />
-              </View>
-              <View style={styles.userDetails}>
-                <Text style={[styles.userName, !isDarkMode && styles.lightUserName]}>
-                  {user?.name || 'Şarjet Kullanıcısı'}
-                </Text>
-                <Text style={[styles.userEmail, !isDarkMode && styles.lightUserEmail]}>
-                  {user?.email || 'kullanici@sarjet.com'}
-                </Text>
-                {userLocation && (
-                  <Text style={styles.userLocation}>
-                    📍 {userLocation.latitude.toFixed(4)}, {userLocation.longitude.toFixed(4)}
-                  </Text>
-                )}
-              </View>
-            </View>
-          </View>
+        {/* Tabs */}
+        <View style={styles.tabsContainer}>
+          <TouchableOpacity
+            style={[styles.tab, activeTab === 'profile' && styles.activeTab]}
+            onPress={() => setActiveTab('profile')}
+          >
+            <Text style={[styles.tabText, activeTab === 'profile' && styles.activeTabText]}>
+              Profil
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.tab, activeTab === 'history' && styles.activeTab]}
+            onPress={() => setActiveTab('history')}
+          >
+            <Text style={[styles.tabText, activeTab === 'history' && styles.activeTabText]}>
+              Geçmiş
+            </Text>
+          </TouchableOpacity>
+        </View>
 
-          {/* Araç Bilgileri */}
-          {user?.userVehicles && user.userVehicles.length > 0 && (
-            <View style={styles.section}>
-              <Text style={[styles.sectionTitle, !isDarkMode && styles.lightSectionTitle]}>Araçlarım</Text>
-              {user.userVehicles.map((vehicle: any, index: number) => (
-                <View key={index} style={[styles.vehicleCard, !isDarkMode && styles.lightVehicleCard]}>
-                  <View style={styles.vehicleInfo}>
-                    <Text style={[styles.vehicleName, !isDarkMode && styles.lightVehicleName]}>
-                      {vehicle.nickname || `${vehicle.variant.model.brand.name} ${vehicle.variant.model.name}`}
-                    </Text>
-                    <Text style={[styles.vehicleModel, !isDarkMode && styles.lightVehicleModel]}>
-                      {vehicle.variant.name} ({vehicle.variant.year})
-                    </Text>
-                    <Text style={[styles.vehicleSpecs, !isDarkMode && styles.lightVehicleSpecs]}>
-                      {vehicle.variant.batteryCapacity} kWh • {vehicle.variant.maxRange} km
-                    </Text>
+        <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+          {activeTab === 'profile' ? (
+            <>
+              {/* Kullanıcı Bilgileri */}
+              <View style={styles.section}>
+                <View style={styles.userInfo}>
+                  <View style={styles.avatar}>
+                    <Ionicons name="person" size={40} color={colors.white} />
                   </View>
-                  <View style={styles.batteryIndicator}>
-                    <Text style={styles.batteryLevel}>{vehicle.currentBatteryLevel || 100}%</Text>
-                    <View style={styles.batteryBar}>
-                      <View 
-                        style={[
-                          styles.batteryFill, 
-                          { width: `${vehicle.currentBatteryLevel || 100}%` }
-                        ]} 
-                      />
-                    </View>
+                  <View style={styles.userDetails}>
+                    <Text style={[styles.userName, !isDarkMode && styles.lightUserName]}>
+                      {user?.name || 'Şarjet Kullanıcısı'}
+                    </Text>
+                    <Text style={[styles.userEmail, !isDarkMode && styles.lightUserEmail]}>
+                      {user?.email || 'kullanici@sarjet.com'}
+                    </Text>
+                    {userLocation && (
+                      <Text style={styles.userLocation}>
+                        📍 {userLocation.latitude.toFixed(4)}, {userLocation.longitude.toFixed(4)}
+                      </Text>
+                    )}
                   </View>
                 </View>
-              ))}
+              </View>
+
+              {/* Araç Bilgileri */}
+              {user?.userVehicles && user.userVehicles.length > 0 && (
+                <View style={styles.section}>
+                  <Text style={[styles.sectionTitle, !isDarkMode && styles.lightSectionTitle]}>Araçlarım</Text>
+                  {user.userVehicles.map((vehicle: any, index: number) => (
+                    <View key={index} style={[styles.vehicleCard, !isDarkMode && styles.lightVehicleCard]}>
+                      <View style={styles.vehicleInfo}>
+                        <Text style={[styles.vehicleName, !isDarkMode && styles.lightVehicleName]}>
+                          {vehicle.nickname || `${vehicle.variant.model.brand.name} ${vehicle.variant.model.name}`}
+                        </Text>
+                        <Text style={[styles.vehicleModel, !isDarkMode && styles.lightVehicleModel]}>
+                          {vehicle.variant.name} ({vehicle.variant.year})
+                        </Text>
+                        <Text style={[styles.vehicleSpecs, !isDarkMode && styles.lightVehicleSpecs]}>
+                          {vehicle.variant.batteryCapacity} kWh • {vehicle.variant.maxRange} km
+                        </Text>
+                      </View>
+                      <View style={styles.batteryIndicator}>
+                        <Text style={styles.batteryLevel}>{vehicle.currentBatteryLevel || 100}%</Text>
+                        <View style={styles.batteryBar}>
+                          <View 
+                            style={[
+                              styles.batteryFill, 
+                              { width: `${vehicle.currentBatteryLevel || 100}%` }
+                            ]} 
+                          />
+                        </View>
+                      </View>
+                    </View>
+                  ))}
+                </View>
+              )}
+
+              {/* İstatistikler */}
+              <View style={styles.section}>
+                <Text style={[styles.sectionTitle, !isDarkMode && styles.lightSectionTitle]}>İstatistiklerim</Text>
+                
+                <View style={styles.statsGrid}>
+                  <View style={[styles.statCard, !isDarkMode && styles.lightStatCard]}>
+                    <Text style={styles.statNumber}>{userStats.stationsVisited}</Text>
+                    <Text style={[styles.statLabel, !isDarkMode && styles.lightStatLabel]}>Ziyaret Edilen İstasyon</Text>
+                  </View>
+                  
+                  <View style={[styles.statCard, !isDarkMode && styles.lightStatCard]}>
+                    <Text style={styles.statNumber}>{userStats.totalChargingSessions}</Text>
+                    <Text style={[styles.statLabel, !isDarkMode && styles.lightStatLabel]}>Şarj Seansı</Text>
+                  </View>
+                </View>
+
+                <View style={styles.statsGrid}>
+                  <View style={[styles.statCard, !isDarkMode && styles.lightStatCard]}>
+                    <Text style={styles.statNumber}>{userStats.energyConsumed}</Text>
+                    <Text style={[styles.statLabel, !isDarkMode && styles.lightStatLabel]}>kWh Enerji</Text>
+                  </View>
+                  
+                  <View style={[styles.statCard, !isDarkMode && styles.lightStatCard]}>
+                    <Text style={styles.statNumber}>{userStats.carbonSaved}</Text>
+                    <Text style={[styles.statLabel, !isDarkMode && styles.lightStatLabel]}>kg CO₂ Tasarruf</Text>
+                  </View>
+                </View>
+              </View>
+
+              {/* Ayarlar */}
+              <View style={styles.section}>
+                <Text style={[styles.sectionTitle, !isDarkMode && styles.lightSectionTitle]}>Ayarlar</Text>
+                
+                <View style={[styles.settingItem, !isDarkMode && styles.lightSettingItem]}>
+                  <View style={styles.settingLeft}>
+                    <Ionicons name="notifications-outline" size={20} color={colors.primary} />
+                    <Text style={[styles.settingText, !isDarkMode && styles.lightSettingText]}>Bildirimler</Text>
+                  </View>
+                  <Switch
+                    value={notificationsEnabled}
+                    onValueChange={setNotificationsEnabled}
+                    trackColor={{ false: colors.gray500, true: colors.primary }}
+                    thumbColor={notificationsEnabled ? colors.white : colors.gray200}
+                  />
+                </View>
+
+                <View style={[styles.settingItem, !isDarkMode && styles.lightSettingItem]}>
+                  <View style={styles.settingLeft}>
+                    <Ionicons name="flash-outline" size={20} color={colors.primary} />
+                    <Text style={[styles.settingText, !isDarkMode && styles.lightSettingText]}>Sadece Hızlı Şarj</Text>
+                  </View>
+                  <Switch
+                    value={fastChargingOnly}
+                    onValueChange={setFastChargingOnly}
+                    trackColor={{ false: colors.gray500, true: colors.primary }}
+                    thumbColor={fastChargingOnly ? colors.white : colors.gray200}
+                  />
+                </View>
+
+                <View style={[styles.settingItem, !isDarkMode && styles.lightSettingItem]}>
+                  <View style={styles.settingLeft}>
+                    <Ionicons name="moon-outline" size={20} color={colors.primary} />
+                    <Text style={[styles.settingText, !isDarkMode && styles.lightSettingText]}>Karanlık Tema</Text>
+                  </View>
+                  <Switch
+                    value={isDarkMode}
+                    onValueChange={onToggleDarkMode}
+                    trackColor={{ false: colors.gray500, true: colors.primary }}
+                    thumbColor={isDarkMode ? colors.white : colors.gray200}
+                  />
+                </View>
+              </View>
+
+              {/* Menü Öğeleri */}
+              <View style={styles.section}>
+                <TouchableOpacity 
+                  style={styles.menuItem}
+                  onPress={() => setActiveTab('history')}
+                >
+                  <Ionicons name="time-outline" size={20} color={colors.primary} />
+                  <Text style={[styles.menuText, !isDarkMode && styles.lightSettingText]}>Şarj Geçmişi</Text>
+                  <Ionicons name="chevron-forward" size={20} color={colors.gray500} />
+                </TouchableOpacity>
+
+                <TouchableOpacity style={styles.menuItem}>
+                  <Ionicons name="heart-outline" size={20} color={colors.primary} />
+                  <Text style={[styles.menuText, !isDarkMode && styles.lightSettingText]}>Favori İstasyonlarım</Text>
+                  <Ionicons name="chevron-forward" size={20} color={colors.gray500} />
+                </TouchableOpacity>
+
+                <TouchableOpacity style={styles.menuItem}>
+                  <Ionicons name="help-circle-outline" size={20} color="#00C853" />
+                  <Text style={[styles.menuText, !isDarkMode && styles.lightSettingText]}>Yardım & Destek</Text>
+                  <Ionicons name="chevron-forward" size={20} color="#B0BEC5" />
+                </TouchableOpacity>
+
+                <TouchableOpacity style={styles.menuItem}>
+                  <Ionicons name="information-circle-outline" size={20} color="#00C853" />
+                  <Text style={[styles.menuText, !isDarkMode && styles.lightSettingText]}>Hakkında</Text>
+                  <Ionicons name="chevron-forward" size={20} color="#B0BEC5" />
+                </TouchableOpacity>
+              </View>
+
+              {/* Çıkış Yap Butonu */}
+              <View style={styles.section}>
+                <TouchableOpacity
+                  style={styles.logoutButton}
+                  onPress={onLogout}
+                >
+                  <Ionicons name="log-out-outline" size={20} color={colors.error} />
+                  <Text style={styles.logoutButtonText}>Çıkış Yap</Text>
+                </TouchableOpacity>
+              </View>
+
+              {/* Uygulama Bilgisi */}
+              <View style={styles.footer}>
+                <Text style={styles.appVersion}>Şarjet v1.0.0</Text>
+                <Text style={styles.copyright}>© 2025 Şarjet. Tüm hakları saklıdır.</Text>
+              </View>
+            </>
+          ) : (
+            /* Geçmiş Sekmesi */
+            <View style={styles.section}>
+              <Text style={[styles.sectionTitle, !isDarkMode && styles.lightSectionTitle]}>
+                Şarj Geçmişi
+              </Text>
+              <Text style={[styles.noHistoryText, !isDarkMode && styles.lightNoHistoryText]}>
+                Henüz şarj geçmişi bulunmamaktadır.
+              </Text>
             </View>
           )}
-
-          {/* İstatistikler */}
-          <View style={styles.section}>
-            <Text style={[styles.sectionTitle, !isDarkMode && styles.lightSectionTitle]}>İstatistiklerim</Text>
-            
-            <View style={styles.statsGrid}>
-              <View style={[styles.statCard, !isDarkMode && styles.lightStatCard]}>
-                <Text style={styles.statNumber}>{userStats.stationsVisited}</Text>
-                <Text style={[styles.statLabel, !isDarkMode && styles.lightStatLabel]}>Ziyaret Edilen İstasyon</Text>
-              </View>
-              
-              <View style={[styles.statCard, !isDarkMode && styles.lightStatCard]}>
-                <Text style={styles.statNumber}>{userStats.totalChargingSessions}</Text>
-                <Text style={[styles.statLabel, !isDarkMode && styles.lightStatLabel]}>Şarj Seansı</Text>
-              </View>
-            </View>
-
-            <View style={styles.statsGrid}>
-              <View style={[styles.statCard, !isDarkMode && styles.lightStatCard]}>
-                <Text style={styles.statNumber}>{userStats.energyConsumed}</Text>
-                <Text style={[styles.statLabel, !isDarkMode && styles.lightStatLabel]}>kWh Enerji</Text>
-              </View>
-              
-              <View style={[styles.statCard, !isDarkMode && styles.lightStatCard]}>
-                <Text style={styles.statNumber}>{userStats.carbonSaved}</Text>
-                <Text style={[styles.statLabel, !isDarkMode && styles.lightStatLabel]}>kg CO₂ Tasarruf</Text>
-              </View>
-            </View>
-          </View>
-
-          {/* Ayarlar */}
-          <View style={styles.section}>
-            <Text style={[styles.sectionTitle, !isDarkMode && styles.lightSectionTitle]}>Ayarlar</Text>
-            
-            <View style={[styles.settingItem, !isDarkMode && styles.lightSettingItem]}>
-              <View style={styles.settingLeft}>
-                <Ionicons name="notifications-outline" size={20} color={colors.primary} />
-                <Text style={[styles.settingText, !isDarkMode && styles.lightSettingText]}>Bildirimler</Text>
-              </View>
-              <Switch
-                value={notificationsEnabled}
-                onValueChange={setNotificationsEnabled}
-                trackColor={{ false: colors.gray500, true: colors.primary }}
-                thumbColor={notificationsEnabled ? colors.white : colors.gray200}
-              />
-            </View>
-
-            <View style={[styles.settingItem, !isDarkMode && styles.lightSettingItem]}>
-              <View style={styles.settingLeft}>
-                <Ionicons name="flash-outline" size={20} color={colors.primary} />
-                <Text style={[styles.settingText, !isDarkMode && styles.lightSettingText]}>Sadece Hızlı Şarj</Text>
-              </View>
-              <Switch
-                value={fastChargingOnly}
-                onValueChange={setFastChargingOnly}
-                trackColor={{ false: colors.gray500, true: colors.primary }}
-                thumbColor={fastChargingOnly ? colors.white : colors.gray200}
-              />
-            </View>
-
-            <View style={[styles.settingItem, !isDarkMode && styles.lightSettingItem]}>
-              <View style={styles.settingLeft}>
-                <Ionicons name="moon-outline" size={20} color={colors.primary} />
-                <Text style={[styles.settingText, !isDarkMode && styles.lightSettingText]}>Karanlık Tema</Text>
-              </View>
-              <Switch
-                value={isDarkMode}
-                onValueChange={onToggleDarkMode}
-                trackColor={{ false: colors.gray500, true: colors.primary }}
-                thumbColor={isDarkMode ? colors.white : colors.gray200}
-              />
-            </View>
-          </View>
-
-          {/* Menü Öğeleri */}
-          <View style={styles.section}>
-            <TouchableOpacity style={styles.menuItem}>
-              <Ionicons name="heart-outline" size={20} color={colors.primary} />
-              <Text style={[styles.menuText, !isDarkMode && styles.lightSettingText]}>Favori İstasyonlarım</Text>
-              <Ionicons name="chevron-forward" size={20} color={colors.gray500} />
-            </TouchableOpacity>
-
-            <TouchableOpacity style={styles.menuItem}>
-              <Ionicons name="help-circle-outline" size={20} color="#00C853" />
-              <Text style={[styles.menuText, !isDarkMode && styles.lightSettingText]}>Yardım & Destek</Text>
-              <Ionicons name="chevron-forward" size={20} color="#B0BEC5" />
-            </TouchableOpacity>
-
-            <TouchableOpacity style={styles.menuItem}>
-              <Ionicons name="information-circle-outline" size={20} color="#00C853" />
-              <Text style={[styles.menuText, !isDarkMode && styles.lightSettingText]}>Hakkında</Text>
-              <Ionicons name="chevron-forward" size={20} color="#B0BEC5" />
-            </TouchableOpacity>
-          </View>
-
-          {/* Çıkış Yap Butonu */}
-          <View style={styles.section}>
-            <TouchableOpacity
-              style={styles.logoutButton}
-              onPress={onLogout}
-            >
-              <Ionicons name="log-out-outline" size={20} color={colors.error} />
-              <Text style={styles.logoutButtonText}>Çıkış Yap</Text>
-            </TouchableOpacity>
-          </View>
-
-          {/* Uygulama Bilgisi */}
-          <View style={styles.footer}>
-            <Text style={styles.appVersion}>Şarjet v1.0.0</Text>
-            <Text style={styles.copyright}>© 2025 Şarjet. Tüm hakları saklıdır.</Text>
-          </View>
         </ScrollView>
       </SafeAreaView>
     </Modal>
@@ -253,6 +299,37 @@ const styles = StyleSheet.create({
   },
   headerSpacer: {
     width: 40,
+  },
+  tabsContainer: {
+    flexDirection: 'row',
+    borderBottomWidth: 1,
+    borderBottomColor: colors.gray600,
+  },
+  tab: {
+    flex: 1,
+    paddingVertical: 16,
+    alignItems: 'center',
+  },
+  activeTab: {
+    borderBottomWidth: 2,
+    borderBottomColor: colors.primary,
+  },
+  tabText: {
+    fontSize: 16,
+    color: colors.gray400,
+  },
+  activeTabText: {
+    color: colors.primary,
+    fontWeight: '600',
+  },
+  noHistoryText: {
+    color: colors.gray400,
+    fontSize: 16,
+    textAlign: 'center',
+    marginTop: 50,
+  },
+  lightNoHistoryText: {
+    color: colors.gray600,
   },
   content: {
     flex: 1,

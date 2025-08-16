@@ -7,6 +7,7 @@ interface SearchBarProps {
   value: string;
   onChangeText: (text: string) => void;
   onSearch: () => void;
+  onSearchChange?: (text: string) => void;
   onShowFilters?: () => void;
   placeholder?: string;
   filterCount?: number;
@@ -49,7 +50,10 @@ export const SearchBar: React.FC<SearchBarProps> = ({
             placeholder={placeholder}
             placeholderTextColor={colors.gray500}
             value={value}
-            onChangeText={onChangeText}
+            onChangeText={(text) => {
+              onChangeText(text);
+              onSearchChange?.(text);
+            }}
             onSubmitEditing={onSearch}
           />
         </View>

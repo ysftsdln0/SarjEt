@@ -236,6 +236,123 @@ class ChargingStationController {
       });
     }
   }
+
+  // İstasyon değerlendirmelerini getir
+  async getStationReviews(req, res) {
+    try {
+      const { stationId } = req.params;
+      
+      if (!stationId || isNaN(stationId)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid station ID'
+        });
+      }
+
+      // TODO: Implement actual review fetching from database
+      // For now, return mock reviews
+      const mockReviews = [
+        {
+          id: '1',
+          userId: 'user1',
+          userName: 'Ahmet Y.',
+          rating: 5,
+          comment: 'Çok hızlı şarj, park yeri de var. Kesinlikle tavsiye ederim!',
+          date: '2024-01-15',
+          photos: [],
+          helpful: 12,
+        },
+        {
+          id: '2',
+          userId: 'user2',
+          userName: 'Fatma K.',
+          rating: 4,
+          comment: 'İyi istasyon ama biraz pahalı. Hızlı şarj yapıyor.',
+          date: '2024-01-14',
+          photos: [],
+          helpful: 8,
+        },
+        {
+          id: '3',
+          userId: 'user3',
+          userName: 'Mehmet A.',
+          rating: 5,
+          comment: 'Mükemmel! 24 saat açık ve güvenli.',
+          date: '2024-01-13',
+          photos: [],
+          helpful: 15,
+        },
+      ];
+
+      res.json({
+        success: true,
+        data: { reviews: mockReviews }
+      });
+
+    } catch (error) {
+      logger.error('Error getting station reviews:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Internal server error'
+      });
+    }
+  }
+
+  // İstasyon değerlendirmesi ekle
+  async addStationReview(req, res) {
+    try {
+      const { stationId } = req.params;
+      const { rating, comment } = req.body;
+      
+      if (!stationId || isNaN(stationId)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid station ID'
+        });
+      }
+
+      // Validate input
+      const schema = Joi.object({
+        rating: Joi.number().min(1).max(5).required(),
+        comment: Joi.string().min(10).max(500).required()
+      });
+
+      const { error } = schema.validate({ rating, comment });
+      if (error) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid parameters',
+          errors: error.details.map(detail => detail.message)
+        });
+      }
+
+      // TODO: Implement actual review saving to database
+      // For now, just return success
+      const newReview = {
+        id: Date.now().toString(),
+        userId: req.user?.id || 'anonymous',
+        userName: req.user?.name || 'Anonim Kullanıcı',
+        rating,
+        comment,
+        date: new Date().toISOString().split('T')[0],
+        photos: [],
+        helpful: 0,
+      };
+
+      res.status(201).json({
+        success: true,
+        message: 'Review added successfully',
+        data: { review: newReview }
+      });
+
+    } catch (error) {
+      logger.error('Error adding station review:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Internal server error'
+      });
+    }
+  }
 }
 
 module.exports = new ChargingStationController();

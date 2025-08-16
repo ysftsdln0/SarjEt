@@ -1,3 +1,11 @@
+// Harita bölgesi
+export interface Region {
+  latitude: number;
+  longitude: number;
+  latitudeDelta: number;
+  longitudeDelta: number;
+}
+
 // Şarj istasyonu veri türleri
 export interface ChargingStation {
   ID: number;
@@ -119,4 +127,16 @@ export interface SearchFilters {
 export interface UserLocation {
   latitude: number;
   longitude: number;
+}
+
+// Temel filtre seçenekleri
+export interface FilterOptions {
+  minPowerKW: number;
+  maxPowerKW: number;
+  connectionTypes: string[];
+  operators: string[];
+  maxDistance: number;
+  onlyFastCharging: boolean;
+  onlyAvailable: boolean;
+  onlyFree: boolean;
 }

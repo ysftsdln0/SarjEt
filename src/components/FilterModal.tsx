@@ -9,19 +9,8 @@ import {
   Switch,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { ChargingStation } from '../types';
+import { ChargingStation, FilterOptions } from '../types';
 import colors from '../constants/colors';
-
-export interface FilterOptions {
-  minPowerKW: number;
-  maxPowerKW: number;
-  connectionTypes: string[];
-  operators: string[];
-  maxDistance: number;
-  onlyFastCharging: boolean;
-  onlyAvailable: boolean;
-  onlyFree: boolean;
-}
 
 interface FilterModalProps {
   visible: boolean;
@@ -144,6 +133,7 @@ export const FilterModal: React.FC<FilterModalProps> = ({
           {/* Güç Aralığı */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>⚡ Güç Aralığı</Text>
+            <Text style={styles.sectionDescription}>Şarj istasyonlarının çıkış gücünü seçin</Text>
             {powerRanges.map((range) => (
               <TouchableOpacity
                 key={range.label}
@@ -172,6 +162,7 @@ export const FilterModal: React.FC<FilterModalProps> = ({
           {/* Mesafe */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>📍 Mesafe</Text>
+            <Text style={styles.sectionDescription}>Mevcut konumunuza olan maksimum mesafeyi seçin</Text>
             {distanceRanges.map((range) => (
               <TouchableOpacity
                 key={range.label}
@@ -197,6 +188,7 @@ export const FilterModal: React.FC<FilterModalProps> = ({
           {/* Hızlı Filtreler */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>🚀 Hızlı Filtreler</Text>
+            <Text style={styles.sectionDescription}>En yaygın ihtiyaçlara göre hızlı filtreleme</Text>
             
             <View style={styles.switchRow}>
               <Text style={styles.switchLabel}>Sadece hızlı şarj (50kW+)</Text>
@@ -241,6 +233,7 @@ export const FilterModal: React.FC<FilterModalProps> = ({
           {/* Konnektör Tipi */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>🔌 Konnektör Tipi</Text>
+            <Text style={styles.sectionDescription}>Aracınızla uyumlu konnektör tiplerini seçin</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipContainer}>
               {getAvailableConnectionTypes().slice(0, 10).map((type) => (
                 <TouchableOpacity
@@ -265,6 +258,7 @@ export const FilterModal: React.FC<FilterModalProps> = ({
           {/* Operatör */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>🏢 Operatör</Text>
+            <Text style={styles.sectionDescription}>Tercih ettiğiniz şarj istasyonu operatörlerini seçin</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipContainer}>
               {getAvailableOperators().slice(0, 15).map((operator) => (
                 <TouchableOpacity
@@ -405,6 +399,11 @@ const getStyles = (isDarkMode: boolean) => StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     marginBottom: 12,
+  },
+  sectionDescription: {
+    color: isDarkMode ? colors.gray400 : colors.gray600,
+    fontSize: 14,
+    marginBottom: 16,
   },
   switchLabel: {
     color: isDarkMode ? colors.darkText : colors.lightText,

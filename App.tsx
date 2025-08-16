@@ -6,6 +6,7 @@ import LoginScreen from './src/screens/LoginScreen';
 import RegisterScreen from './src/screens/RegisterScreen';
 import SarjetMainScreen from './src/screens/SarjetMainScreen';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import apiClient, { withAuth, getBaseUrl } from './src/services/apiClient';
 
 export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -46,11 +47,10 @@ export default function App() {
 
   const validateToken = async (token: string): Promise<boolean> => {
     try {
-      const response = await fetch('http://192.168.5.65:3000/api/auth/profile', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
+      const base = await getBaseUrl();
+      if (!base) return false;
+      const response = await fetch(`${base}/api/auth/profile`, {
+        headers: withAuth(token) as any,
       });
       return response.ok;
     } catch (error) {

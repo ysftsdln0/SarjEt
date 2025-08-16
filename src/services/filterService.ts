@@ -1,5 +1,4 @@
-import { ChargingStation } from '../types';
-import { FilterOptions } from '../components/FilterModal';
+import { ChargingStation, FilterOptions } from '../types';
 
 export class FilterService {
   /**

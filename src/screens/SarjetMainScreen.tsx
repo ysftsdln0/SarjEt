@@ -10,6 +10,7 @@ import {
   Dimensions,
   Animated,
 } from 'react-native';
+import debounce from 'lodash.debounce';
 import colors from '../constants/colors';
 import { Ionicons } from '@expo/vector-icons';
 import { Region } from 'react-native-maps';
@@ -204,22 +205,37 @@ const SarjetMainScreen: React.FC<{
     showToast('Gelişmiş filtreler uygulandı', 'success');
   }, []);
 
-  // Handle search
-  const handleSearch = useCallback((query: string) => {
-    setSearchQuery(query);
-    
-    if (query.trim()) {
-      const filtered = allStations.filter(station =>
-        station.AddressInfo?.Title?.toLowerCase().includes(query.toLowerCase()) ||
-        station.AddressInfo?.AddressLine1?.toLowerCase().includes(query.toLowerCase())
-      );
-      setStations(filtered);
-    } else {
-      setStations(allStations);
-    }
-    
-    AnalyticsService.trackUserBehavior(userId, sessionId, 'search_performed', { query });
-  }, [allStations]);
+  // Handle search with debounce
+  const handleSearch = useCallback(
+    debounce((query: string) => {
+      setSearchQuery(query);
+      
+      if (query.trim()) {
+        const searchText = query.toLowerCase();
+        const filtered = allStations.filter(station => {
+          const addressInfo = station.AddressInfo;
+          const operatorInfo = station.OperatorInfo;
+          
+          return (
+            addressInfo?.Title?.toLowerCase().includes(searchText) ||
+            addressInfo?.AddressLine1?.toLowerCase().includes(searchText) ||
+            addressInfo?.Town?.toLowerCase().includes(searchText) ||
+            addressInfo?.StateOrProvince?.toLowerCase().includes(searchText) ||
+            operatorInfo?.Title?.toLowerCase().includes(searchText) ||
+            station.Connections?.some(conn => 
+              conn.ConnectionType?.Title?.toLowerCase().includes(searchText)
+            )
+          );
+        });
+        setStations(filtered);
+      } else {
+        setStations(allStations);
+      }
+      
+      AnalyticsService.trackUserBehavior(userId, sessionId, 'search_performed', { query });
+    }, 300),
+    [allStations]
+  );
 
   // Handle quick filter press
   const handleQuickFilterPress = useCallback((filter: string) => {
@@ -324,6 +340,7 @@ const SarjetMainScreen: React.FC<{
         value={searchQuery}
         onChangeText={setSearchQuery}
         onSearch={() => handleSearch(searchQuery)}
+        onSearchChange={handleSearch}
         onShowFilters={() => setFilterVisible(true)}
         isDarkMode={isDarkMode}
         activeFilters={activeQuickFilters}
@@ -436,6 +453,7 @@ const SarjetMainScreen: React.FC<{
         visible={reviewsModalVisible}
         onClose={() => setReviewsModalVisible(false)}
         onHeightChange={handleMapHeightChange}
+        authToken={authToken}
       />
     </SafeAreaView>
   );

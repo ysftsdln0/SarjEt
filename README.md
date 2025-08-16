@@ -24,15 +24,27 @@
 
 
 
-## şimdilik olan özellikler
+## Özellikler
 
-1- varsayılan konumdan openchargemap api sini kullanarak filtleredeki kilometre çapına göre elektrikli istasyonları göstermesi
+### Temel Özellikler
+- Yakındaki şarj istasyonlarını harita üzerinde gösterme
+- Şarj istasyonu detaylarını görüntüleme
+- Liste görünümü desteği
+- Detaylı filtreleme seçenekleri (güç, mesafe, konnektör tipi, operatör, vb.)
+- Gelişmiş filtreleme seçenekleri (fiyat, çalışma saatleri, puan, vb.)
+- Arama fonksiyonu
+- Koyu/açık tema desteği
+- Kullanıcı profili ve istatistikler
+- Rota planlama
 
-2- seçilen istasyonun detaylı bilgilerini göstermesi şimdilik sınırlı olarak yalnızca 100 adet gösteriyor
-
-3- harite yerine liste görünümü
-
-4- arama fonksiyonu var fakat şu anda konumla alakalı sorunlardan ötürü kullanılamıyor
+### Yeni Geliştirilen Özellikler
+- Performans optimizasyonları (marker render ve filtreleme)
+- Geliştirilmiş arama fonksiyonu (çoklu alan araması)
+- Detaylı filtre açıklamaları
+- Tema değişikliğinde kullanıcı geri bildirimi
+- Şarj istasyonu değerlendirme sistemi
+- Kullanıcı şarj geçmişi
+- Rota planlama (Google Maps API entegrasyonu planlandı)
 
 ## REPOYU CLONLE'LAMAK İCİN
 
