@@ -11,7 +11,7 @@ interface StationMarkerProps {
   onPress?: () => void;
 }
 
-const StationMarker: React.FC<StationMarkerProps> = React.memo(({ 
+const StationMarker: React.FC<StationMarkerProps> = ({ 
   station, 
   isSelected = false,
   onPress 
@@ -93,7 +93,7 @@ const StationMarker: React.FC<StationMarkerProps> = React.memo(({
       )}
     </Animated.View>
   );
-});
+};
 
 const styles = StyleSheet.create({
   container: {

@@ -1,21 +1,18 @@
 const express = require('express');
 const router = express.Router();
+const RouteController = require('../controllers/RouteController');
 
-// Placeholder routes - implement based on your requirements
-
-// Route planning endpoints
+// Info endpoint
 router.get('/', (req, res) => {
   res.json({
-    message: 'Route planning routes not implemented yet',
+    message: 'Route planning API',
     endpoints: [
-      'GET /api/routes - Get saved routes',
-      'POST /api/routes - Create new route',
-      'GET /api/routes/:id - Get specific route',
-      'PUT /api/routes/:id - Update route',
-      'DELETE /api/routes/:id - Delete route',
       'POST /api/routes/plan - Plan new route with charging stops'
     ]
   });
 });
+
+// Plan a route with charging stops
+router.post('/plan', RouteController.plan);
 
 module.exports = router;

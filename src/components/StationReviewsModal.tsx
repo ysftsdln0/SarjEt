@@ -15,7 +15,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { ChargingStation } from '../types';
 import colors from '../constants/colors';
 import { slideUp, slideDown, fadeIn, fadeOut } from '../utils/animationUtils';
-import { useTheme } from '../contexts/ThemeContext';
 
 const { width, height } = Dimensions.get('window');
 
@@ -35,7 +34,6 @@ interface StationReviewsModalProps {
   visible: boolean;
   onClose: () => void;
   onHeightChange?: (height: number) => void;
-  authToken?: string | null;
 }
 
 const StationReviewsModal: React.FC<StationReviewsModalProps> = ({
@@ -43,13 +41,42 @@ const StationReviewsModal: React.FC<StationReviewsModalProps> = ({
   visible,
   onClose,
   onHeightChange,
-  authToken,
 }) => {
-  const { isDarkMode } = useTheme();
-  const [reviews, setReviews] = useState<Review[]>([]);
+  const [reviews, setReviews] = useState<Review[]>([
+    {
+      id: '1',
+      userId: 'user1',
+      userName: 'Ahmet Y.',
+      rating: 5,
+      comment: 'Çok hızlı şarj, park yeri de var. Kesinlikle tavsiye ederim!',
+      date: '2024-01-15',
+      photos: [],
+      helpful: 12,
+    },
+    {
+      id: '2',
+      userId: 'user2',
+      userName: 'Fatma K.',
+      rating: 4,
+      comment: 'İyi istasyon ama biraz pahalı. Hızlı şarj yapıyor.',
+      date: '2024-01-14',
+      photos: [],
+      helpful: 8,
+    },
+    {
+      id: '3',
+      userId: 'user3',
+      userName: 'Mehmet A.',
+      rating: 5,
+      comment: 'Mükemmel! 24 saat açık ve güvenli.',
+      date: '2024-01-13',
+      photos: [],
+      helpful: 15,
+    },
+  ]);
+
   const [newReview, setNewReview] = useState({ rating: 0, comment: '', photos: [] as string[] });
   const [showAddReview, setShowAddReview] = useState(false);
-  const [loading, setLoading] = useState(false);
 
   // Animation values
   const slideAnim = useRef(new Animated.Value(height)).current;
@@ -58,62 +85,10 @@ const StationReviewsModal: React.FC<StationReviewsModalProps> = ({
   useEffect(() => {
     if (visible) {
       showModal();
-      fetchReviews();
     } else {
       hideModal();
     }
   }, [visible]);
-
-  const fetchReviews = async () => {
-    if (!station?.ID) return;
-    
-    try {
-      setLoading(true);
-      // TODO: Replace with actual API call
-      // For now, use mock data
-      const mockReviews: Review[] = [
-        {
-          id: '1',
-          userId: 'user1',
-          userName: 'Ahmet Y.',
-          rating: 5,
-          comment: 'Çok hızlı şarj, park yeri de var. Kesinlikle tavsiye ederim!',
-          date: '2024-01-15',
-          photos: [],
-          helpful: 12,
-        },
-        {
-          id: '2',
-          userId: 'user2',
-          userName: 'Fatma K.',
-          rating: 4,
-          comment: 'İyi istasyon ama biraz pahalı. Hızlı şarj yapıyor.',
-          date: '2024-01-14',
-          photos: [],
-          helpful: 8,
-        },
-        {
-          id: '3',
-          userId: 'user3',
-          userName: 'Mehmet A.',
-          rating: 5,
-          comment: 'Mükemmel! 24 saat açık ve güvenli.',
-          date: '2024-01-13',
-          photos: [],
-          helpful: 15,
-        },
-      ];
-      
-      // Simulate network delay
-      await new Promise(resolve => setTimeout(resolve, 500));
-      setReviews(mockReviews);
-    } catch (error) {
-      console.error('Error fetching reviews:', error);
-      Alert.alert('Hata', 'Değerlendirmeler yüklenirken bir hata oluştu');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const showModal = () => {
     slideDown(slideAnim).start();
@@ -132,7 +107,7 @@ const StationReviewsModal: React.FC<StationReviewsModalProps> = ({
     setTimeout(() => onClose(), 300);
   };
 
-  const handleAddReview = async () => {
+  const handleAddReview = () => {
     if (newReview.rating === 0) {
       Alert.alert('Hata', 'Lütfen bir puan verin');
       return;
@@ -142,35 +117,21 @@ const StationReviewsModal: React.FC<StationReviewsModalProps> = ({
       return;
     }
 
-    try {
-      setLoading(true);
-      
-      // TODO: Replace with actual API call
-      // For now, use mock data
-      const review: Review = {
-        id: Date.now().toString(),
-        userId: 'currentUser',
-        userName: 'Siz',
-        rating: newReview.rating,
-        comment: newReview.comment,
-        date: new Date().toISOString().split('T')[0],
-        photos: newReview.photos,
-        helpful: 0,
-      };
+    const review: Review = {
+      id: Date.now().toString(),
+      userId: 'currentUser',
+      userName: 'Siz',
+      rating: newReview.rating,
+      comment: newReview.comment,
+      date: new Date().toISOString().split('T')[0],
+      photos: newReview.photos,
+      helpful: 0,
+    };
 
-      // Simulate network delay
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      setReviews([review, ...reviews]);
-      setNewReview({ rating: 0, comment: '', photos: [] });
-      setShowAddReview(false);
-      Alert.alert('Başarılı', 'Değerlendirmeniz eklendi!');
-    } catch (error) {
-      console.error('Error adding review:', error);
-      Alert.alert('Hata', 'Değerlendirmeniz eklenirken bir hata oluştu');
-    } finally {
-      setLoading(false);
-    }
+    setReviews([review, ...reviews]);
+    setNewReview({ rating: 0, comment: '', photos: [] });
+    setShowAddReview(false);
+    Alert.alert('Başarılı', 'Değerlendirmeniz eklendi!');
   };
 
   const handleHelpful = (reviewId: string) => {

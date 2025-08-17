@@ -69,6 +69,9 @@ npm start
 ### Health Check
 - `GET /health` - Servis durumu
 
+### Route Planning
+- `POST /api/routes/plan` - EV rota planlama (girdi: start/end koordinatları, opsiyonel araç menzili ve SOC parametreleri; çıktı: duraklar ve özet)
+
 ## 🗄️ Veritabanı Modeli
 
 ### Ana Tablolar:

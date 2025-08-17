@@ -14,7 +14,6 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../constants/colors';
 import VehicleSelection from '../components/VehicleSelection';
-import { getBaseUrl } from '../services/apiClient';
 
 const { width, height } = Dimensions.get('window');
 
@@ -94,14 +93,9 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({
       };
 
       console.log('📤 Sending request to backend:', requestBody);
-      const base = await getBaseUrl();
-      if (!base) {
-        Alert.alert('Bağlantı Hatası', 'Backend URL ayarlı değil. EXPO_PUBLIC_BACKEND_URL ekleyin.');
-        return;
-      }
-      console.log('🌐 Backend URL:', `${base}/api/auth/register`);
+      console.log('🌐 Backend URL: http://192.168.5.65:3000/api/auth/register');
 
-      const response = await fetch(`${base}/api/auth/register`, {
+      const response = await fetch('http://192.168.5.65:3000/api/auth/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

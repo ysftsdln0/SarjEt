@@ -1,6 +1,6 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { View, StyleSheet, Dimensions, Text } from 'react-native';
+import { View, StyleSheet, Dimensions } from 'react-native';
 import MapViewClustering from 'react-native-map-clustering';
 import { Marker, Callout } from 'react-native-maps';
 import { ChargingStation, UserLocation, Region } from '../types';
@@ -105,7 +105,7 @@ const ClusteredMapView: React.FC<ClusteredMapViewProps> = ({
     },
   ];
 
-  const renderCluster = (cluster: any) => {
+  const renderCluster = (cluster: any, onPress: () => void) => {
     const { pointCount, coordinate } = cluster;
     
     const getClusterStyle = (count: number) => {
@@ -118,10 +118,11 @@ const ClusteredMapView: React.FC<ClusteredMapViewProps> = ({
     const clusterStyle = getClusterStyle(pointCount);
 
     return (
-        <Marker
-          coordinate={coordinate}
-          tracksViewChanges={false}
-        >
+      <Marker
+        coordinate={coordinate}
+        onPress={onPress}
+        tracksViewChanges={false}
+      >
         <View style={[
           styles.cluster,
           {
@@ -132,11 +133,11 @@ const ClusteredMapView: React.FC<ClusteredMapViewProps> = ({
           }
         ]}>
           <View style={styles.clusterInner}>
-              <View style={styles.clusterTextContainer}>
-                <Text style={styles.clusterText}>
-                  {pointCount > 99 ? '99+' : pointCount}
-                </Text>
+            <View style={styles.clusterTextContainer}>
+              <View style={styles.clusterText}>
+                {pointCount > 99 ? '99+' : pointCount}
               </View>
+            </View>
           </View>
         </View>
       </Marker>
@@ -171,14 +172,14 @@ const ClusteredMapView: React.FC<ClusteredMapViewProps> = ({
     );
   };
 
-  const handleClusterPress = (cluster: any, markers?: any[]) => {
-    if (mapRef.current && markers && markers.length > 0) {
+  const handleClusterPress = (cluster: any, markers: any[]) => {
+    if (mapRef.current) {
       const coordinates = markers.map(marker => ({
         latitude: marker.coordinate.latitude,
         longitude: marker.coordinate.longitude,
       }));
 
-      (mapRef.current as any)?.fitToCoordinates?.(coordinates, {
+      mapRef.current.fitToCoordinates(coordinates, {
         edgePadding: { top: 50, right: 50, bottom: 50, left: 50 },
         animated: true,
       });
@@ -194,7 +195,10 @@ const ClusteredMapView: React.FC<ClusteredMapViewProps> = ({
         showsUserLocation={true}
         showsMyLocationButton={false}
         customMapStyle={lightMapStyle}
-  clusterColor={colors.primary}
+        clusterColor={colors.primary}
+        clusterTextColor={colors.white}
+        clusterBorderColor={colors.white}
+        clusterBorderWidth={2}
         extent={50}
         nodeSize={64}
         minZoom={1}

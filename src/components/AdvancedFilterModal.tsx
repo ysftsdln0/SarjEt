@@ -185,7 +185,6 @@ const AdvancedFilterModal: React.FC<AdvancedFilterModalProps> = ({
               {/* Bağlantı Tipleri */}
               <View style={styles.section}>
                 <Text style={styles.sectionTitle}>Bağlantı Tipleri</Text>
-                <Text style={styles.sectionDescription}>Aracınızla uyumlu bağlantı tiplerini seçin</Text>
                 <View style={styles.connectionTypesGrid}>
                   {connectionTypes.map((type) => (
                     <TouchableOpacity
@@ -215,7 +214,6 @@ const AdvancedFilterModal: React.FC<AdvancedFilterModalProps> = ({
               {/* Mesafe */}
               <View style={styles.section}>
                 <Text style={styles.sectionTitle}>Maksimum Mesafe: {filters.maxDistance} km</Text>
-                <Text style={styles.sectionDescription}>Mevcut konumunuza olan maksimum mesafeyi seçin</Text>
                 <View style={styles.sliderContainer}>
                   {[5, 10, 25, 50, 100].map((distance) => (
                     <TouchableOpacity
@@ -244,7 +242,6 @@ const AdvancedFilterModal: React.FC<AdvancedFilterModalProps> = ({
               {/* Fiyat Aralığı */}
               <View style={styles.section}>
                 <Text style={styles.sectionTitle}>Fiyat Aralığı (₺/kWh)</Text>
-                <Text style={styles.sectionDescription}>kWh başına istediğiniz fiyat aralığını seçin</Text>
                 <View style={styles.priceContainer}>
                   <TextInput
                     style={styles.priceInput}
@@ -267,7 +264,6 @@ const AdvancedFilterModal: React.FC<AdvancedFilterModalProps> = ({
               {/* Çalışma Saatleri */}
               <View style={styles.section}>
                 <Text style={styles.sectionTitle}>Çalışma Saatleri</Text>
-                <Text style={styles.sectionDescription}>İstasyonların çalışma saatlerine göre filtreleyin</Text>
                 <View style={styles.switchRow}>
                   <Text style={styles.switchLabel}>Şu anda açık olanlar</Text>
                   <Switch
@@ -291,7 +287,6 @@ const AdvancedFilterModal: React.FC<AdvancedFilterModalProps> = ({
               {/* Rating */}
               <View style={styles.section}>
                 <Text style={styles.sectionTitle}>Minimum Rating: {filters.rating.min}</Text>
-                <Text style={styles.sectionDescription}>En az puanı seçin</Text>
                 <View style={styles.ratingContainer}>
                   {[1, 2, 3, 4, 5].map((rating) => (
                     <TouchableOpacity
@@ -319,7 +314,6 @@ const AdvancedFilterModal: React.FC<AdvancedFilterModalProps> = ({
               {/* Kullanıcı Tercihleri */}
               <View style={styles.section}>
                 <Text style={styles.sectionTitle}>Görüntüleme Tercihleri</Text>
-                <Text style={styles.sectionDescription}>Kişisel tercihlerinize göre görüntüleyin</Text>
                 <View style={styles.switchRow}>
                   <Text style={styles.switchLabel}>Sadece favoriler</Text>
                   <Switch
@@ -352,7 +346,6 @@ const AdvancedFilterModal: React.FC<AdvancedFilterModalProps> = ({
               {/* Özel Filtreler */}
               <View style={styles.section}>
                 <Text style={styles.sectionTitle}>Özel Filtreler</Text>
-                <Text style={styles.sectionDescription}>Özel ihtiyaçlarınıza göre filtreleyin</Text>
                 <View style={styles.switchRow}>
                   <Text style={styles.switchLabel}>Yeşil enerji</Text>
                   <Switch
@@ -470,11 +463,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: colors.black,
-    marginBottom: 16,
-  },
-  sectionDescription: {
-    color: colors.gray600,
-    fontSize: 14,
     marginBottom: 16,
   },
   connectionTypesGrid: {

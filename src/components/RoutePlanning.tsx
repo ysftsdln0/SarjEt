@@ -113,40 +113,7 @@ const RoutePlanning: React.FC<RoutePlanningProps> = ({
     }
 
     try {
-      // Google Maps Directions API URL
-      const baseUrl = 'https://maps.googleapis.com/maps/api/directions/json';
-      const origin = `${startPoint.coordinates.latitude},${startPoint.coordinates.longitude}`;
-      const dest = `${destination.coordinates.latitude},${destination.coordinates.longitude}`;
-      
-      // Waypoints
-      const waypointStr = waypoints.map(wp => 
-        `${wp.coordinates.latitude},${wp.coordinates.longitude}`
-      ).join('|');
-      
-      // API key - TODO: Move to environment variable
-      const apiKey = 'YOUR_GOOGLE_MAPS_API_KEY';
-      
-      // Construct URL
-      let url = `${baseUrl}?origin=${origin}&destination=${dest}&key=${apiKey}&mode=${transportMode}`;
-      if (waypointStr) {
-        url += `&waypoints=${waypointStr}`;
-      }
-      
-      // For now, use mock data since we don't have API key
-      // In a real app, you would fetch from the API:
-      /*
-      const response = await fetch(url);
-      const data = await response.json();
-      
-      if (data.status !== 'OK') {
-        throw new Error(data.error_message || 'Rota hesaplanamadı');
-      }
-      
-      const route = data.routes[0];
-      const leg = route.legs[0];
-      */
-      
-      // Mock data for demonstration
+      // TODO: Implement actual route calculation with Google Maps API
       const mockRoute: RouteInfo = {
         distance: 25.5,
         duration: 45,
@@ -159,7 +126,6 @@ const RoutePlanning: React.FC<RoutePlanningProps> = ({
       onRouteCreated(mockRoute);
       onClose();
     } catch (error) {
-      console.error('Route calculation error:', error);
       Alert.alert('Hata', 'Rota hesaplanırken bir hata oluştu.');
     }
   };
