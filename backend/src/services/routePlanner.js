@@ -25,6 +25,16 @@ function distancePointToSegmentKm(p, v, w) {
   return haversine(p.lat, p.lon, proj.lat, proj.lon);
 }
 
+function pointAlongLineKm(current, destination, targetKm) {
+  const totalKm = haversine(current.lat, current.lon, destination.lat, destination.lon);
+  if (totalKm <= 0) return { lat: current.lat, lon: current.lon };
+  const frac = Math.max(0, Math.min(1, targetKm / totalKm));
+  return {
+    lat: current.lat + (destination.lat - current.lat) * frac,
+    lon: current.lon + (destination.lon - current.lon) * frac
+  };
+}
+
 function planRoute({ start, end, vehicle, currentSocPercent = 100, reservePercent = 10, corridorKm = 30, maxStops = 8, chargeAfterStopPercent = 90 }) {
   const maxRangeKm = vehicle?.maxRangeKm || vehicle?.maxRange || 300;
   const reserveKm = (maxRangeKm * reservePercent) / 100;
@@ -41,10 +51,64 @@ function planRoute({ start, end, vehicle, currentSocPercent = 100, reservePercen
       break;
     }
     if (hops >= maxStops) {
-      throw new Error('Rota planlanamadı: Çok fazla durak gerektiriyor');
+      // Fallback: instead of failing immediately, try widening the corridor progressively
+      let widenedCorridor = corridorKm;
+      let retryChosen = null;
+      while (widenedCorridor <= Math.max(20, corridorKm + 10) && !retryChosen) {
+        const sr = Math.min(Math.max(availableKm - reserveKm, 0), 200);
+        const targetAlongKm = Math.max(0, Math.min(distToDest, availableKm * 0.9));
+        const targetPoint = pointAlongLineKm(current, destination, targetAlongKm);
+        const retryCandidates = chargingStationService.findNearbyStations(current.lat, current.lon, sr, 500)
+          .map(st => ({
+            station: st,
+            dist: haversine(current.lat, current.lon, st.AddressInfo.Latitude, st.AddressInfo.Longitude),
+            toDestAfter: haversine(st.AddressInfo.Latitude, st.AddressInfo.Longitude, destination.lat, destination.lon),
+            power: Math.max(...(st.Connections || []).map(c => c.PowerKW || 0), 0),
+            isOperational: st.StatusTypeID === 50 || st.StatusTypeID === 75,
+            distToTarget: haversine(st.AddressInfo.Latitude, st.AddressInfo.Longitude, targetPoint.lat, targetPoint.lon),
+            corridorDist: distancePointToSegmentKm({ lat: st.AddressInfo.Latitude, lon: st.AddressInfo.Longitude }, current, destination)
+          }))
+          .filter(c => c.dist <= Math.max(0, availableKm - reserveKm) && c.corridorDist <= widenedCorridor);
+        if (retryCandidates.length > 0) {
+          retryCandidates.sort((a, b) => {
+            if (a.distToTarget !== b.distToTarget) return a.distToTarget - b.distToTarget;
+            if (a.corridorDist !== b.corridorDist) return a.corridorDist - b.corridorDist;
+            if (a.isOperational !== b.isOperational) return a.isOperational ? -1 : 1;
+            if (a.power !== b.power) return b.power - a.power;
+            if (a.toDestAfter !== b.toDestAfter) return a.toDestAfter - b.toDestAfter;
+            return b.dist - a.dist;
+          });
+          retryChosen = retryCandidates[0];
+          break;
+        }
+        widenedCorridor += 3; // widen step
+      }
+      if (!retryChosen) {
+        throw new Error('Rota planlanamadı: Çok fazla durak gerektiriyor');
+      }
+      // apply retryChosen as chosen stop
+      const chosen = retryChosen;
+      waypoints.push({
+        type: 'charging',
+        latitude: chosen.station.AddressInfo.Latitude,
+        longitude: chosen.station.AddressInfo.Longitude,
+        stationId: chosen.station.ID,
+        title: chosen.station.AddressInfo.Title,
+        powerKW: chosen.power
+      });
+      const usedPercentRetry = (chosen.dist / maxRangeKm) * 100;
+      soc = Math.max(0, soc - usedPercentRetry);
+      soc = Math.max(soc, reservePercent);
+      soc = Math.max(soc, chargeAfterStopPercent);
+      current = { lat: chosen.station.AddressInfo.Latitude, lon: chosen.station.AddressInfo.Longitude };
+      hops += 1;
+      continue;
     }
 
-    const searchRadiusKm = Math.min(availableKm - reserveKm, 200);
+  const searchRadiusKm = Math.min(Math.max(availableKm - reserveKm, 0), 200);
+  // Flowchart: 0.9 × kullanılabilir menzil noktasını bul
+  const targetAlongKm = Math.max(0, Math.min(distToDest, availableKm * 0.9));
+  const targetPoint = pointAlongLineKm(current, destination, targetAlongKm);
     const candidates = chargingStationService.findNearbyStations(current.lat, current.lon, searchRadiusKm, 500)
       .filter(st => {
         const pt = { lat: st.AddressInfo.Latitude, lon: st.AddressInfo.Longitude };
@@ -56,7 +120,9 @@ function planRoute({ start, end, vehicle, currentSocPercent = 100, reservePercen
         dist: haversine(current.lat, current.lon, st.AddressInfo.Latitude, st.AddressInfo.Longitude),
         toDestAfter: haversine(st.AddressInfo.Latitude, st.AddressInfo.Longitude, destination.lat, destination.lon),
         power: Math.max(...(st.Connections || []).map(c => c.PowerKW || 0), 0),
-        isOperational: st.StatusTypeID === 50 || st.StatusTypeID === 75
+    isOperational: st.StatusTypeID === 50 || st.StatusTypeID === 75,
+    distToTarget: haversine(st.AddressInfo.Latitude, st.AddressInfo.Longitude, targetPoint.lat, targetPoint.lon),
+    corridorDist: distancePointToSegmentKm({ lat: st.AddressInfo.Latitude, lon: st.AddressInfo.Longitude }, current, destination)
       }))
       .filter(c => c.dist <= Math.max(0, availableKm - reserveKm));
 
@@ -65,10 +131,12 @@ function planRoute({ start, end, vehicle, currentSocPercent = 100, reservePercen
     }
 
     candidates.sort((a, b) => {
-      if (a.isOperational !== b.isOperational) return a.isOperational ? -1 : 1;
-      if (a.toDestAfter !== b.toDestAfter) return a.toDestAfter - b.toDestAfter;
-      if (a.power !== b.power) return b.power - a.power;
-      return b.dist - a.dist;
+      if (a.distToTarget !== b.distToTarget) return a.distToTarget - b.distToTarget; // hedef noktaya yakınlık
+      if (a.corridorDist !== b.corridorDist) return a.corridorDist - b.corridorDist; // rota dışı sapma
+      if (a.isOperational !== b.isOperational) return a.isOperational ? -1 : 1; // çalışır durumda öncelik
+      if (a.power !== b.power) return b.power - a.power; // hızlı şarj öncelikli
+      if (a.toDestAfter !== b.toDestAfter) return a.toDestAfter - b.toDestAfter; // hedefe yaklaşma
+      return b.dist - a.dist; // son çare: erişim menzili içinde en uzak (ilerleme maksimize)
     });
 
     const chosen = candidates[0];
