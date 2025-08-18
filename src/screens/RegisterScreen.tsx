@@ -93,9 +93,9 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({
       };
 
       console.log('📤 Sending request to backend:', requestBody);
-      console.log('🌐 Backend URL: http://192.168.5.65:3000/api/auth/register');
+      console.log('🌐 Backend URL:', `${process.env.EXPO_PUBLIC_BACKEND_URL}/api/auth/register`);
 
-      const response = await fetch('http://192.168.5.65:3000/api/auth/register', {
+      const response = await fetch(`${process.env.EXPO_PUBLIC_BACKEND_URL}/api/auth/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

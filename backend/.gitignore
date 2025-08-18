@@ -1,58 +1,109 @@
-# Dependencies
+# ===== NODE.JS =====
 node_modules/
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+package-lock.json
+yarn.lock
+
+# ===== ENVIRONMENT =====
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# ===== LOGS =====
+logs/
+*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+lerna-debug.log*
 
-# Environment files
-.env
-.env.local
-.env.production
-.env.test
+# ===== CACHE =====
+.cache/
+.parcel-cache/
+.eslintcache
+.stylelintcache
 
-# Logs
-logs/
-*.log
+# ===== DATABASE =====
+# SQLite
+*.db
+*.sqlite
+*.sqlite3
 
-# Runtime data
-pids/
-*.pid
-*.seed
-*.pid.lock
-
-# Coverage directory used by tools like istanbul
-coverage/
-
-# nyc test coverage
-.nyc_output
-
-# OS generated files
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
-
-# Editor files
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
+# PostgreSQL
+*.sql
+*.dump
 
 # Prisma
 prisma/migrations/
-.env.database
+prisma/dev.db
+prisma/dev.db-journal
 
-# Build output
-dist/
+# ===== BUILD/OUTPUT =====
 build/
+dist/
+out/
 
-# Cache
-.cache/
+# ===== TESTING =====
+coverage/
+.nyc_output/
+junit.xml
+test-results/
 
-# Temporary files
-tmp/
+# ===== IDE/EDITOR =====
+.vscode/
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# ===== OS =====
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.tmp
+*.temp
+Desktop.ini
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+# ===== TEMPORARY FILES =====
+*.tmp
+*.temp
+*.bak
+*.backup
+*.old
+*.orig
+
+# ===== SECURITY =====
+# Certificates
+*.pem
+*.crt
+*.key
+*.p12
+*.pfx
+
+# ===== CUSTOM =====
+# Project specific
+uploads/
 temp/
+tmp/
+data/
+backups/

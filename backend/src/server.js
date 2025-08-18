@@ -6,8 +6,8 @@ const compression = require('compression');
 const rateLimit = require('express-rate-limit');
 const { PrismaClient } = require('@prisma/client');
 
-// Load environment variables
-require('dotenv').config();
+// Load environment variables from root .env
+require('dotenv').config({ path: '../.env' });
 
 // Import routes
 const authRoutes = require('./routes/auth');

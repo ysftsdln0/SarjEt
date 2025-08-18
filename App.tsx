@@ -46,7 +46,7 @@ export default function App() {
 
   const validateToken = async (token: string): Promise<boolean> => {
     try {
-      const response = await fetch('http://192.168.5.65:3000/api/auth/profile', {
+      const response = await fetch(`${process.env.EXPO_PUBLIC_BACKEND_URL}/api/auth/profile`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',

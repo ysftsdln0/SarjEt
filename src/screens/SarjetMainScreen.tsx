@@ -21,7 +21,6 @@ import { ProfileModal } from '../components/ProfileModal';
 import { FilterModal, FilterOptions } from '../components/FilterModal';
 import AdvancedFilterModal, { AdvancedFilterOptions } from '../components/AdvancedFilterModal';
 import RoutePlanning, { RouteInfo } from '../components/RoutePlanning';
-import geocodingService, { searchPlaces as geocodeSearch, GeocodeResult } from '../services/geocodingService';
 
 import Toast, { ToastType } from '../components/Toast';
 import ThemeSettings from '../components/ThemeSettings';
@@ -31,7 +30,7 @@ import { LocationService } from '../services/locationService';
 import { FilterService } from '../services/filterService';
 import NotificationService from '../services/NotificationService';
 import AnalyticsService from '../services/AnalyticsService';
-import ClusteredMapView from '../components/ClusteredMapView';
+import MapboxClusteredMapView from '../components/MapboxClusteredMapView';
 import { BottomNavigation } from '../components/BottomNavigation';
 import { useTheme } from '../contexts/ThemeContext';
 import { 
@@ -66,9 +65,6 @@ const SarjetMainScreen: React.FC<{
   const [filterVisible, setFilterVisible] = useState(false);
   const [advancedFilterVisible, setAdvancedFilterVisible] = useState(false);
   const [routePlanningVisible, setRoutePlanningVisible] = useState(false);
-  const [searchResults, setSearchResults] = useState<GeocodeResult[]>([]);
-  const [searchLoading, setSearchLoading] = useState(false);
-  const [initialDestination, setInitialDestination] = useState<{ name: string; latitude: number; longitude: number } | null>(null);
 
   const [themeSettingsVisible, setThemeSettingsVisible] = useState(false);
   const [reviewsModalVisible, setReviewsModalVisible] = useState(false);
@@ -209,48 +205,21 @@ const SarjetMainScreen: React.FC<{
   }, []);
 
   // Handle search
-  const handleSearch = useCallback(async (query: string) => {
+  const handleSearch = useCallback((query: string) => {
     setSearchQuery(query);
-    AnalyticsService.trackUserBehavior(userId, sessionId, 'search_performed', { query });
-
-    if (!query.trim()) {
+    
+    if (query.trim()) {
+      const filtered = allStations.filter(station =>
+        station.AddressInfo?.Title?.toLowerCase().includes(query.toLowerCase()) ||
+        station.AddressInfo?.AddressLine1?.toLowerCase().includes(query.toLowerCase())
+      );
+      setStations(filtered);
+    } else {
       setStations(allStations);
-      setSearchResults([]);
-      return;
     }
-
-    // 1) Filter stations locally as before
-    const filtered = allStations.filter(station =>
-      station.AddressInfo?.Title?.toLowerCase().includes(query.toLowerCase()) ||
-      station.AddressInfo?.AddressLine1?.toLowerCase().includes(query.toLowerCase())
-    );
-    setStations(filtered);
-
-    // 2) Also perform place search for destination setting
-    try {
-      setSearchLoading(true);
-      const results = await geocodeSearch(query, 'tr', 6);
-      setSearchResults(results);
-    } catch (e) {
-      console.warn('Geocoding search failed:', e);
-      setSearchResults([]);
-    } finally {
-      setSearchLoading(false);
-    }
+    
+    AnalyticsService.trackUserBehavior(userId, sessionId, 'search_performed', { query });
   }, [allStations]);
-
-  // Debounced search-as-you-type for destination suggestions
-  useEffect(() => {
-    const q = searchQuery.trim();
-    if (q.length < 2) {
-      setSearchResults([]);
-      return;
-    }
-    const t = setTimeout(() => {
-      handleSearch(q);
-    }, 400);
-    return () => clearTimeout(t);
-  }, [searchQuery]);
 
   // Handle quick filter press
   const handleQuickFilterPress = useCallback((filter: string) => {
@@ -361,30 +330,6 @@ const SarjetMainScreen: React.FC<{
         onFilterPress={handleQuickFilterPress}
       />
       
-      {/* Search Results (destination) */}
-      {searchResults.length > 0 && (
-        <View style={styles.searchResultsContainer}>
-          {searchResults.slice(0, 5).map((r, idx) => (
-            <View key={`${r.latitude}-${r.longitude}-${idx}`} style={styles.searchResultRow}>
-              <View style={styles.searchResultInfo}>
-                <Ionicons name="location-outline" size={18} color={themeColors.textSecondary} />
-                <Text style={styles.searchResultText} numberOfLines={1}>{r.displayName}</Text>
-              </View>
-              <TouchableOpacity
-                style={styles.setDestinationBtn}
-                onPress={() => {
-                  setInitialDestination({ name: r.displayName, latitude: r.latitude, longitude: r.longitude });
-                  setRoutePlanningVisible(true);
-                }}
-              >
-                <Ionicons name="flag" size={14} color={colors.white} />
-                <Text style={styles.setDestinationBtnText}>Hedef olarak seç</Text>
-              </TouchableOpacity>
-            </View>
-          ))}
-        </View>
-      )}
-
       {/* Map Container */}
       <Animated.View 
         style={[
@@ -395,7 +340,7 @@ const SarjetMainScreen: React.FC<{
           }
         ]}
       >
-        <ClusteredMapView
+        <MapboxClusteredMapView
           stations={stations}
           userLocation={userLocation}
           initialRegion={initialRegion}
@@ -466,7 +411,6 @@ const SarjetMainScreen: React.FC<{
         onRouteCreated={handleRouteCreated}
         userLocation={userLocation}
         stations={stations}
-  initialDestination={initialDestination}
       />
       
 
@@ -501,44 +445,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.white,
-  },
-  searchResultsContainer: {
-    backgroundColor: colors.white,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.gray200,
-    paddingHorizontal: 16,
-    paddingBottom: 8,
-  },
-  searchResultRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 8,
-    gap: 12,
-  },
-  searchResultInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    flex: 1,
-  },
-  searchResultText: {
-    flex: 1,
-    color: colors.gray900,
-  },
-  setDestinationBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 16,
-    backgroundColor: colors.primary,
-  },
-  setDestinationBtnText: {
-    color: colors.white,
-    fontSize: 12,
-    fontWeight: '600',
   },
   mapContainer: {
     flex: 1,

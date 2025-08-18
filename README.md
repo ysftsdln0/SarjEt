@@ -59,26 +59,65 @@ cd SarjEt
 - Node.js (v16 veya üzeri)
 - npm veya yarn
 - Expo CLI
+- PostgreSQL (backend için)
 - iOS Simulator (iOS için) veya Android Emulator (Android için)
 
 ### Kurulum Adımları
 
-1. **Bağımlılıkları yükleyin:**
+1. **Repository'yi klonlayın:**
+```bash
+git clone https://github.com/ysftsdln0/SarjEt
+cd SarjEt
+```
+
+2. **Environment dosyasını oluşturun:**
+```bash
+cp .env.example .env
+# .env dosyasını düzenleyerek gerekli API key'leri ve URL'leri ayarlayın
+```
+
+3. **Frontend bağımlılıklarını yükleyin:**
 ```bash
 npm install
-# veya
-yarn install
 ```
 
-2. **Expo development server'ı başlatın:**
+4. **Backend bağımlılıklarını yükleyin:**
 ```bash
-npx expo start
+cd backend
+npm install
+cd ..
 ```
 
-3. **Uygulamayı çalıştırın:**
+5. **Veritabanını kurun:**
+```bash
+cd backend
+npx prisma migrate dev
+npx prisma generate
+cd ..
+```
+
+6. **Backend'i başlatın:**
+```bash
+cd backend
+npm run dev
+```
+
+7. **Frontend'i başlatın (yeni terminal):**
+```bash
+npx expo start --dev-client
+```
+
+8. **Uygulamayı çalıştırın:**
    - iOS için: `i` tuşuna basın veya iOS Simulator'da açın
    - Android için: `a` tuşuna basın veya Android Emulator'da açın
-   - Fiziksel cihaz için: Expo Go uygulamasıyla QR kodu tarayın
+## Environment
 
+Use a single `.env` at the repo root to configure both frontend and backend. See `.env.example`.
+
+Required keys:
+
+- EXPO_PUBLIC_BACKEND_URL
+- EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN
+- NODE_ENV, PORT, DATABASE_URL, JWT_SECRET, OPENCHARGE_MAP_API_KEY (backend)
 
 ## KULLANIM.md Yİ OKUYUN
