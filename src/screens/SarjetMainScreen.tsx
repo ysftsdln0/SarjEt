@@ -12,13 +12,12 @@ import {
 } from 'react-native';
 import colors from '../constants/colors';
 import { Ionicons } from '@expo/vector-icons';
-import { Region } from 'react-native-maps';
-import { ChargingStation, UserLocation } from '../types';
+import { ChargingStation, UserLocation, FilterOptions, Region } from '../types';
 import { Header } from '../components/Header';
 import { SearchBar } from '../components/SearchBar';
 import LoadingScreen from '../components/LoadingScreen';
 import { ProfileModal } from '../components/ProfileModal';
-import { FilterModal, FilterOptions } from '../components/FilterModal';
+import { FilterModal } from '../components/FilterModal';
 import AdvancedFilterModal, { AdvancedFilterOptions } from '../components/AdvancedFilterModal';
 import RoutePlanning, { RouteInfo } from '../components/RoutePlanning';
 

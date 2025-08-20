@@ -103,7 +103,7 @@ const RoutePlanning: React.FC<RoutePlanningProps> = ({
 
   const removeWaypoint = (id: string) => {
     setWaypoints(prev => prev.filter(wp => wp.id !== id));
-    setSelectedStations(prev => prev.filter(station => station.ID !== id));
+    setSelectedStations(prev => prev.filter(station => station.ID.toString() !== id));
   };
 
   const calculateRoute = async () => {

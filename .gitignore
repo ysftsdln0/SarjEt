@@ -7,6 +7,11 @@ yarn-debug.*
 yarn-error.*
 package-lock.json
 yarn.lock
+pnpm-lock.yaml
+bun.lockb
+
+# npm
+.npm/
 
 # ===== EXPO/REACT NATIVE =====
 .expo/
@@ -14,6 +19,16 @@ dist/
 web-build/
 expo-env.d.ts
 .expo-shared/
+.expo-shared
+
+# React Native
+*.hprof
+
+# Expo generated
+.expo-shared/
+.expo-shared/assets.json
+.expo/
+expo-env.d.ts
 
 # ===== NATIVE =====
 # iOS
@@ -23,6 +38,8 @@ ios/Podfile.lock
 ios/*.xcworkspace/xcuserdata/
 ios/*.xcodeproj/xcuserdata/
 ios/*.xcodeproj/project.xcworkspace/xcuserdata/
+ios/build/
+ios/DerivedData/
 *.orig.*
 *.jks
 *.p8
@@ -31,6 +48,7 @@ ios/*.xcodeproj/project.xcworkspace/xcuserdata/
 *.mobileprovision
 *.ipa
 *.apk
+*.aab
 
 # Android
 android/app/build/
@@ -43,6 +61,8 @@ android/gradlew
 android/gradlew.bat
 android/key.properties
 android/app/release/
+android/.cxx/
+android/app/.cxx/
 
 # ===== METRO =====
 .metro-health-check*
@@ -80,6 +100,9 @@ logs/
 .parcel-cache/
 .eslintcache
 .stylelintcache
+.tscache/
+.jest/
+.webpack/
 
 # ===== IDE/EDITOR =====
 # VSCode
@@ -201,6 +224,12 @@ tsconfig.tsbuildinfo
 *.p12
 *.pfx
 
+# SSH Keys
+id_rsa
+id_rsa.pub
+id_ed25519
+id_ed25519.pub
+
 # ===== TEMPORARY FILES =====
 *.tmp
 *.temp
@@ -216,6 +245,15 @@ temp/
 tmp/
 data/
 backups/
+
+# Screenshots (if not needed in repo)
+screenshots/
+*.png.old
+*.jpg.old
+
+# Local development files
+.local/
+.config/local/
 
 # ===== MONITORING =====
 # PM2
