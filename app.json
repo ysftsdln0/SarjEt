@@ -51,6 +51,13 @@
         {
           "locationAlwaysAndWhenInUsePermission": "This app uses location to show nearby charging stations."
         }
+      ],
+      [
+        "@rnmapbox/maps",
+        {
+          "RNMapboxMapsImpl": "mapbox",
+          "RNMapboxMapsDownloadToken": "$EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN"
+        }
       ]
     ]
   }

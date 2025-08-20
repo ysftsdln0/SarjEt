@@ -68,29 +68,31 @@ const StationMarker: React.FC<StationMarkerProps> = ({
         },
       ]}
     >
-      <Ionicons 
-        name={getMarkerIcon() as any} 
-        size={16} 
-        color={colors.white} 
-      />
-      
-      {isSelected && (
-        <View style={styles.selectedIndicator}>
-          <Text style={styles.selectedText}>●</Text>
-        </View>
-      )}
-      
-      {/* Station name popup */}
-      {isSelected && (
-        <View style={styles.popup}>
-          <Text style={styles.stationName} numberOfLines={1}>
-            {station.AddressInfo?.Title || 'İstasyon'}
-          </Text>
-          <Text style={styles.stationDistance}>
-            {station.AddressInfo?.Distance?.toFixed(1) || '0'} km
-          </Text>
-        </View>
-      )}
+      <View style={styles.markerContent}>
+        <Ionicons 
+          name={getMarkerIcon() as any} 
+          size={16} 
+          color={colors.white} 
+        />
+        
+        {isSelected && (
+          <View style={styles.selectedIndicator}>
+            <Text style={styles.selectedText}>●</Text>
+          </View>
+        )}
+        
+        {/* Station name popup */}
+        {isSelected && (
+          <View style={styles.popup}>
+            <Text style={styles.stationName} numberOfLines={1}>
+              {station.AddressInfo?.Title || 'İstasyon'}
+            </Text>
+            <Text style={styles.stationDistance}>
+              {station.AddressInfo?.Distance?.toFixed(1) || '0'} km
+            </Text>
+          </View>
+        )}
+      </View>
     </Animated.View>
   );
 };
@@ -109,6 +111,12 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     elevation: 5,
+  },
+  markerContent: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+    height: '100%',
   },
   selectedIndicator: {
     position: 'absolute',

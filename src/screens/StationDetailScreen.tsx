@@ -22,7 +22,7 @@ import { Ionicons, MaterialIcons, FontAwesome5 } from '@expo/vector-icons';
 import { ChargingStation, UserLocation } from '../types';
 import { StationUtils } from '../utils/stationUtils';
 import { LocationService } from '../services/locationService';
-import { AnimationUtils } from '../utils/animationUtils';
+import { fadeIn, fadeOut, slideUp, slideDown } from '../utils/animationUtils';
 import colors from '../constants/colors';
 
 interface StationDetailScreenProps {
@@ -51,17 +51,9 @@ export const StationDetailScreen: React.FC<StationDetailScreenProps> = ({
   const cardScale = useSharedValue(0.9);
 
   useEffect(() => {
-    // Initialize animations and check reduced motion
-    const initializeAnimations = async () => {
-      const reducedMotion = await AnimationUtils.getReducedMotionSetting();
-      setIsReducedMotion(reducedMotion);
-      
-      // Animasyonları başlat - reduced motion ayarını göz önünde bulundurarak
-      headerOpacity.value = AnimationUtils.createSpringAnimation(1, { duration: 800 });
-      cardScale.value = AnimationUtils.createSpringAnimation(1, { duration: 600 });
-    };
-    
-    initializeAnimations();
+    // Initialize animations
+    headerOpacity.value = 1;
+    cardScale.value = 1;
     
     // Kullanıcı konumunu al
     LocationService.getCurrentLocation()
@@ -142,14 +134,12 @@ export const StationDetailScreen: React.FC<StationDetailScreenProps> = ({
   };
 
   const renderConnectionInfo = () => {
-    const animationConfig = AnimationUtils.getMotiAnimationConfig(isReducedMotion);
-    
     if (!station.Connections || station.Connections.length === 0) {
       return (
         <MotiView
           from={{ opacity: 0, translateY: isReducedMotion ? 0 : 20 }}
           animate={{ opacity: 1, translateY: 0 }}
-          transition={{ ...animationConfig, delay: isReducedMotion ? 0 : 400 }}
+          transition={{ duration: 300, delay: isReducedMotion ? 0 : 400 }}
           style={[styles.infoCard, isDarkMode && styles.darkCard]}
         >        <View style={styles.cardHeader}>
           <FontAwesome5 name="plug" size={20} color={colors.accent1} />
@@ -166,7 +156,7 @@ export const StationDetailScreen: React.FC<StationDetailScreenProps> = ({
       <MotiView
         from={{ opacity: 0, translateY: isReducedMotion ? 0 : 20 }}
         animate={{ opacity: 1, translateY: 0 }}
-        transition={{ ...animationConfig, delay: isReducedMotion ? 0 : 400 }}
+        transition={{ duration: 300, delay: isReducedMotion ? 0 : 400 }}
         style={[styles.infoCard, isDarkMode && styles.darkCard]}
       >
         <View style={styles.cardHeader}>
@@ -179,7 +169,7 @@ export const StationDetailScreen: React.FC<StationDetailScreenProps> = ({
             from={{ opacity: 0, scale: isReducedMotion ? 1 : 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ 
-              ...animationConfig, 
+              duration: 300, 
               delay: isReducedMotion ? 0 : 500 + (index * 100) 
             }}
             style={[styles.connectionItem, isDarkMode && styles.darkConnectionItem]}
@@ -320,7 +310,7 @@ export const StationDetailScreen: React.FC<StationDetailScreenProps> = ({
             from={{ opacity: 0, translateY: isReducedMotion ? 0 : 20 }}
             animate={{ opacity: 1, translateY: 0 }}
             transition={{ 
-              ...AnimationUtils.getMotiAnimationConfig(isReducedMotion), 
+              duration: 300, 
               delay: isReducedMotion ? 0 : 500 
             }}
             style={styles.statItem}

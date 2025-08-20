@@ -7,7 +7,13 @@ import { StationDetailScreen } from '../screens/StationDetailScreen';
 
 const Stack = createStackNavigator<RootStackParamList>();
 
-export const AppNavigator: React.FC = () => {
+interface AppNavigatorProps {
+  authToken: string | null;
+  user: any;
+  onLogout: () => void;
+}
+
+export const AppNavigator: React.FC<AppNavigatorProps> = ({ authToken, user, onLogout }) => {
   return (
     <NavigationContainer>
       <Stack.Navigator
@@ -20,11 +26,12 @@ export const AppNavigator: React.FC = () => {
       >
         <Stack.Screen
           name="Home"
-          component={SarjetMainScreen}
           options={{
             title: 'Şarjet',
           }}
-        />
+        >
+          {props => <SarjetMainScreen {...props} authToken={authToken} user={user} onLogout={onLogout} />}
+        </Stack.Screen>
         <Stack.Screen
           name="StationDetail"
           component={StationDetailScreen}
