@@ -8,12 +8,34 @@ class AuthController {
   // Kullanıcı kaydı
   static async register(req, res) {
     try {
-      console.log('🚀 Register endpoint called with body:', req.body);
+      const Joi = require('joi');
+      const schema = Joi.object({
+        email: Joi.string().email().required(),
+        password: Joi.string().min(6).max(100).required(),
+        name: Joi.string().min(2).max(100).optional(),
+        phone: Joi.string().min(5).max(30).optional(),
+        vehicle: Joi.object({
+          variantId: Joi.string().optional(),
+          nickname: Joi.string().allow('', null).optional(),
+          licensePlate: Joi.string().allow('', null).optional(),
+          color: Joi.string().allow('', null).optional(),
+          currentBatteryLevel: Joi.number().min(0).max(100).optional(),
+        }).optional()
+      });
+      const { error: validationError } = schema.validate(req.body);
+      if (validationError) {
+        return res.status(400).json({ error: 'Geçersiz kayıt verisi', details: validationError.details.map(d => d.message) });
+      }
+      if (process.env.NODE_ENV !== 'production') {
+        console.log('🚀 Register endpoint called');
+      }
       
       const { email, password, name, phone, vehicle } = req.body;
 
       // Email kontrolü
-      console.log('📧 Checking if email exists:', email);
+      if (process.env.NODE_ENV !== 'production') {
+        console.log('📧 Checking if email exists');
+      }
       const existingUser = await prisma.user.findUnique({
         where: { email: email.toLowerCase() }
       });
@@ -23,15 +45,21 @@ class AuthController {
         return res.status(400).json({ error: 'Bu email adresi zaten kullanılıyor' });
       }
 
-      console.log('✅ Email is available, proceeding with registration');
+      if (process.env.NODE_ENV !== 'production') {
+        console.log('✅ Email is available, proceeding with registration');
+      }
 
       // Şifre hash'leme
       const saltRounds = 12;
       const hashedPassword = await bcrypt.hash(password, saltRounds);
-      console.log('🔐 Password hashed successfully');
+      if (process.env.NODE_ENV !== 'production') {
+        console.log('🔐 Password hashed successfully');
+      }
 
       // Kullanıcı oluşturma
-      console.log('👤 Creating user with data:', { name, email, phone });
+      if (process.env.NODE_ENV !== 'production') {
+        console.log('👤 Creating user');
+      }
       const user = await prisma.user.create({
         data: {
           email: email.toLowerCase(),
@@ -54,11 +82,15 @@ class AuthController {
         }
       });
 
-      console.log('✅ User created successfully:', user.id);
+      if (process.env.NODE_ENV !== 'production') {
+        console.log('✅ User created successfully:', user.id);
+      }
 
       // Araç bilgileri varsa ekle
       if (vehicle && vehicle.variantId) {
-        console.log('🚗 Adding vehicle information:', vehicle);
+        if (process.env.NODE_ENV !== 'production') {
+          console.log('🚗 Adding vehicle information');
+        }
         try {
           await prisma.userVehicle.create({
             data: {
@@ -70,13 +102,17 @@ class AuthController {
               currentBatteryLevel: vehicle.currentBatteryLevel || 100
             }
           });
-          console.log('✅ Vehicle added successfully');
+          if (process.env.NODE_ENV !== 'production') {
+            console.log('✅ Vehicle added successfully');
+          }
         } catch (vehicleError) {
           console.error('❌ Vehicle creation failed:', vehicleError);
           // Araç eklenemese bile kullanıcı kaydı başarılı olsun
         }
       } else {
-        console.log('ℹ️ No vehicle information provided');
+        if (process.env.NODE_ENV !== 'production') {
+          console.log('ℹ️ No vehicle information provided');
+        }
       }
 
       // JWT token oluşturma
@@ -85,12 +121,16 @@ class AuthController {
         process.env.JWT_SECRET,
         { expiresIn: '30d' }
       );
-      console.log('🎫 JWT token created successfully');
+      if (process.env.NODE_ENV !== 'production') {
+        console.log('🎫 JWT token created successfully');
+      }
 
       // Kullanıcı bilgilerini döndür (şifre hariç)
       const { password: _, ...userWithoutPassword } = user;
 
-      console.log('🎉 Registration completed successfully for user:', user.email);
+      if (process.env.NODE_ENV !== 'production') {
+        console.log('🎉 Registration completed successfully for user');
+      }
       res.status(201).json({
         message: 'Kullanıcı başarıyla oluşturuldu',
         user: userWithoutPassword,
@@ -98,8 +138,10 @@ class AuthController {
       });
 
     } catch (error) {
-      console.error('❌ Registration error:', error);
-      console.error('❌ Error stack:', error.stack);
+      console.error('❌ Registration error');
+      if (process.env.NODE_ENV !== 'production') {
+        console.error('❌ Error stack:', error.stack);
+      }
       res.status(500).json({ error: 'Kayıt işlemi başarısız', details: error.message });
     }
   }
@@ -107,6 +149,15 @@ class AuthController {
   // Kullanıcı girişi
   static async login(req, res) {
     try {
+      const Joi = require('joi');
+      const schema = Joi.object({
+        email: Joi.string().email().required(),
+        password: Joi.string().min(6).max(100).required(),
+      });
+      const { error: validationError } = schema.validate(req.body);
+      if (validationError) {
+        return res.status(400).json({ error: 'Geçersiz giriş verisi', details: validationError.details.map(d => d.message) });
+      }
       const { email, password } = req.body;
 
       // Kullanıcıyı bul
@@ -161,7 +212,7 @@ class AuthController {
       });
 
     } catch (error) {
-      console.error('Login error:', error);
+      console.error('Login error');
       res.status(500).json({ error: 'Giriş işlemi başarısız' });
     }
   }

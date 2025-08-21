@@ -5,14 +5,16 @@ import { ThemeProvider } from './src/contexts/ThemeContext';
 import LoginScreen from './src/screens/LoginScreen';
 import RegisterScreen from './src/screens/RegisterScreen';
 import SarjetMainScreen from './src/screens/SarjetMainScreen';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { User } from './src/types';
+import tokenStorage from './src/services/tokenStorage';
+import apiClient, { withAuth } from './src/services/apiClient';
 
 export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [currentScreen, setCurrentScreen] = useState<'login' | 'register' | 'main'>('login');
   const [authToken, setAuthToken] = useState<string | null>(null);
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
     checkAuthenticationStatus();
@@ -20,21 +22,21 @@ export default function App() {
 
   const checkAuthenticationStatus = async () => {
     try {
-      const token = await AsyncStorage.getItem('authToken');
-      const userData = await AsyncStorage.getItem('userData');
+      const token = await tokenStorage.getToken();
+      const userData = await tokenStorage.getUser();
       
       if (token && userData) {
         // Token'ı doğrula (backend'de)
         const isValid = await validateToken(token);
         if (isValid) {
           setAuthToken(token);
-          setUser(JSON.parse(userData));
+          setUser(userData);
           setIsAuthenticated(true);
           setCurrentScreen('main');
         } else {
           // Geçersiz token'ı temizle
-          await AsyncStorage.removeItem('authToken');
-          await AsyncStorage.removeItem('userData');
+          await tokenStorage.deleteToken();
+          await tokenStorage.deleteUser();
         }
       }
     } catch (error) {
@@ -46,11 +48,10 @@ export default function App() {
 
   const validateToken = async (token: string): Promise<boolean> => {
     try {
-      const response = await fetch(`${process.env.EXPO_PUBLIC_BACKEND_URL}/api/auth/profile`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
+      const base = await apiClient.getBaseUrl();
+      if (!base) return false;
+      const response = await fetch(`${base}/api/auth/profile`, {
+        headers: withAuth(token) as any,
       });
       return response.ok;
     } catch (error) {
@@ -61,8 +62,8 @@ export default function App() {
 
   const handleLoginSuccess = async (token: string, userData: any) => {
     try {
-      await AsyncStorage.setItem('authToken', token);
-      await AsyncStorage.setItem('userData', JSON.stringify(userData));
+      await tokenStorage.saveToken(token);
+      await tokenStorage.saveUser(userData);
       
       setAuthToken(token);
       setUser(userData);
@@ -75,8 +76,8 @@ export default function App() {
 
   const handleRegisterSuccess = async (token: string, userData: any) => {
     try {
-      await AsyncStorage.setItem('authToken', token);
-      await AsyncStorage.setItem('userData', JSON.stringify(userData));
+      await tokenStorage.saveToken(token);
+      await tokenStorage.saveUser(userData);
       
       setAuthToken(token);
       setUser(userData);
@@ -89,8 +90,8 @@ export default function App() {
 
   const handleLogout = async () => {
     try {
-      await AsyncStorage.removeItem('authToken');
-      await AsyncStorage.removeItem('userData');
+      await tokenStorage.deleteToken();
+      await tokenStorage.deleteUser();
       
       setAuthToken(null);
       setUser(null);

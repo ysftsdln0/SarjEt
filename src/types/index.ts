@@ -140,3 +140,37 @@ export interface FilterOptions {
   onlyAvailable: boolean;
   onlyFree: boolean;
 }
+
+// Auth and user types
+export interface UserPreferences {
+  id: string;
+  isDarkMode?: boolean;
+  notificationsEnabled?: boolean;
+  fastChargingOnly?: boolean;
+  maxDistance?: number;
+  language?: string;
+}
+
+export interface User {
+  id: string;
+  email: string;
+  name?: string;
+  phone?: string;
+  avatar?: string;
+  isActive?: boolean;
+  preferences?: UserPreferences | null;
+  userVehicles?: Array<{
+    id: string;
+    nickname?: string;
+    licensePlate?: string;
+    color?: string;
+    currentBatteryLevel?: number;
+    variant?: {
+      id: string;
+      name?: string;
+      year?: number;
+      model?: { name?: string; brand?: { name?: string } };
+      maxRange?: number;
+    } | null;
+  }>;
+}

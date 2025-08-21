@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const chargingStationController = require('../controllers/ChargingStationController');
-const optionalAuth = require('../middleware/optionalAuth');
+const { optionalAuth } = require('../middleware/auth');
 
 // Cache kontrolü ve istatistikler
 router.get('/cache/status', chargingStationController.getCacheStatus);

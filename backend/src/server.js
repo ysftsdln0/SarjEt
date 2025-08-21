@@ -46,8 +46,20 @@ const limiter = rateLimit({
 // Middleware
 app.use(compression()); // Compress responses
 app.use(helmet()); // Security headers
+// CORS origins from env (comma-separated), fallback to common dev ports
+const corsOrigins = (process.env.CORS_ORIGINS || '')
+  .split(',')
+  .map(s => s.trim())
+  .filter(Boolean);
+
+const defaultOrigins = [
+  'http://localhost:19006',
+  'http://localhost:8081',
+  'http://localhost:8082'
+];
+
 app.use(cors({
-  origin: ['http://localhost:19006', 'http://localhost:8081', 'http://localhost:8082', 'http://192.168.5.65:8081', 'http://192.168.5.65:8082'],
+  origin: corsOrigins.length ? corsOrigins : defaultOrigins,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']

@@ -25,6 +25,12 @@ class ChargingStationService {
     this.lastUpdated = null;
     
     this.init();
+
+    // Cron-like periodic refresh once per day (simple timer; better with node-cron)
+    const dailyMs = 24 * 60 * 60 * 1000;
+    setInterval(() => {
+      this.refreshCache().catch(() => {});
+    }, dailyMs);
   }
 
   async init() {
@@ -93,6 +99,11 @@ class ChargingStationService {
 
   async fetchAndCacheStations() {
     try {
+      if (this._refreshInFlight) {
+        logger.info('Cache refresh already in flight, skipping');
+        return;
+      }
+      this._refreshInFlight = true;
       logger.info('Fetching charging stations from OpenChargeMap API...');
       
       // Türkiye için şarj istasyonları çek (Turkey country code: TR)
@@ -138,6 +149,8 @@ class ChargingStationService {
       if (!this.isLoaded) {
         await this.loadFromCache();
       }
+    } finally {
+      this._refreshInFlight = false;
     }
   }
 

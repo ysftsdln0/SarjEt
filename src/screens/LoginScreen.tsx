@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../constants/colors';
+import { post } from '../services/apiClient';
 
 const { width, height } = Dimensions.get('window');
 
@@ -39,15 +40,9 @@ const LoginScreen: React.FC<LoginScreenProps> = ({
     setLoading(true);
 
     try {
-      const response = await fetch(`${process.env.EXPO_PUBLIC_BACKEND_URL}/api/auth/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: email.toLowerCase(),
-          password
-        }),
+      const response = await post('/api/auth/login', {
+        email: email.toLowerCase(),
+        password,
       });
 
       const data = await response.json();

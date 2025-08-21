@@ -5,10 +5,13 @@ export class FilterService {
    * İstasyonları filtreleme seçeneklerine göre filtreler
    */
   static applyFilters(stations: ChargingStation[], filters: FilterOptions): ChargingStation[] {
-    console.log('🔧 FilterService.applyFilters çağrıldı:', {
-      stationCount: stations.length,
-      filters: filters
-    });
+    if (__DEV__) {
+      // eslint-disable-next-line no-console
+      console.log('🔧 FilterService.applyFilters çağrıldı:', {
+        stationCount: stations.length,
+        filters: filters
+      });
+    }
 
     let powerFailCount = 0;
     let distanceFailCount = 0;
@@ -64,20 +67,23 @@ export class FilterService {
       return true;
     });
 
-    console.log('✅ FilterService sonuç:', {
-      originalCount: stations.length,
-      filteredCount: filteredStations.length,
-      sampleStation: filteredStations[0]?.AddressInfo?.Title || 'Yok',
-      filterFailures: {
-        power: powerFailCount,
-        distance: distanceFailCount,
-        fastCharging: fastChargingFailCount,
-        available: availableFailCount,
-        free: freeFailCount,
-        connection: connectionFailCount,
-        operator: operatorFailCount
-      }
-    });
+    if (__DEV__) {
+      // eslint-disable-next-line no-console
+      console.log('✅ FilterService sonuç:', {
+        originalCount: stations.length,
+        filteredCount: filteredStations.length,
+        sampleStation: filteredStations[0]?.AddressInfo?.Title || 'Yok',
+        filterFailures: {
+          power: powerFailCount,
+          distance: distanceFailCount,
+          fastCharging: fastChargingFailCount,
+          available: availableFailCount,
+          free: freeFailCount,
+          connection: connectionFailCount,
+          operator: operatorFailCount
+        }
+      });
+    }
 
     return filteredStations;
   }
@@ -92,7 +98,8 @@ export class FilterService {
     const passes = stationPower >= filters.minPowerKW && stationPower <= filters.maxPowerKW;
     
     // İlk birkaç istasyon için debug log
-    if (Math.random() < 0.01) { // %1 şans ile log
+    if (__DEV__ && Math.random() < 0.01) { // %1 şans ile log
+      // eslint-disable-next-line no-console
       console.log('⚡ Güç filtresi:', {
         stationName: station.AddressInfo?.Title,
         stationPower: stationPower,
@@ -158,7 +165,8 @@ export class FilterService {
     const maxPower = powers.length > 0 ? Math.max(...powers) : 0;
     
     // İlk birkaç istasyon için debug log
-    if (Math.random() < 0.005) { // %0.5 şans ile log
+    if (__DEV__ && Math.random() < 0.005) { // %0.5 şans ile log
+      // eslint-disable-next-line no-console
       console.log('🔋 İstasyon güç hesaplama:', {
         stationName: station.AddressInfo?.Title,
         connections: station.Connections?.map(c => ({ type: c.ConnectionType?.Title, power: c.PowerKW })),

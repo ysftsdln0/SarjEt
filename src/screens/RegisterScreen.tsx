@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../constants/colors';
+import { post } from '../services/apiClient';
 import VehicleSelection from '../components/VehicleSelection';
 
 const { width, height } = Dimensions.get('window');
@@ -93,15 +94,7 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({
       };
 
       console.log('📤 Sending request to backend:', requestBody);
-      console.log('🌐 Backend URL:', `${process.env.EXPO_PUBLIC_BACKEND_URL}/api/auth/register`);
-
-      const response = await fetch(`${process.env.EXPO_PUBLIC_BACKEND_URL}/api/auth/register`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(requestBody),
-      });
+      const response = await post('/api/auth/register', requestBody);
 
       console.log('📥 Response received:', {
         status: response.status,
