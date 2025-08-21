@@ -71,16 +71,22 @@ const MapboxClusteredMapView: React.FC<Props> = ({
     } as const;
   }, [plannedRoute]);
 
-  const onClusterPress = async (e: any) => {
+  const onSourcePress = async (e: any) => {
     const { features } = e;
-    const cluster = features && features[0];
-    if (!cluster || !cluster.properties || !cluster.properties.cluster) return;
-    try {
-      const zoom = await sourceRef.current?.getClusterExpansionZoom(cluster);
-      const [lon, lat] = cluster.geometry.coordinates;
-      cameraRef.current?.setCamera({ centerCoordinate: [lon, lat], zoomLevel: (zoom || 10) + 0.5, animationDuration: 400 });
-    } catch (err) {
-      // noop
+    const feat = features && features[0];
+    if (!feat || !feat.properties) return;
+    if (feat.properties.cluster) {
+      try {
+        const zoom = await sourceRef.current?.getClusterExpansionZoom(feat);
+        const [lon, lat] = feat.geometry.coordinates;
+        cameraRef.current?.setCamera({ centerCoordinate: [lon, lat], zoomLevel: (zoom || 10) + 0.5, animationDuration: 400 });
+      } catch (err) {
+        // noop
+      }
+    } else {
+      const stationId = feat.properties.id;
+      const st = stations.find(s => s.ID === stationId);
+      if (st) onStationPress(st);
     }
   };
 
@@ -94,14 +100,14 @@ const MapboxClusteredMapView: React.FC<Props> = ({
       >
         <MapboxGL.Camera ref={cameraRef} centerCoordinate={center} zoomLevel={zoomLevel} />
 
-        {/* Clusters (only clusters rendered; unclustered points will be our custom PointAnnotations below) */}
+        {/* Clusters and unclustered points via layers */}
         <MapboxGL.ShapeSource
           id="stations-source"
           ref={sourceRef}
           cluster
           clusterRadius={50}
           shape={stationFeatures as any}
-          onPress={onClusterPress}
+          onPress={onSourcePress}
         >
           <MapboxGL.CircleLayer
             id="cluster-circles"
@@ -129,6 +135,36 @@ const MapboxClusteredMapView: React.FC<Props> = ({
               textAllowOverlap: true,
             }}
           />
+
+          {/* Unclustered stations as circles */}
+          <MapboxGL.CircleLayer
+            id="unclustered-points"
+            filter={["!", ["has", "point_count"]]}
+            style={{
+              circleColor: isDarkMode ? colors.secondary : colors.primary,
+              circleRadius: 6,
+              circleStrokeColor: colors.white,
+              circleStrokeWidth: 2,
+            }}
+          />
+
+          {/* Selected station highlight */}
+          {selectedStation && (
+            <MapboxGL.CircleLayer
+              id="selected-point"
+              filter={[
+                'all',
+                ['!', ['has', 'point_count']],
+                ['==', ['get', 'id'], selectedStation.ID]
+              ] as any}
+              style={{
+                circleColor: colors.accent1,
+                circleRadius: 9,
+                circleStrokeColor: colors.white,
+                circleStrokeWidth: 2,
+              }}
+            />
+          )}
         </MapboxGL.ShapeSource>
 
         {/* Planned route line */}
@@ -153,24 +189,6 @@ const MapboxClusteredMapView: React.FC<Props> = ({
             </View>
           </MapboxGL.PointAnnotation>
         )}
-
-        {/* Station markers as custom views to keep the same UI */}
-        {(stations || []).map((station) => {
-          const lat = station.AddressInfo?.Latitude;
-          const lon = station.AddressInfo?.Longitude;
-          if (!lat || !lon) return null;
-          const isSelected = selectedStation?.ID === station.ID;
-          return (
-            <MapboxGL.PointAnnotation
-              key={`st-${station.ID}`}
-              id={`st-${station.ID}`}
-              coordinate={[lon, lat]}
-              onSelected={() => onStationPress(station)}
-            >
-              <StationMarker station={station} isSelected={isSelected} onPress={() => onStationPress(station)} />
-            </MapboxGL.PointAnnotation>
-          );
-        })}
       </MapboxGL.MapView>
     </View>
   );

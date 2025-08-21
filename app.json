@@ -58,7 +58,8 @@
           "RNMapboxMapsImpl": "mapbox",
           "RNMapboxMapsDownloadToken": "$EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN"
         }
-      ]
+      ],
+      "expo-secure-store"
     ]
   }
 }
