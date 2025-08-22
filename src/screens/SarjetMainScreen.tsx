@@ -25,6 +25,7 @@ import Toast, { ToastType } from '../components/Toast';
 import ThemeSettings from '../components/ThemeSettings';
 import StationReviewsModal from '../components/StationReviewsModal';
 import { chargingStationService } from '../services/chargingStationService';
+import { searchPlaces } from '../services/geocodingService';
 import { LocationService } from '../services/locationService';
 import { FilterService } from '../services/filterService';
 import NotificationService from '../services/NotificationService';
@@ -32,6 +33,7 @@ import AnalyticsService from '../services/AnalyticsService';
 import MapboxClusteredMapView from '../components/MapboxClusteredMapView';
 import { BottomNavigation } from '../components/BottomNavigation';
 import { useTheme } from '../contexts/ThemeContext';
+import { Linking } from 'react-native';
 import { 
   fadeIn, 
   fadeOut, 
@@ -102,6 +104,9 @@ const SarjetMainScreen: React.FC<{
 
   // Responsive map height
   const [mapHeight, setMapHeight] = useState(height);
+  const [mapCenter, setMapCenter] = useState<{ latitude: number; longitude: number } | null>(null);
+  const [presetDestination, setPresetDestination] = useState<{ name: string; latitude: number; longitude: number } | null>(null);
+  const [plannedRoute, setPlannedRoute] = useState<{ points: Array<{ latitude: number; longitude: number }> } | null>(null);
 
   // Animations
   const fadeAnim = useRef(new Animated.Value(1)).current;
@@ -204,19 +209,28 @@ const SarjetMainScreen: React.FC<{
   }, []);
 
   // Handle search
-  const handleSearch = useCallback((query: string) => {
+  const handleSearch = useCallback(async (query: string) => {
     setSearchQuery(query);
-    
-    if (query.trim()) {
-      const filtered = allStations.filter(station =>
-        station.AddressInfo?.Title?.toLowerCase().includes(query.toLowerCase()) ||
-        station.AddressInfo?.AddressLine1?.toLowerCase().includes(query.toLowerCase())
-      );
-      setStations(filtered);
-    } else {
+    if (!query.trim()) {
       setStations(allStations);
+      return;
     }
-    
+    // Önce istasyon adı/adresinde ara
+    const filtered = allStations.filter(station =>
+      station.AddressInfo?.Title?.toLowerCase().includes(query.toLowerCase()) ||
+      station.AddressInfo?.AddressLine1?.toLowerCase().includes(query.toLowerCase())
+    );
+    setStations(filtered);
+    // Şehir/ilçe için geocoding yap ve üstte bir hedef seçimi öner
+    try {
+      const results = await searchPlaces(query, 'tr', 1);
+      if (results[0]) {
+        setMapCenter({ latitude: results[0].latitude, longitude: results[0].longitude });
+        // Kullanıcıya hedef olarak seçme butonu için preset sakla
+        setPresetDestination({ name: results[0].displayName, latitude: results[0].latitude, longitude: results[0].longitude });
+        showToast('Konuma odaklanmak için hedef seçimi menüsünü kullanın', 'info');
+      }
+    } catch {}
     AnalyticsService.trackUserBehavior(userId, sessionId, 'search_performed', { query });
   }, [allStations]);
 
@@ -273,6 +287,9 @@ const SarjetMainScreen: React.FC<{
   // Handle route created
   const handleRouteCreated = useCallback((route: RouteInfo) => {
     showToast('Rota oluşturuldu!', 'success');
+    // Route preview points
+    const pts = route.waypoints.map(w => ({ latitude: w.coordinates.latitude, longitude: w.coordinates.longitude }));
+    setPlannedRoute({ points: pts });
     AnalyticsService.trackUserBehavior(userId, sessionId, 'route_created', { route });
   }, []);
 
@@ -346,6 +363,8 @@ const SarjetMainScreen: React.FC<{
           onStationPress={handleStationPress}
           selectedStation={selectedStation}
           isDarkMode={isDarkMode}
+          centerTo={mapCenter}
+          plannedRoute={plannedRoute}
         />
         
         {/* Map Action Buttons */}
@@ -377,6 +396,60 @@ const SarjetMainScreen: React.FC<{
 
         </View>
       </Animated.View>
+
+      {/* Destination selection panel */}
+      {presetDestination && (
+        <View style={styles.destinationPanel}>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.destinationTitle} numberOfLines={1}>{presetDestination.name}</Text>
+            <Text style={styles.destinationSubtitle}>Hedef olarak belirlemek için dokunun</Text>
+          </View>
+          <TouchableOpacity
+            onPress={() => {
+              setRoutePlanningVisible(true);
+            }}
+            style={styles.destinationButton}
+          >
+            <Text style={styles.destinationButtonText}>Hedef Olarak Seç</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => setPresetDestination(null)} style={{ marginLeft: 8, paddingHorizontal: 8, paddingVertical: 6 }}>
+            <Ionicons name="close" size={20} color={themeColors.textSecondary} />
+          </TouchableOpacity>
+        </View>
+      )}
+
+      {/* Start journey CTA when route exists */}
+      {plannedRoute && (
+        <View style={styles.startJourneyBar}>
+          <TouchableOpacity
+            style={styles.startJourneyButton}
+            onPress={async () => {
+              try {
+                const pts = plannedRoute.points;
+                if (!pts || pts.length < 2) return;
+                const start = pts[0];
+                const end = pts[pts.length - 1];
+                const wps = pts.slice(1, -1);
+                const url = LocationService.getDirectionsUrlMulti(start, end, wps);
+                const canOpen = await Linking.canOpenURL(url);
+                if (canOpen) {
+                  await Linking.openURL(url);
+                } else {
+                  showToast('Harita uygulaması açılamadı', 'error');
+                }
+              } catch (e) {
+                showToast('Haritaya yönlendirme başarısız', 'error');
+              }
+            }}
+          >
+            <Ionicons name="navigate" size={18} color={colors.white} />
+            <Text style={styles.startJourneyText}>Yolculuğa Başla</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => setPlannedRoute(null)} style={styles.clearRouteButton}>
+            <Ionicons name="close" size={18} color={colors.white} />
+          </TouchableOpacity>
+        </View>
+      )}
       
       {/* Bottom Navigation */}
       <BottomNavigation
@@ -410,6 +483,7 @@ const SarjetMainScreen: React.FC<{
         onRouteCreated={handleRouteCreated}
         userLocation={userLocation}
         stations={stations}
+        presetDestination={presetDestination}
       />
       
 
@@ -468,6 +542,74 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
+  },
+  destinationPanel: {
+    position: 'absolute',
+    left: 12,
+    right: 12,
+    top: 12,
+    backgroundColor: colors.white,
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    shadowColor: colors.black,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 3,
+  },
+  destinationTitle: {
+    color: colors.gray900,
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  destinationSubtitle: {
+    color: colors.gray600,
+    fontSize: 12,
+  },
+  destinationButton: {
+    backgroundColor: colors.primary,
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+  },
+  destinationButtonText: {
+    color: colors.white,
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  startJourneyBar: {
+    position: 'absolute',
+    left: 12,
+    right: 12,
+    bottom: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: colors.black,
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+  },
+  startJourneyButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: colors.primary,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+  },
+  startJourneyText: {
+    color: colors.white,
+    fontWeight: '700',
+  },
+  clearRouteButton: {
+    backgroundColor: colors.gray600,
+    padding: 8,
+    borderRadius: 8,
   },
 });
 

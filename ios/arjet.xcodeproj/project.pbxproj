@@ -8,25 +8,25 @@
 
 /* Begin PBXBuildFile section */
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
+		227395C4BFE7555EC557DF1F /* libPods-arjet.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C9D559E38A035B70824370F6 /* libPods-arjet.a */; };
 		3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */; };
-		B497E3B0397B0EAA5AD433BA /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 947D304E74DBD7EDC3D9F0D1 /* PrivacyInfo.xcprivacy */; };
+		5F35B96D31346ADDA73301E6 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = DB2CAC15EE732B339C93565B /* PrivacyInfo.xcprivacy */; };
 		BB2F792D24A3F905000567C9 /* Expo.plist in Resources */ = {isa = PBXBuildFile; fileRef = BB2F792C24A3F905000567C9 /* Expo.plist */; };
-		BE7AAFA4BDBDCA35C751A1AD /* libPods-arjet.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 52C69C43320FB13D44A13B06 /* libPods-arjet.a */; };
+		E033C32F59A7A2E0C20C1BDE /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10F614CE313E87D8A1AFBC0B /* ExpoModulesProvider.swift */; };
 		F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F11748412D0307B40044C1D9 /* AppDelegate.swift */; };
-		FB82B45F778788AD2EF9B004 /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E8D3D2F7A15708E3B668927 /* ExpoModulesProvider.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		10F614CE313E87D8A1AFBC0B /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-arjet/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
 		13B07F961A680F5B00A75B9A /* arjet.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = arjet.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = arjet/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = arjet/Info.plist; sourceTree = "<group>"; };
-		47CEAF0F6249425FC4E7DE12 /* Pods-arjet.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-arjet.debug.xcconfig"; path = "Target Support Files/Pods-arjet/Pods-arjet.debug.xcconfig"; sourceTree = "<group>"; };
-		52C69C43320FB13D44A13B06 /* libPods-arjet.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-arjet.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		7E8D3D2F7A15708E3B668927 /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-arjet/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
-		947D304E74DBD7EDC3D9F0D1 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; name = PrivacyInfo.xcprivacy; path = arjet/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		58C09FFCA32066CE6F684922 /* Pods-arjet.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-arjet.debug.xcconfig"; path = "Target Support Files/Pods-arjet/Pods-arjet.debug.xcconfig"; sourceTree = "<group>"; };
 		AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = SplashScreen.storyboard; path = arjet/SplashScreen.storyboard; sourceTree = "<group>"; };
 		BB2F792C24A3F905000567C9 /* Expo.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Expo.plist; sourceTree = "<group>"; };
-		E3D80286E754D6291ACDB23B /* Pods-arjet.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-arjet.release.xcconfig"; path = "Target Support Files/Pods-arjet/Pods-arjet.release.xcconfig"; sourceTree = "<group>"; };
+		C9D559E38A035B70824370F6 /* libPods-arjet.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-arjet.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		CBD6D40AAC2E389FEF6FE364 /* Pods-arjet.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-arjet.release.xcconfig"; path = "Target Support Files/Pods-arjet/Pods-arjet.release.xcconfig"; sourceTree = "<group>"; };
+		DB2CAC15EE732B339C93565B /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; name = PrivacyInfo.xcprivacy; path = arjet/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		F11748412D0307B40044C1D9 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = arjet/AppDelegate.swift; sourceTree = "<group>"; };
 		F11748442D0722820044C1D9 /* arjet-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "arjet-Bridging-Header.h"; path = "arjet/arjet-Bridging-Header.h"; sourceTree = "<group>"; };
@@ -37,7 +37,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				BE7AAFA4BDBDCA35C751A1AD /* libPods-arjet.a in Frameworks */,
+				227395C4BFE7555EC557DF1F /* libPods-arjet.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -53,7 +53,7 @@
 				13B07FB51A68108700A75B9A /* Images.xcassets */,
 				13B07FB61A68108700A75B9A /* Info.plist */,
 				AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */,
-				947D304E74DBD7EDC3D9F0D1 /* PrivacyInfo.xcprivacy */,
+				DB2CAC15EE732B339C93565B /* PrivacyInfo.xcprivacy */,
 			);
 			name = arjet;
 			sourceTree = "<group>";
@@ -62,25 +62,17 @@
 			isa = PBXGroup;
 			children = (
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
-				52C69C43320FB13D44A13B06 /* libPods-arjet.a */,
+				C9D559E38A035B70824370F6 /* libPods-arjet.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
-		2D9A51B6548550A63AD7E67B /* ExpoModulesProviders */ = {
+		709EC920EA446927ADE74671 /* ExpoModulesProviders */ = {
 			isa = PBXGroup;
 			children = (
-				7C9402F584649470DCA8DD00 /* arjet */,
+				987C3F92042A23A5A6AF736B /* arjet */,
 			);
 			name = ExpoModulesProviders;
-			sourceTree = "<group>";
-		};
-		7C9402F584649470DCA8DD00 /* arjet */ = {
-			isa = PBXGroup;
-			children = (
-				7E8D3D2F7A15708E3B668927 /* ExpoModulesProvider.swift */,
-			);
-			name = arjet;
 			sourceTree = "<group>";
 		};
 		832341AE1AAA6A7D00B99B32 /* Libraries */ = {
@@ -97,8 +89,8 @@
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
 				83CBBA001A601CBA00E9B192 /* Products */,
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
-				8ECEC419831C804878D5B16D /* Pods */,
-				2D9A51B6548550A63AD7E67B /* ExpoModulesProviders */,
+				FE0759093430109177A027C0 /* Pods */,
+				709EC920EA446927ADE74671 /* ExpoModulesProviders */,
 			);
 			indentWidth = 2;
 			sourceTree = "<group>";
@@ -113,14 +105,12 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		8ECEC419831C804878D5B16D /* Pods */ = {
+		987C3F92042A23A5A6AF736B /* arjet */ = {
 			isa = PBXGroup;
 			children = (
-				47CEAF0F6249425FC4E7DE12 /* Pods-arjet.debug.xcconfig */,
-				E3D80286E754D6291ACDB23B /* Pods-arjet.release.xcconfig */,
+				10F614CE313E87D8A1AFBC0B /* ExpoModulesProvider.swift */,
 			);
-			name = Pods;
-			path = Pods;
+			name = arjet;
 			sourceTree = "<group>";
 		};
 		BB2F792B24A3F905000567C9 /* Supporting */ = {
@@ -132,6 +122,16 @@
 			path = arjet/Supporting;
 			sourceTree = "<group>";
 		};
+		FE0759093430109177A027C0 /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				58C09FFCA32066CE6F684922 /* Pods-arjet.debug.xcconfig */,
+				CBD6D40AAC2E389FEF6FE364 /* Pods-arjet.release.xcconfig */,
+			);
+			name = Pods;
+			path = Pods;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -140,13 +140,13 @@
 			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "arjet" */;
 			buildPhases = (
 				08A4A3CD28434E44B6B9DE2E /* [CP] Check Pods Manifest.lock */,
-				F4031EFBCF8ED0D95972BD05 /* [Expo] Configure project */,
+				8526CED7C0FD5DC10DE1FD3F /* [Expo] Configure project */,
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
 				800E24972A6A228C8D4807E9 /* [CP] Copy Pods Resources */,
-				F03FBAD777F13C613C348858 /* [CP] Embed Pods Frameworks */,
+				CDBC798CC503E62C0E21B298 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -196,7 +196,7 @@
 				BB2F792D24A3F905000567C9 /* Expo.plist in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */,
-				B497E3B0397B0EAA5AD433BA /* PrivacyInfo.xcprivacy in Resources */,
+				5F35B96D31346ADDA73301E6 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -318,7 +318,26 @@
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-arjet/Pods-arjet-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		F03FBAD777F13C613C348858 /* [CP] Embed Pods Frameworks */ = {
+		8526CED7C0FD5DC10DE1FD3F /* [Expo] Configure project */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "[Expo] Configure project";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# This script configures Expo modules and generates the modules provider file.\nbash -l -c \"./Pods/Target\\ Support\\ Files/Pods-arjet/expo-configure-project.sh\"\n";
+		};
+		CDBC798CC503E62C0E21B298 /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -346,25 +365,6 @@
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-arjet/Pods-arjet-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		F4031EFBCF8ED0D95972BD05 /* [Expo] Configure project */ = {
-			isa = PBXShellScriptBuildPhase;
-			alwaysOutOfDate = 1;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-			);
-			name = "[Expo] Configure project";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "# This script configures Expo modules and generates the modules provider file.\nbash -l -c \"./Pods/Target\\ Support\\ Files/Pods-arjet/expo-configure-project.sh\"\n";
-		};
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -373,7 +373,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */,
-				FB82B45F778788AD2EF9B004 /* ExpoModulesProvider.swift in Sources */,
+				E033C32F59A7A2E0C20C1BDE /* ExpoModulesProvider.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -382,7 +382,7 @@
 /* Begin XCBuildConfiguration section */
 		13B07F941A680F5B00A75B9A /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 47CEAF0F6249425FC4E7DE12 /* Pods-arjet.debug.xcconfig */;
+			baseConfigurationReference = 58C09FFCA32066CE6F684922 /* Pods-arjet.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
@@ -407,7 +407,7 @@
 				);
 				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_DEBUG";
 				PRODUCT_BUNDLE_IDENTIFIER = com.anonymous.sarjet;
-				PRODUCT_NAME = arjet;
+				PRODUCT_NAME = "arjet";
 				SWIFT_OBJC_BRIDGING_HEADER = "arjet/arjet-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
@@ -418,7 +418,7 @@
 		};
 		13B07F951A680F5B00A75B9A /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = E3D80286E754D6291ACDB23B /* Pods-arjet.release.xcconfig */;
+			baseConfigurationReference = CBD6D40AAC2E389FEF6FE364 /* Pods-arjet.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
@@ -438,7 +438,7 @@
 				);
 				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_RELEASE";
 				PRODUCT_BUNDLE_IDENTIFIER = com.anonymous.sarjet;
-				PRODUCT_NAME = arjet;
+				PRODUCT_NAME = "arjet";
 				SWIFT_OBJC_BRIDGING_HEADER = "arjet/arjet-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";

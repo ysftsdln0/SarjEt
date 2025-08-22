@@ -8,10 +8,12 @@ import {
   ScrollView,
   Modal,
   Alert,
+  Linking,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ChargingStation } from '../types';
 import colors from '../constants/colors';
+import { LocationService } from '../services/locationService';
 
 export interface RoutePoint {
   id: string;
@@ -39,6 +41,7 @@ interface RoutePlanningProps {
   onRouteCreated: (route: RouteInfo) => void;
   userLocation: { latitude: number; longitude: number } | null;
   stations: ChargingStation[];
+  presetDestination?: { name: string; latitude: number; longitude: number } | null;
 }
 
 const RoutePlanning: React.FC<RoutePlanningProps> = ({
@@ -47,6 +50,7 @@ const RoutePlanning: React.FC<RoutePlanningProps> = ({
   onRouteCreated,
   userLocation,
   stations,
+  presetDestination,
 }) => {
   const [startPoint, setStartPoint] = useState<RoutePoint | null>(null);
   const [destination, setDestination] = useState<RoutePoint | null>(null);
@@ -71,6 +75,20 @@ const RoutePlanning: React.FC<RoutePlanningProps> = ({
       });
     }
   }, [userLocation]);
+
+  useEffect(() => {
+    if (visible && presetDestination) {
+      setDestination({
+        id: 'preset-destination',
+        name: presetDestination.name,
+        type: 'destination',
+        coordinates: {
+          latitude: presetDestination.latitude,
+          longitude: presetDestination.longitude,
+        },
+      });
+    }
+  }, [visible, presetDestination]);
 
   const handleStationSelect = (station: ChargingStation) => {
     if (!destination) {
@@ -130,6 +148,18 @@ const RoutePlanning: React.FC<RoutePlanningProps> = ({
     }
   };
 
+  const openInMaps = async () => {
+    if (!startPoint || !destination) return;
+    const way = waypoints.map(w => w.coordinates);
+    const url = LocationService.getDirectionsUrlMulti(startPoint.coordinates, destination.coordinates, way);
+    const canOpen = await Linking.canOpenURL(url);
+    if (canOpen) {
+      await Linking.openURL(url);
+    } else {
+      Alert.alert('Hata', 'Harita uygulaması açılamadı.');
+    }
+  };
+
   const getTransportModeIcon = (mode: string) => {
     const modeInfo = transportModes.find(m => m.key === mode);
     return modeInfo?.icon || 'car';
@@ -154,13 +184,22 @@ const RoutePlanning: React.FC<RoutePlanningProps> = ({
             <Ionicons name="close" size={24} color={colors.black} />
           </TouchableOpacity>
           <Text style={styles.title}>Rota Planlama</Text>
-          <TouchableOpacity 
-            style={[styles.createButton, (!startPoint || !destination) && styles.createButtonDisabled]} 
-            onPress={calculateRoute}
-            disabled={!startPoint || !destination}
-          >
-            <Text style={styles.createButtonText}>Oluştur</Text>
-          </TouchableOpacity>
+          <View style={{ flexDirection: 'row', gap: 8 }}>
+            <TouchableOpacity 
+              style={[styles.createButton, (!startPoint || !destination) && styles.createButtonDisabled]} 
+              onPress={calculateRoute}
+              disabled={!startPoint || !destination}
+            >
+              <Text style={styles.createButtonText}>Oluştur</Text>
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={[styles.createButton, (!startPoint || !destination) && styles.createButtonDisabled]} 
+              onPress={openInMaps}
+              disabled={!startPoint || !destination}
+            >
+              <Text style={styles.createButtonText}>Yolculuğa Başla</Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
         <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>

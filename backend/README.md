@@ -20,7 +20,7 @@ cp .env.example .env
 - `JWT_SECRET`: JWT token şifreleme anahtarı
 - `OPENCHARGE_MAP_API_KEY`: OpenChargeMap API anahtarı
 
-### 3. Veritabanını Hazırlayın
+### 3. Veritabanını Hazırlayın (PostgreSQL)
 ```bash
 # Prisma migration'ları çalıştır
 npm run prisma:migrate
@@ -133,7 +133,7 @@ npm run prisma:generate
 
 ### Health Check
 ```bash
-curl http://localhost:3000/health
+curl http://localhost:3001/health
 ```
 
 ### Logs

@@ -73,7 +73,10 @@ class AuthController {
               notificationsEnabled: true,
               fastChargingOnly: false,
               maxDistance: 100,
-              language: 'tr'
+              language: 'tr',
+              // JSON fields (MySQL): provide defaults to satisfy non-null schema
+              preferredConnectorTypes: [],
+              preferredOperators: []
             }
           }
         },

@@ -3,7 +3,6 @@ import { View, StyleSheet } from 'react-native';
 import MapboxGL from '@rnmapbox/maps';
 import colors from '../constants/colors';
 import { ChargingStation, Region, UserLocation } from '../types';
-import StationMarker from './StationMarker';
 
 MapboxGL.setAccessToken(process.env.EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN || '');
 
@@ -15,6 +14,7 @@ type Props = {
   selectedStation: ChargingStation | null;
   isDarkMode?: boolean;
   plannedRoute?: { points?: Array<{ latitude: number; longitude: number; type?: string; title?: string; powerKW?: number }> } | null;
+  centerTo?: { latitude: number; longitude: number; zoomLevel?: number } | null;
 };
 
 function deltasToZoom(lonDelta: number, screenWidth: number): number {
@@ -34,6 +34,7 @@ const MapboxClusteredMapView: React.FC<Props> = ({
   selectedStation,
   isDarkMode = false,
   plannedRoute,
+  centerTo,
 }) => {
   const cameraRef = useRef<MapboxGL.Camera>(null);
   const sourceRef = useRef<MapboxGL.ShapeSource>(null);
@@ -71,6 +72,16 @@ const MapboxClusteredMapView: React.FC<Props> = ({
     } as const;
   }, [plannedRoute]);
 
+  useEffect(() => {
+    if (centerTo && centerTo.latitude && centerTo.longitude) {
+      cameraRef.current?.setCamera({
+        centerCoordinate: [centerTo.longitude, centerTo.latitude],
+        zoomLevel: centerTo.zoomLevel ?? 12,
+        animationDuration: 500,
+      });
+    }
+  }, [centerTo]);
+
   const onSourcePress = async (e: any) => {
     const { features } = e;
     const feat = features && features[0];
@@ -80,7 +91,7 @@ const MapboxClusteredMapView: React.FC<Props> = ({
         const zoom = await sourceRef.current?.getClusterExpansionZoom(feat);
         const [lon, lat] = feat.geometry.coordinates;
         cameraRef.current?.setCamera({ centerCoordinate: [lon, lat], zoomLevel: (zoom || 10) + 0.5, animationDuration: 400 });
-      } catch (err) {
+      } catch {
         // noop
       }
     } else {
@@ -105,7 +116,7 @@ const MapboxClusteredMapView: React.FC<Props> = ({
           id="stations-source"
           ref={sourceRef}
           cluster
-          clusterRadius={50}
+          clusterRadius={60}
           shape={stationFeatures as any}
           onPress={onSourcePress}
         >
@@ -117,11 +128,11 @@ const MapboxClusteredMapView: React.FC<Props> = ({
               circleRadius: [
                 'step',
                 ['get', 'point_count'],
-                16, 20, 20, 50, 24, 100, 28
+                18, 20, 20, 50, 26, 100, 32
               ],
-              circleOpacity: 0.9,
+              circleOpacity: 0.95,
               circleStrokeColor: colors.white,
-              circleStrokeWidth: 2,
+              circleStrokeWidth: 3,
             }}
           />
           <MapboxGL.SymbolLayer
@@ -129,10 +140,13 @@ const MapboxClusteredMapView: React.FC<Props> = ({
             filter={["has", "point_count"]}
             style={{
               textField: ['to-string', ['get', 'point_count']],
-              textSize: 12,
+              textSize: 16,
               textColor: colors.white,
               textIgnorePlacement: true,
               textAllowOverlap: true,
+              textFont: ['Open Sans Bold'],
+              textHaloColor: colors.primary,
+              textHaloWidth: 1,
             }}
           />
 
@@ -142,9 +156,10 @@ const MapboxClusteredMapView: React.FC<Props> = ({
             filter={["!", ["has", "point_count"]]}
             style={{
               circleColor: isDarkMode ? colors.secondary : colors.primary,
-              circleRadius: 6,
+              circleRadius: 15,
               circleStrokeColor: colors.white,
-              circleStrokeWidth: 2,
+              circleStrokeWidth: 3,
+              circleOpacity: 0.9,
             }}
           />
 
@@ -159,9 +174,10 @@ const MapboxClusteredMapView: React.FC<Props> = ({
               ] as any}
               style={{
                 circleColor: colors.accent1,
-                circleRadius: 9,
+                circleRadius: 15,
                 circleStrokeColor: colors.white,
-                circleStrokeWidth: 2,
+                circleStrokeWidth: 4,
+                circleOpacity: 1,
               }}
             />
           )}
@@ -184,8 +200,8 @@ const MapboxClusteredMapView: React.FC<Props> = ({
             coordinate={[userLocation.longitude, userLocation.latitude]}
           >
             <View style={styles.userLocationMarker}>
-              <View style={styles.userLocationDot} />
               <View style={styles.userLocationPulse} />
+              <View style={styles.userLocationDot} />
             </View>
           </MapboxGL.PointAnnotation>
         )}
@@ -198,26 +214,29 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   userLocationMarker: {
     alignItems: 'center',
-    justifyContent: 'center',
-    width: 40,
     height: 40,
+    justifyContent: 'center',
+    position: 'relative',
+    width: 40,
   },
   userLocationDot: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
     backgroundColor: colors.primary,
-    borderWidth: 3,
     borderColor: colors.white,
+    borderRadius: 6,
+    borderWidth: 3,
+    height: 12,
+    width: 12,
+    zIndex: 2,
   },
   userLocationPulse: {
+    backgroundColor: colors.primary + '30',
+    borderColor: colors.primary + '50',
+    borderRadius: 20,
+    borderWidth: 2,
+    height: 40,
     position: 'absolute',
     width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: colors.primary + '30',
-    borderWidth: 2,
-    borderColor: colors.primary + '50',
+    zIndex: 1,
   },
 });
 

@@ -91,4 +91,21 @@ export class LocationService {
   ): string {
     return `https://www.google.com/maps/dir/${fromLat},${fromLon}/${toLat},${toLon}`;
   }
+
+  /**
+   * Çok duraklı rota için Google Maps URL (origin, waypoints, destination)
+   */
+  static getDirectionsUrlMulti(
+    start: { latitude: number; longitude: number },
+    end: { latitude: number; longitude: number },
+    waypoints?: Array<{ latitude: number; longitude: number }>
+  ): string {
+    const origin = `${start.latitude},${start.longitude}`;
+    const destination = `${end.latitude},${end.longitude}`;
+    const wp = (waypoints || [])
+      .map(w => `${w.latitude},${w.longitude}`)
+      .join('|');
+    const base = `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}`;
+    return wp ? `${base}&waypoints=${encodeURIComponent(wp)}&travelmode=driving` : `${base}&travelmode=driving`;
+  }
 }

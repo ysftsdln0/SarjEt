@@ -13,6 +13,7 @@ interface SearchBarProps {
   isDarkMode?: boolean;
   onFilterPress?: (filterType: string) => void;
   activeFilters?: string[];
+  onPlaceSelected?: (place: { name: string; latitude: number; longitude: number }) => void;
 }
 
 export const SearchBar: React.FC<SearchBarProps> = ({
@@ -25,6 +26,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
   isDarkMode = false,
   onFilterPress,
   activeFilters = [],
+  onPlaceSelected,
 }) => {
   const filterOptions = [
     { key: 'AC', label: 'AC', icon: 'flash-outline' },
@@ -52,6 +54,11 @@ export const SearchBar: React.FC<SearchBarProps> = ({
             onChangeText={onChangeText}
             onSubmitEditing={onSearch}
           />
+          {!!onPlaceSelected && (
+            <TouchableOpacity onPress={onSearch}>
+              <Ionicons name="search" size={20} color={colors.gray600} />
+            </TouchableOpacity>
+          )}
         </View>
       </View>
 
