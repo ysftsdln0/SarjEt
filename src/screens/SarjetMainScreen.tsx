@@ -635,6 +635,7 @@ const SarjetMainScreen: React.FC<{
         userLocation={userLocation}
         stations={stations}
         presetDestination={presetDestination}
+        authToken={authToken || undefined}
       />
       
 

@@ -16,6 +16,7 @@ import colors from '../constants/colors';
 import { LocationService } from '../services/locationService';
 import { planRoute, PlanRouteRequest, PlannedRoutePoint } from '../services/routeService';
 import { getRouteWithStops } from '../services/directionsService';
+import { getPrimaryVehicle, PrimaryVehicle } from '../services/userVehicleService';
 
 export interface RoutePoint {
   id: string;
@@ -45,6 +46,7 @@ interface RoutePlanningProps {
   userLocation: { latitude: number; longitude: number } | null;
   stations: ChargingStation[];
   presetDestination?: { name: string; latitude: number; longitude: number } | null;
+  authToken?: string; // Token'ı props olarak al
 }
 
 const RoutePlanning: React.FC<RoutePlanningProps> = ({
@@ -54,6 +56,7 @@ const RoutePlanning: React.FC<RoutePlanningProps> = ({
   userLocation,
   stations,
   presetDestination,
+  authToken,
 }) => {
   const [startPoint, setStartPoint] = useState<RoutePoint | null>(null);
   const [destination, setDestination] = useState<RoutePoint | null>(null);
@@ -63,13 +66,13 @@ const RoutePlanning: React.FC<RoutePlanningProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [routeResult, setRouteResult] = useState<any>(null);
   
-  // Vehicle and charging settings - flowchart'a göre eklenen parametreler
-  const [vehicleRange, setVehicleRange] = useState<string>('300'); // km
+  // User vehicle data - otomatik olarak yüklenir
+  const [userVehicle, setUserVehicle] = useState<PrimaryVehicle | null>(null);
+  const [vehicleLoading, setVehicleLoading] = useState(false);
+  
+  // Sadece batarya yüzdeleri kullanıcıdan alınır
   const [currentSoC, setCurrentSoC] = useState<string>('80'); // %
-  const [reservePercent, setReservePercent] = useState<string>('10'); // %
-  const [chargeAfterStopPercent, setChargeAfterStopPercent] = useState<string>('80'); // %
-  const [corridorKm, setCorridorKm] = useState<string>('30'); // km
-  const [maxStops, setMaxStops] = useState<string>('8');
+  const [desiredArrivalSoC, setDesiredArrivalSoC] = useState<string>('20'); // %
 
   const transportModes = [
     { key: 'driving', label: 'Araç', icon: 'car', color: colors.primary },
@@ -88,6 +91,36 @@ const RoutePlanning: React.FC<RoutePlanningProps> = ({
       });
     }
   }, [userLocation]);
+
+  // Kullanıcının araç bilgilerini yükle
+  useEffect(() => {
+    if (visible && authToken) {
+      loadUserVehicle();
+    }
+  }, [visible, authToken]);
+
+  const loadUserVehicle = async () => {
+    if (!authToken) return;
+    
+    setVehicleLoading(true);
+    try {
+      const vehicle = await getPrimaryVehicle(authToken);
+      setUserVehicle(vehicle);
+      // Mevcut batarya seviyesini araçtan al
+      if (vehicle.currentBatteryLevel) {
+        setCurrentSoC(vehicle.currentBatteryLevel.toString());
+      }
+    } catch (error) {
+      console.error('Araç bilgileri yüklenirken hata:', error);
+      Alert.alert(
+        'Araç Bilgileri',
+        'Araç bilgileriniz yüklenemedi. Lütfen profil ayarlarınızdan bir araç ekleyin.',
+        [{ text: 'Tamam' }]
+      );
+    } finally {
+      setVehicleLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (visible && presetDestination) {
@@ -156,9 +189,14 @@ const RoutePlanning: React.FC<RoutePlanningProps> = ({
       return;
     }
 
+    if (!userVehicle) {
+      Alert.alert('Hata', 'Araç bilgileri yüklenmelidir. Lütfen profil ayarlarınızdan bir araç ekleyin.');
+      return;
+    }
+
     setIsLoading(true);
     try {
-      // Flowchart'a göre backend route planner'ı çağır
+      // Flowchart'a göre backend route planner'ı çağır - araç bilgilerini otomatik al
       const request: PlanRouteRequest = {
         start: {
           latitude: startPoint.coordinates.latitude,
@@ -169,13 +207,13 @@ const RoutePlanning: React.FC<RoutePlanningProps> = ({
           longitude: destination.coordinates.longitude
         },
         vehicle: {
-          maxRangeKm: parseInt(vehicleRange) || 300
+          maxRangeKm: userVehicle.range // Kullanıcının aracının menzili
         },
         currentSocPercent: parseInt(currentSoC) || 80,
-        reservePercent: parseInt(reservePercent) || 10,
-        chargeAfterStopPercent: parseInt(chargeAfterStopPercent) || 80,
-        corridorKm: parseInt(corridorKm) || 30,
-        maxStops: parseInt(maxStops) || 8
+        reservePercent: 10, // Sabit değer
+        chargeAfterStopPercent: 80, // Sabit değer 
+        corridorKm: 30, // Sabit değer
+        maxStops: 8 // Sabit değer
       };
 
       const response = await planRoute(request);
@@ -324,27 +362,40 @@ const RoutePlanning: React.FC<RoutePlanningProps> = ({
             </View>
           </View>
 
-          {/* Vehicle and Charging Settings - Flowchart'a göre eklenen bölüm */}
+          {/* Vehicle and Battery Settings - Basitleştirilmiş versiyon */}
           {transportMode === 'driving' && (
             <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Araç ve Şarj Ayarları</Text>
+              <Text style={styles.sectionTitle}>Araç ve Batarya Ayarları</Text>
               
-              <View style={styles.settingsGrid}>
-                <View style={styles.settingItem}>
-                  <Text style={styles.settingLabel}>Araç Menzili (km)</Text>
-                  <TextInput
-                    style={styles.settingInput}
-                    value={vehicleRange}
-                    onChangeText={setVehicleRange}
-                    keyboardType="numeric"
-                    placeholder="300"
-                  />
+              {/* Vehicle Info Display */}
+              {vehicleLoading ? (
+                <Text style={styles.loadingText}>Araç bilgileri yükleniyor...</Text>
+              ) : userVehicle ? (
+                <View style={styles.vehicleInfo}>
+                  <Text style={styles.vehicleTitle}>
+                    {userVehicle.brand} {userVehicle.model} {userVehicle.variant} ({userVehicle.year})
+                  </Text>
+                  <Text style={styles.vehicleSpecs}>
+                    Menzil: {userVehicle.range} km • Batarya: {userVehicle.batteryCapacity} kWh
+                  </Text>
+                  {userVehicle.nickname && (
+                    <Text style={styles.vehicleNickname}>"{userVehicle.nickname}"</Text>
+                  )}
                 </View>
-                
-                <View style={styles.settingItem}>
-                  <Text style={styles.settingLabel}>Mevcut Şarj (%)</Text>
+              ) : (
+                <View style={styles.noVehicleInfo}>
+                  <Text style={styles.noVehicleText}>
+                    Araç bilgileri bulunamadı. Lütfen profil ayarlarınızdan bir araç ekleyin.
+                  </Text>
+                </View>
+              )}
+              
+              {/* Simplified Battery Settings */}
+              <View style={styles.batterySettings}>
+                <View style={styles.batterySettingItem}>
+                  <Text style={styles.batteryLabel}>Mevcut Batarya (%)</Text>
                   <TextInput
-                    style={styles.settingInput}
+                    style={styles.batteryInput}
                     value={currentSoC}
                     onChangeText={setCurrentSoC}
                     keyboardType="numeric"
@@ -352,47 +403,14 @@ const RoutePlanning: React.FC<RoutePlanningProps> = ({
                   />
                 </View>
                 
-                <View style={styles.settingItem}>
-                  <Text style={styles.settingLabel}>Rezerv Oran (%)</Text>
+                <View style={styles.batterySettingItem}>
+                  <Text style={styles.batteryLabel}>Varış Noktasında İstenen Batarya (%)</Text>
                   <TextInput
-                    style={styles.settingInput}
-                    value={reservePercent}
-                    onChangeText={setReservePercent}
+                    style={styles.batteryInput}
+                    value={desiredArrivalSoC}
+                    onChangeText={setDesiredArrivalSoC}
                     keyboardType="numeric"
-                    placeholder="10"
-                  />
-                </View>
-                
-                <View style={styles.settingItem}>
-                  <Text style={styles.settingLabel}>Şarj Sonrası (%)</Text>
-                  <TextInput
-                    style={styles.settingInput}
-                    value={chargeAfterStopPercent}
-                    onChangeText={setChargeAfterStopPercent}
-                    keyboardType="numeric"
-                    placeholder="80"
-                  />
-                </View>
-                
-                <View style={styles.settingItem}>
-                  <Text style={styles.settingLabel}>Rota Koridoru (km)</Text>
-                  <TextInput
-                    style={styles.settingInput}
-                    value={corridorKm}
-                    onChangeText={setCorridorKm}
-                    keyboardType="numeric"
-                    placeholder="30"
-                  />
-                </View>
-                
-                <View style={styles.settingItem}>
-                  <Text style={styles.settingLabel}>Max Durak Sayısı</Text>
-                  <TextInput
-                    style={styles.settingInput}
-                    value={maxStops}
-                    onChangeText={setMaxStops}
-                    keyboardType="numeric"
-                    placeholder="8"
+                    placeholder="20"
                   />
                 </View>
               </View>
@@ -729,6 +747,70 @@ const styles = StyleSheet.create({
     padding: 12,
     fontSize: 16,
     backgroundColor: colors.white,
+  },
+  // Yeni stiller - Basitleştirilmiş araç ve batarya ayarları için
+  loadingText: {
+    fontSize: 16,
+    color: colors.gray600,
+    textAlign: 'center',
+    padding: 16,
+  },
+  vehicleInfo: {
+    backgroundColor: colors.gray50,
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+  },
+  vehicleTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: colors.black,
+    marginBottom: 4,
+  },
+  vehicleSpecs: {
+    fontSize: 14,
+    color: colors.gray600,
+    marginBottom: 4,
+  },
+  vehicleNickname: {
+    fontSize: 14,
+    color: colors.primary,
+    fontStyle: 'italic',
+  },
+  noVehicleInfo: {
+    backgroundColor: colors.warning + '20',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: colors.warning,
+  },
+  noVehicleText: {
+    fontSize: 14,
+    color: colors.warning,
+    textAlign: 'center',
+  },
+  batterySettings: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  batterySettingItem: {
+    flex: 1,
+  },
+  batteryLabel: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: colors.black,
+    marginBottom: 8,
+  },
+  batteryInput: {
+    borderWidth: 1,
+    borderColor: colors.gray300,
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 16,
+    backgroundColor: colors.white,
+    textAlign: 'center',
   },
 });
 

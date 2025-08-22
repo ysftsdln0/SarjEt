@@ -117,6 +117,68 @@ router.get('/user-vehicles', auth, async (req, res) => {
   }
 });
 
+// Kullanıcının varsayılan/ana aracını getir (rota planlama için)
+router.get('/user-vehicle/primary', auth, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    
+    // İlk araç varsayılan araç olarak kabul edilir
+    const primaryVehicle = await prisma.userVehicle.findFirst({
+      where: { userId, isActive: true },
+      include: {
+        variant: {
+          include: {
+            model: {
+              include: {
+                brand: true
+              }
+            }
+          }
+        }
+      },
+      orderBy: { createdAt: 'asc' }
+    });
+
+    if (!primaryVehicle) {
+      return res.status(404).json({ 
+        error: 'Kullanıcının kayıtlı aracı bulunamadı',
+        message: 'Lütfen önce bir araç ekleyin' 
+      });
+    }
+
+    // Rota planlama için gerekli teknik özellikleri dahil et
+    const vehicleWithSpecs = {
+      id: primaryVehicle.id,
+      nickname: primaryVehicle.nickname,
+      licensePlate: primaryVehicle.licensePlate,
+      color: primaryVehicle.color,
+      currentBatteryLevel: primaryVehicle.currentBatteryLevel,
+      brand: primaryVehicle.variant.model.brand.name,
+      model: primaryVehicle.variant.model.name,
+      variant: primaryVehicle.variant.name,
+      year: primaryVehicle.variant.year,
+      // Teknik özellikler - Prisma schema'dan alınıyor
+      batteryCapacity: primaryVehicle.variant.batteryCapacity,
+      range: primaryVehicle.variant.maxRange, // maxRange'i range olarak kullan
+      cityRange: primaryVehicle.variant.cityRange,
+      highwayRange: primaryVehicle.variant.highwayRange,
+      efficiency: primaryVehicle.variant.efficiency,
+      cityEfficiency: primaryVehicle.variant.cityEfficiency,
+      highwayEfficiency: primaryVehicle.variant.highwayEfficiency,
+      chargingSpeed: {
+        ac: primaryVehicle.variant.acChargingSpeed,
+        dc: primaryVehicle.variant.dcChargingSpeed
+      },
+      connectorTypes: primaryVehicle.variant.connectorTypes
+    };
+    
+    res.json(vehicleWithSpecs);
+  } catch (error) {
+    console.error('Get primary vehicle error:', error);
+    res.status(500).json({ error: 'Ana araç bilgileri alınamadı' });
+  }
+});
+
 // Kullanıcıya yeni araç ekle (authentication gerekir)
 router.post('/user-vehicles', auth, async (req, res) => {
   try {
