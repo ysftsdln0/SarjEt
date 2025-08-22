@@ -344,6 +344,9 @@ const SarjetMainScreen: React.FC<{
         isDarkMode={isDarkMode}
         activeFilters={activeQuickFilters}
         onFilterPress={handleQuickFilterPress}
+        searchSuggestion={presetDestination}
+        onSuggestionSelect={() => setRoutePlanningVisible(true)}
+        onSuggestionDismiss={() => setPresetDestination(null)}
       />
       
       {/* Map Container */}
@@ -397,26 +400,7 @@ const SarjetMainScreen: React.FC<{
         </View>
       </Animated.View>
 
-      {/* Destination selection panel */}
-      {presetDestination && (
-        <View style={styles.destinationPanel}>
-          <View style={{ flex: 1 }}>
-            <Text style={styles.destinationTitle} numberOfLines={1}>{presetDestination.name}</Text>
-            <Text style={styles.destinationSubtitle}>Hedef olarak belirlemek için dokunun</Text>
-          </View>
-          <TouchableOpacity
-            onPress={() => {
-              setRoutePlanningVisible(true);
-            }}
-            style={styles.destinationButton}
-          >
-            <Text style={styles.destinationButtonText}>Hedef Olarak Seç</Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => setPresetDestination(null)} style={{ marginLeft: 8, paddingHorizontal: 8, paddingVertical: 6 }}>
-            <Ionicons name="close" size={20} color={themeColors.textSecondary} />
-          </TouchableOpacity>
-        </View>
-      )}
+      {/* Start journey CTA when route exists */}
 
       {/* Start journey CTA when route exists */}
       {plannedRoute && (
@@ -542,43 +526,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
-  },
-  destinationPanel: {
-    position: 'absolute',
-    left: 12,
-    right: 12,
-    top: 12,
-    backgroundColor: colors.white,
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    flexDirection: 'row',
-    alignItems: 'center',
-    shadowColor: colors.black,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
-    elevation: 3,
-  },
-  destinationTitle: {
-    color: colors.gray900,
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  destinationSubtitle: {
-    color: colors.gray600,
-    fontSize: 12,
-  },
-  destinationButton: {
-    backgroundColor: colors.primary,
-    borderRadius: 8,
-    paddingHorizontal: 10,
-    paddingVertical: 8,
-  },
-  destinationButtonText: {
-    color: colors.white,
-    fontSize: 12,
-    fontWeight: '600',
   },
   startJourneyBar: {
     position: 'absolute',

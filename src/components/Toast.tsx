@@ -7,6 +7,7 @@ import {
   Dimensions,
   TouchableOpacity,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import colors from '../constants/colors';
 import { fadeIn, fadeOut, slideUp, slideDown } from '../utils/animationUtils';
@@ -32,6 +33,7 @@ const Toast: React.FC<ToastProps> = ({
   onHide,
   onPress,
 }) => {
+  const insets = useSafeAreaInsets();
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(-100)).current;
 
@@ -82,6 +84,7 @@ const Toast: React.FC<ToastProps> = ({
       style={[
         styles.container,
         {
+          top: insets.top + 10, // Safe area'ya uygun pozisyon
           opacity: fadeAnim,
           transform: [{ translateY: slideAnim }],
         },
@@ -105,7 +108,6 @@ const Toast: React.FC<ToastProps> = ({
 const styles = StyleSheet.create({
   container: {
     position: 'absolute',
-    top: 60,
     left: 20,
     right: 20,
     zIndex: 1000,

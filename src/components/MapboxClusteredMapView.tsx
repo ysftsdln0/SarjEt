@@ -51,7 +51,11 @@ const MapboxClusteredMapView: React.FC<Props> = ({
       .map(s => ({
         type: 'Feature',
         geometry: { type: 'Point', coordinates: [s.AddressInfo!.Longitude!, s.AddressInfo!.Latitude!] },
-        properties: { id: s.ID },
+        properties: { 
+          id: s.ID?.toString() || '0',
+          stationId: s.ID,
+          symbol: 'E'  // E for Electric - simple and clear
+        },
       }));
     return {
       type: 'FeatureCollection',
@@ -96,7 +100,7 @@ const MapboxClusteredMapView: React.FC<Props> = ({
       }
     } else {
       const stationId = feat.properties.id;
-      const st = stations.find(s => s.ID === stationId);
+      const st = stations.find(s => s.ID?.toString() === stationId);
       if (st) onStationPress(st);
     }
   };
@@ -150,37 +154,35 @@ const MapboxClusteredMapView: React.FC<Props> = ({
             }}
           />
 
-          {/* Unclustered stations as circles */}
+          {/* Unclustered stations as circles with enhanced design */}
           <MapboxGL.CircleLayer
             id="unclustered-points"
             filter={["!", ["has", "point_count"]]}
             style={{
-              circleColor: isDarkMode ? colors.secondary : colors.primary,
-              circleRadius: 15,
+              circleColor: isDarkMode ? colors.secondary : colors.success,
+              circleRadius: 16,
               circleStrokeColor: colors.white,
               circleStrokeWidth: 3,
-              circleOpacity: 0.9,
+              circleOpacity: 1.0,
             }}
           />
 
           {/* Selected station highlight */}
-          {selectedStation && (
-            <MapboxGL.CircleLayer
-              id="selected-point"
-              filter={[
-                'all',
-                ['!', ['has', 'point_count']],
-                ['==', ['get', 'id'], selectedStation.ID]
-              ] as any}
-              style={{
-                circleColor: colors.accent1,
-                circleRadius: 15,
-                circleStrokeColor: colors.white,
-                circleStrokeWidth: 4,
-                circleOpacity: 1,
-              }}
-            />
-          )}
+          <MapboxGL.CircleLayer
+            id="selected-point"
+            filter={selectedStation ? [
+              'all',
+              ['!', ['has', 'point_count']],
+              ['==', ['get', 'id'], selectedStation.ID?.toString() || '0']
+            ] : ['==', ['literal', false], ['literal', true]]}
+            style={{
+              circleColor: colors.accent1,
+              circleRadius: 20,
+              circleStrokeColor: colors.white,
+              circleStrokeWidth: 4,
+              circleOpacity: 1,
+            }}
+          />
         </MapboxGL.ShapeSource>
 
         {/* Planned route line */}
@@ -200,7 +202,6 @@ const MapboxClusteredMapView: React.FC<Props> = ({
             coordinate={[userLocation.longitude, userLocation.latitude]}
           >
             <View style={styles.userLocationMarker}>
-              <View style={styles.userLocationPulse} />
               <View style={styles.userLocationDot} />
             </View>
           </MapboxGL.PointAnnotation>
@@ -214,29 +215,17 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   userLocationMarker: {
     alignItems: 'center',
-    height: 40,
     justifyContent: 'center',
-    position: 'relative',
-    width: 40,
+    width: 20,
+    height: 20,
   },
   userLocationDot: {
     backgroundColor: colors.primary,
     borderColor: colors.white,
-    borderRadius: 6,
+    borderRadius: 10,
     borderWidth: 3,
-    height: 12,
-    width: 12,
-    zIndex: 2,
-  },
-  userLocationPulse: {
-    backgroundColor: colors.primary + '30',
-    borderColor: colors.primary + '50',
-    borderRadius: 20,
-    borderWidth: 2,
-    height: 40,
-    position: 'absolute',
-    width: 40,
-    zIndex: 1,
+    height: 20,
+    width: 20,
   },
 });
 

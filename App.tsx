@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { ThemeProvider } from './src/contexts/ThemeContext';
 import LoginScreen from './src/screens/LoginScreen';
 import RegisterScreen from './src/screens/RegisterScreen';
@@ -113,42 +114,46 @@ export default function App() {
   if (isLoading) {
     // Loading screen göster
     return (
-      <ThemeProvider>
-        <GestureHandlerRootView style={{ flex: 1 }}>
-          <StatusBar style="auto" />
-          {/* Basit loading ekranı */}
-        </GestureHandlerRootView>
-      </ThemeProvider>
+      <SafeAreaProvider>
+        <ThemeProvider>
+          <GestureHandlerRootView style={{ flex: 1 }}>
+            <StatusBar style="auto" />
+            {/* Basit loading ekranı */}
+          </GestureHandlerRootView>
+        </ThemeProvider>
+      </SafeAreaProvider>
     );
   }
 
   return (
-    <ThemeProvider>
-      <GestureHandlerRootView style={{ flex: 1 }}>
-        <StatusBar style="auto" />
-        
-        {!isAuthenticated ? (
-          // Authentication ekranları
-          currentScreen === 'login' ? (
-            <LoginScreen
-              onLoginSuccess={handleLoginSuccess}
-              onSwitchToRegister={switchToRegister}
-            />
+    <SafeAreaProvider>
+      <ThemeProvider>
+        <GestureHandlerRootView style={{ flex: 1 }}>
+          <StatusBar style="auto" />
+          
+          {!isAuthenticated ? (
+            // Authentication ekranları
+            currentScreen === 'login' ? (
+              <LoginScreen
+                onLoginSuccess={handleLoginSuccess}
+                onSwitchToRegister={switchToRegister}
+              />
+            ) : (
+              <RegisterScreen
+                onRegisterSuccess={handleRegisterSuccess}
+                onSwitchToLogin={switchToLogin}
+              />
+            )
           ) : (
-            <RegisterScreen
-              onRegisterSuccess={handleRegisterSuccess}
-              onSwitchToLogin={switchToLogin}
+            // Ana uygulama
+            <SarjetMainScreen
+              authToken={authToken}
+              user={user}
+              onLogout={handleLogout}
             />
-          )
-        ) : (
-          // Ana uygulama
-          <SarjetMainScreen
-            authToken={authToken}
-            user={user}
-            onLogout={handleLogout}
-          />
-        )}
-      </GestureHandlerRootView>
-    </ThemeProvider>
+          )}
+        </GestureHandlerRootView>
+      </ThemeProvider>
+    </SafeAreaProvider>
   );
 }

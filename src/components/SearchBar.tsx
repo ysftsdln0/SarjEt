@@ -14,6 +14,9 @@ interface SearchBarProps {
   onFilterPress?: (filterType: string) => void;
   activeFilters?: string[];
   onPlaceSelected?: (place: { name: string; latitude: number; longitude: number }) => void;
+  searchSuggestion?: { name: string; latitude: number; longitude: number } | null;
+  onSuggestionSelect?: (suggestion: { name: string; latitude: number; longitude: number }) => void;
+  onSuggestionDismiss?: () => void;
 }
 
 export const SearchBar: React.FC<SearchBarProps> = ({
@@ -27,6 +30,9 @@ export const SearchBar: React.FC<SearchBarProps> = ({
   onFilterPress,
   activeFilters = [],
   onPlaceSelected,
+  searchSuggestion,
+  onSuggestionSelect,
+  onSuggestionDismiss,
 }) => {
   const filterOptions = [
     { key: 'AC', label: 'AC', icon: 'flash-outline' },
@@ -106,6 +112,33 @@ export const SearchBar: React.FC<SearchBarProps> = ({
           </TouchableOpacity>
         ))}
       </ScrollView>
+
+      {/* Search Suggestion Panel - Arama önerisi arama çubuğunun altında */}
+      {searchSuggestion && (
+        <View style={styles.suggestionPanel}>
+          <View style={styles.suggestionContent}>
+            <Ionicons name="location-outline" size={16} color={colors.primary} />
+            <View style={styles.suggestionText}>
+              <Text style={styles.suggestionTitle} numberOfLines={1}>
+                {searchSuggestion.name}
+              </Text>
+              <Text style={styles.suggestionSubtitle}>Hedef olarak belirlemek için dokunun</Text>
+            </View>
+          </View>
+          <TouchableOpacity
+            onPress={() => onSuggestionSelect?.(searchSuggestion)}
+            style={styles.suggestionButton}
+          >
+            <Text style={styles.suggestionButtonText}>Hedef Seç</Text>
+          </TouchableOpacity>
+          <TouchableOpacity 
+            onPress={onSuggestionDismiss}
+            style={styles.suggestionDismiss}
+          >
+            <Ionicons name="close" size={18} color={colors.gray600} />
+          </TouchableOpacity>
+        </View>
+      )}
     </View>
   );
 };
@@ -173,5 +206,56 @@ const styles = StyleSheet.create({
   },
   dropdownIcon: {
     marginLeft: 6,
+  },
+  suggestionPanel: {
+    backgroundColor: colors.white,
+    borderRadius: 12,
+    marginHorizontal: 0,
+    marginTop: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    shadowColor: colors.black,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    borderWidth: 1,
+    borderColor: colors.gray200,
+  },
+  suggestionContent: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  suggestionText: {
+    flex: 1,
+    marginLeft: 8,
+  },
+  suggestionTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.black,
+  },
+  suggestionSubtitle: {
+    fontSize: 12,
+    color: colors.gray600,
+    marginTop: 2,
+  },
+  suggestionButton: {
+    backgroundColor: colors.primary,
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    marginRight: 8,
+  },
+  suggestionButtonText: {
+    color: colors.white,
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  suggestionDismiss: {
+    padding: 4,
   },
 });

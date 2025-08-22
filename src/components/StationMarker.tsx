@@ -39,20 +39,17 @@ const StationMarker: React.FC<StationMarkerProps> = ({
   };
 
   const getMarkerColor = () => {
-    if (isSelected) return colors.primary;
+    if (isSelected) return colors.accent1;
     
-    const connectionType = getConnectionType();
-    if (connectionType === 'DC') return colors.success;
-    if (connectionType === 'AC') return colors.warning;
-    
-    return colors.gray500;
+    // Tüm istasyonları yeşil yap (ekran görüntüsündeki gibi)
+    return colors.success;
   };
 
   const getMarkerIcon = () => {
     const connectionType = getConnectionType();
     if (connectionType === 'DC') return 'flash';
-    if (connectionType === 'AC') return 'flash-outline';
-    return 'battery-charging';
+    if (connectionType === 'AC') return 'flash';
+    return 'flash';
   };
 
   return (
@@ -69,11 +66,15 @@ const StationMarker: React.FC<StationMarkerProps> = ({
       ]}
     >
       <View style={styles.markerContent}>
-        <Ionicons 
-          name={getMarkerIcon() as any} 
-          size={16} 
-          color={colors.white} 
-        />
+        {/* Lightning icon with glow effect */}
+        <View style={styles.iconContainer}>
+          <Ionicons 
+            name={getMarkerIcon() as any} 
+            size={22} 
+            color={colors.white} 
+            style={styles.lightningIcon}
+          />
+        </View>
         
         {isSelected && (
           <View style={styles.selectedIndicator}>
@@ -99,12 +100,12 @@ const StationMarker: React.FC<StationMarkerProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 2,
+    borderWidth: 3,
     borderColor: colors.white,
     shadowColor: colors.black,
     shadowOffset: { width: 0, height: 2 },
@@ -117,6 +118,17 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     width: '100%',
     height: '100%',
+  },
+  iconContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+    height: '100%',
+  },
+  lightningIcon: {
+    textShadowColor: 'rgba(0, 0, 0, 0.3)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 2,
   },
   selectedIndicator: {
     position: 'absolute',
