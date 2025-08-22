@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef } from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, Text } from 'react-native';
 import MapboxGL from '@rnmapbox/maps';
 import colors from '../constants/colors';
 import { ChargingStation, Region, UserLocation } from '../types';
@@ -13,7 +13,10 @@ type Props = {
   onStationPress: (station: ChargingStation) => void;
   selectedStation: ChargingStation | null;
   isDarkMode?: boolean;
-  plannedRoute?: { points?: Array<{ latitude: number; longitude: number; type?: string; title?: string; powerKW?: number }> } | null;
+  plannedRoute?: { 
+    points?: Array<{ latitude: number; longitude: number; type?: string; title?: string; powerKW?: number }>;
+    routeCoordinates?: [number, number][]; // Gerçek rota koordinatları
+  } | null;
   centerTo?: { latitude: number; longitude: number; zoomLevel?: number } | null;
 };
 
@@ -64,8 +67,24 @@ const MapboxClusteredMapView: React.FC<Props> = ({
   }, [stations]);
 
   const routeFeature = useMemo(() => {
+    // Önce gerçek rota koordinatlarını kontrol et
+    if (plannedRoute?.routeCoordinates && plannedRoute.routeCoordinates.length >= 2) {
+      console.log('Using real route coordinates:', plannedRoute.routeCoordinates.length, 'points');
+      return {
+        type: 'Feature',
+        geometry: {
+          type: 'LineString',
+          coordinates: plannedRoute.routeCoordinates,
+        },
+        properties: {},
+      } as const;
+    }
+    
+    // Fallback: düz çizgi rota
     const pts = plannedRoute?.points || [];
     if (pts.length < 2) return null;
+    
+    console.log('Using fallback direct route with', pts.length, 'points');
     return {
       type: 'Feature',
       geometry: {
@@ -188,11 +207,72 @@ const MapboxClusteredMapView: React.FC<Props> = ({
         {/* Planned route line */}
         {routeFeature && (
           <MapboxGL.ShapeSource id="route" shape={routeFeature as any}>
+            {/* Ana rota çizgisi */}
+            <MapboxGL.LineLayer
+              id="route-line-casing"
+              style={{
+                lineColor: '#FFFFFF',
+                lineWidth: 8,
+                lineJoin: 'round',
+                lineCap: 'round',
+                lineOpacity: 0.8,
+              }}
+            />
             <MapboxGL.LineLayer
               id="route-line"
-              style={{ lineColor: '#4F46E5', lineWidth: 5, lineJoin: 'round', lineCap: 'round' }}
+              style={{
+                lineColor: '#4F46E5',
+                lineWidth: 5,
+                lineJoin: 'round',
+                lineCap: 'round',
+                lineOpacity: 1,
+              }}
             />
           </MapboxGL.ShapeSource>
+        )}
+
+        {/* Planned route charging stops */}
+        {plannedRoute?.points?.filter(p => p.type === 'charging').map((stop, index) => (
+          <MapboxGL.PointAnnotation
+            key={`charging-stop-${index}`}
+            id={`charging-stop-${index}`}
+            coordinate={[stop.longitude, stop.latitude]}
+          >
+            <View style={styles.chargingStopMarker}>
+              <Text style={styles.chargingStopText}>{index + 1}</Text>
+              <Text style={styles.chargingStopEmoji}>⚡</Text>
+            </View>
+          </MapboxGL.PointAnnotation>
+        ))}
+
+        {/* Start point marker */}
+        {plannedRoute?.points?.find(p => p.type === 'start') && (
+          <MapboxGL.PointAnnotation
+            id="route-start"
+            coordinate={[
+              plannedRoute.points.find(p => p.type === 'start')!.longitude,
+              plannedRoute.points.find(p => p.type === 'start')!.latitude
+            ]}
+          >
+            <View style={styles.startMarker}>
+              <Text style={styles.startText}>S</Text>
+            </View>
+          </MapboxGL.PointAnnotation>
+        )}
+
+        {/* End point marker */}
+        {plannedRoute?.points?.find(p => p.type === 'destination') && (
+          <MapboxGL.PointAnnotation
+            id="route-end"
+            coordinate={[
+              plannedRoute.points.find(p => p.type === 'destination')!.longitude,
+              plannedRoute.points.find(p => p.type === 'destination')!.latitude
+            ]}
+          >
+            <View style={styles.endMarker}>
+              <Text style={styles.endText}>F</Text>
+            </View>
+          </MapboxGL.PointAnnotation>
         )}
 
         {/* User location custom marker */}
@@ -226,6 +306,86 @@ const styles = StyleSheet.create({
     borderWidth: 3,
     height: 20,
     width: 20,
+  },
+  chargingStopMarker: {
+    backgroundColor: colors.warning,
+    borderRadius: 20,
+    width: 40,
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 3,
+    borderColor: colors.white,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+  },
+  chargingStopNumber: {
+    backgroundColor: colors.warning,
+    borderRadius: 12,
+    width: 24,
+    height: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 2,
+  },
+  chargingStopText: {
+    color: colors.white,
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
+  chargingStopIcon: {
+    backgroundColor: colors.primary,
+    borderRadius: 8,
+    width: 16,
+    height: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  chargingStopEmoji: {
+    fontSize: 8,
+    position: 'absolute',
+    bottom: -2,
+    right: -2,
+  },
+  startMarker: {
+    backgroundColor: colors.success,
+    borderRadius: 20,
+    width: 40,
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 3,
+    borderColor: colors.white,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+  },
+  startText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: colors.white,
+  },
+  endMarker: {
+    backgroundColor: colors.error,
+    borderRadius: 20,
+    width: 40,
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 3,
+    borderColor: colors.white,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+  },
+  endText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: colors.white,
   },
 });
 

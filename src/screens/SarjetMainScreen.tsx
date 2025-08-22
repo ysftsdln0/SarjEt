@@ -106,7 +106,10 @@ const SarjetMainScreen: React.FC<{
   const [mapHeight, setMapHeight] = useState(height);
   const [mapCenter, setMapCenter] = useState<{ latitude: number; longitude: number } | null>(null);
   const [presetDestination, setPresetDestination] = useState<{ name: string; latitude: number; longitude: number } | null>(null);
-  const [plannedRoute, setPlannedRoute] = useState<{ points: Array<{ latitude: number; longitude: number }> } | null>(null);
+  const [plannedRoute, setPlannedRoute] = useState<{ 
+    points: Array<{ latitude: number; longitude: number; type?: string; title?: string }>;
+    routeCoordinates?: [number, number][];
+  } | null>(null);
 
   // Animations
   const fadeAnim = useRef(new Animated.Value(1)).current;
@@ -287,9 +290,23 @@ const SarjetMainScreen: React.FC<{
   // Handle route created
   const handleRouteCreated = useCallback((route: RouteInfo) => {
     showToast('Rota oluşturuldu!', 'success');
-    // Route preview points
-    const pts = route.waypoints.map(w => ({ latitude: w.coordinates.latitude, longitude: w.coordinates.longitude }));
-    setPlannedRoute({ points: pts });
+    
+    // Backend'den gelen şarj durakları ile birlikte tüm nokta bilgilerini al
+    const allPoints = route.waypoints.map(w => ({ 
+      latitude: w.coordinates.latitude, 
+      longitude: w.coordinates.longitude,
+      type: w.type,
+      title: w.name
+    }));
+    
+    // Gerçek rota koordinatları varsa onları kullan, yoksa fallback olarak waypoint'leri kullan
+    setPlannedRoute({ 
+      points: allPoints,
+      routeCoordinates: route.routeCoordinates // Mapbox Directions'dan gelen gerçek rota
+    });
+    
+    console.log('Route set with', allPoints.length, 'points and', route.routeCoordinates?.length || 0, 'route coordinates');
+    
     AnalyticsService.trackUserBehavior(userId, sessionId, 'route_created', { route });
   }, []);
 

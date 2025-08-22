@@ -14,6 +14,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { ChargingStation } from '../types';
 import colors from '../constants/colors';
 import { LocationService } from '../services/locationService';
+import { planRoute, PlanRouteRequest, PlannedRoutePoint } from '../services/routeService';
+import { getRouteWithStops } from '../services/directionsService';
 
 export interface RoutePoint {
   id: string;
@@ -33,6 +35,7 @@ export interface RouteInfo {
   waypoints: RoutePoint[];
   estimatedCost?: number;
   chargingStops: number;
+  routeCoordinates?: [number, number][]; // Mapbox directions için gerçek rota koordinatları
 }
 
 interface RoutePlanningProps {
@@ -57,6 +60,16 @@ const RoutePlanning: React.FC<RoutePlanningProps> = ({
   const [waypoints, setWaypoints] = useState<RoutePoint[]>([]);
   const [transportMode, setTransportMode] = useState<'driving' | 'walking' | 'bicycling' | 'transit'>('driving');
   const [selectedStations, setSelectedStations] = useState<ChargingStation[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [routeResult, setRouteResult] = useState<any>(null);
+  
+  // Vehicle and charging settings - flowchart'a göre eklenen parametreler
+  const [vehicleRange, setVehicleRange] = useState<string>('300'); // km
+  const [currentSoC, setCurrentSoC] = useState<string>('80'); // %
+  const [reservePercent, setReservePercent] = useState<string>('10'); // %
+  const [chargeAfterStopPercent, setChargeAfterStopPercent] = useState<string>('80'); // %
+  const [corridorKm, setCorridorKm] = useState<string>('30'); // km
+  const [maxStops, setMaxStops] = useState<string>('8');
 
   const transportModes = [
     { key: 'driving', label: 'Araç', icon: 'car', color: colors.primary },
@@ -88,7 +101,20 @@ const RoutePlanning: React.FC<RoutePlanningProps> = ({
         },
       });
     }
-  }, [visible, presetDestination]);
+    
+    // Kullanıcının mevcut konumunu başlangıç noktası olarak otomatik seç
+    if (visible && userLocation && !startPoint) {
+      setStartPoint({
+        id: 'current-location',
+        name: 'Mevcut Konum',
+        type: 'start',
+        coordinates: {
+          latitude: userLocation.latitude,
+          longitude: userLocation.longitude,
+        },
+      });
+    }
+  }, [visible, presetDestination, userLocation, startPoint]);
 
   const handleStationSelect = (station: ChargingStation) => {
     if (!destination) {
@@ -130,21 +156,84 @@ const RoutePlanning: React.FC<RoutePlanningProps> = ({
       return;
     }
 
+    setIsLoading(true);
     try {
-      // TODO: Implement actual route calculation with Google Maps API
-      const mockRoute: RouteInfo = {
-        distance: 25.5,
-        duration: 45,
-        transportMode,
-        waypoints: [startPoint, ...waypoints, destination],
-        estimatedCost: transportMode === 'transit' ? 15 : 0,
-        chargingStops: waypoints.length,
+      // Flowchart'a göre backend route planner'ı çağır
+      const request: PlanRouteRequest = {
+        start: {
+          latitude: startPoint.coordinates.latitude,
+          longitude: startPoint.coordinates.longitude
+        },
+        end: {
+          latitude: destination.coordinates.latitude,
+          longitude: destination.coordinates.longitude
+        },
+        vehicle: {
+          maxRangeKm: parseInt(vehicleRange) || 300
+        },
+        currentSocPercent: parseInt(currentSoC) || 80,
+        reservePercent: parseInt(reservePercent) || 10,
+        chargeAfterStopPercent: parseInt(chargeAfterStopPercent) || 80,
+        corridorKm: parseInt(corridorKm) || 30,
+        maxStops: parseInt(maxStops) || 8
       };
 
-      onRouteCreated(mockRoute);
-      onClose();
+      const response = await planRoute(request);
+      
+      if (response.success && response.data) {
+        setRouteResult(response.data);
+        
+        // Backend'den gelen noktaları RoutePoint formatına çevir
+        const routeWaypoints: RoutePoint[] = response.data.points
+          .filter(p => p.type === 'charging')
+          .map((point, index) => ({
+            id: point.stationId?.toString() || `waypoint-${index}`,
+            name: point.title || 'Şarj İstasyonu',
+            type: 'waypoint' as const,
+            coordinates: {
+              latitude: point.latitude,
+              longitude: point.longitude
+            }
+          }));
+
+        console.log('Route planning successful, getting real road route...');
+        console.log('Backend response points:', response.data.points);
+        
+        // Mapbox Directions API'den gerçek yol rotasını al
+        const chargingStops = response.data.points
+          .filter(p => p.type === 'charging')
+          .map(p => ({ latitude: p.latitude, longitude: p.longitude, title: p.title }));
+
+        console.log('Charging stops for directions:', chargingStops);
+
+        const directionsResult = await getRouteWithStops(
+          startPoint.coordinates,
+          destination.coordinates,
+          chargingStops
+        );
+
+        const mockRoute: RouteInfo = {
+          distance: directionsResult?.distance ? directionsResult.distance / 1000 : response.data.summary.distanceKm, // m'den km'ye çevir
+          duration: directionsResult?.duration ? directionsResult.duration / 60 : response.data.summary.durationMin, // s'den dk'ya çevir
+          transportMode,
+          waypoints: [startPoint, ...routeWaypoints, destination],
+          estimatedCost: transportMode === 'transit' ? 15 : 0,
+          chargingStops: response.data.summary.chargingStops,
+          routeCoordinates: directionsResult?.coordinates || undefined, // Gerçek rota koordinatları
+        };
+
+        console.log('Route created with real coordinates:', mockRoute.routeCoordinates?.length, 'points');
+
+        onRouteCreated(mockRoute);
+        onClose();
+      } else {
+        Alert.alert('Hata', response.error || 'Rota hesaplanırken bir hata oluştu.');
+      }
     } catch (error) {
+      console.error('Route planning error:', error);
       Alert.alert('Hata', 'Rota hesaplanırken bir hata oluştu.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -188,9 +277,11 @@ const RoutePlanning: React.FC<RoutePlanningProps> = ({
             <TouchableOpacity 
               style={[styles.createButton, (!startPoint || !destination) && styles.createButtonDisabled]} 
               onPress={calculateRoute}
-              disabled={!startPoint || !destination}
+              disabled={!startPoint || !destination || isLoading}
             >
-              <Text style={styles.createButtonText}>Oluştur</Text>
+              <Text style={styles.createButtonText}>
+                {isLoading ? 'Hesaplanıyor...' : 'Oluştur'}
+              </Text>
             </TouchableOpacity>
             <TouchableOpacity 
               style={[styles.createButton, (!startPoint || !destination) && styles.createButtonDisabled]} 
@@ -232,6 +323,81 @@ const RoutePlanning: React.FC<RoutePlanningProps> = ({
               ))}
             </View>
           </View>
+
+          {/* Vehicle and Charging Settings - Flowchart'a göre eklenen bölüm */}
+          {transportMode === 'driving' && (
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Araç ve Şarj Ayarları</Text>
+              
+              <View style={styles.settingsGrid}>
+                <View style={styles.settingItem}>
+                  <Text style={styles.settingLabel}>Araç Menzili (km)</Text>
+                  <TextInput
+                    style={styles.settingInput}
+                    value={vehicleRange}
+                    onChangeText={setVehicleRange}
+                    keyboardType="numeric"
+                    placeholder="300"
+                  />
+                </View>
+                
+                <View style={styles.settingItem}>
+                  <Text style={styles.settingLabel}>Mevcut Şarj (%)</Text>
+                  <TextInput
+                    style={styles.settingInput}
+                    value={currentSoC}
+                    onChangeText={setCurrentSoC}
+                    keyboardType="numeric"
+                    placeholder="80"
+                  />
+                </View>
+                
+                <View style={styles.settingItem}>
+                  <Text style={styles.settingLabel}>Rezerv Oran (%)</Text>
+                  <TextInput
+                    style={styles.settingInput}
+                    value={reservePercent}
+                    onChangeText={setReservePercent}
+                    keyboardType="numeric"
+                    placeholder="10"
+                  />
+                </View>
+                
+                <View style={styles.settingItem}>
+                  <Text style={styles.settingLabel}>Şarj Sonrası (%)</Text>
+                  <TextInput
+                    style={styles.settingInput}
+                    value={chargeAfterStopPercent}
+                    onChangeText={setChargeAfterStopPercent}
+                    keyboardType="numeric"
+                    placeholder="80"
+                  />
+                </View>
+                
+                <View style={styles.settingItem}>
+                  <Text style={styles.settingLabel}>Rota Koridoru (km)</Text>
+                  <TextInput
+                    style={styles.settingInput}
+                    value={corridorKm}
+                    onChangeText={setCorridorKm}
+                    keyboardType="numeric"
+                    placeholder="30"
+                  />
+                </View>
+                
+                <View style={styles.settingItem}>
+                  <Text style={styles.settingLabel}>Max Durak Sayısı</Text>
+                  <TextInput
+                    style={styles.settingInput}
+                    value={maxStops}
+                    onChangeText={setMaxStops}
+                    keyboardType="numeric"
+                    placeholder="8"
+                  />
+                </View>
+              </View>
+            </View>
+          )}
 
           {/* Route Points */}
           <View style={styles.section}>
@@ -325,17 +491,23 @@ const RoutePlanning: React.FC<RoutePlanningProps> = ({
                 <View style={styles.routeInfoRow}>
                   <Ionicons name="map" size={20} color={colors.primary} />
                   <Text style={styles.routeInfoLabel}>Mesafe:</Text>
-                  <Text style={styles.routeInfoValue}>~25.5 km</Text>
+                  <Text style={styles.routeInfoValue}>
+                    {routeResult ? `${routeResult.summary.distanceKm} km` : '~25.5 km'}
+                  </Text>
                 </View>
                 <View style={styles.routeInfoRow}>
                   <Ionicons name="time" size={20} color={colors.primary} />
                   <Text style={styles.routeInfoLabel}>Süre:</Text>
-                  <Text style={styles.routeInfoValue}>~45 dk</Text>
+                  <Text style={styles.routeInfoValue}>
+                    {routeResult ? `${routeResult.summary.durationMin} dk` : '~45 dk'}
+                  </Text>
                 </View>
                 <View style={styles.routeInfoRow}>
                   <Ionicons name="battery-charging" size={20} color={colors.primary} />
                   <Text style={styles.routeInfoLabel}>Şarj Durakları:</Text>
-                  <Text style={styles.routeInfoValue}>{waypoints.length}</Text>
+                  <Text style={styles.routeInfoValue}>
+                    {routeResult ? routeResult.summary.chargingStops : waypoints.length}
+                  </Text>
                 </View>
                 {transportMode === 'transit' && (
                   <View style={styles.routeInfoRow}>
@@ -533,6 +705,30 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: colors.black,
     marginLeft: 'auto',
+  },
+  // Yeni eklenen stiller - Vehicle Settings için
+  settingsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+  },
+  settingItem: {
+    flex: 1,
+    minWidth: '45%',
+  },
+  settingLabel: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: colors.black,
+    marginBottom: 8,
+  },
+  settingInput: {
+    borderWidth: 1,
+    borderColor: colors.gray300,
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 16,
+    backgroundColor: colors.white,
   },
 });
 
