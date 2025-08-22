@@ -131,7 +131,7 @@ class ChargingStationController {
     try {
       const schema = Joi.object({
         page: Joi.number().min(1).default(1),
-        limit: Joi.number().min(1).max(100).default(20)
+        limit: Joi.number().min(1).max(10000).default(1000) // Maksimum istasyon sınırını artır
       });
 
       const { error, value } = schema.validate(req.query);
