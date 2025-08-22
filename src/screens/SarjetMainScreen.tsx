@@ -19,6 +19,8 @@ import LoadingScreen from '../components/LoadingScreen';
 import { ProfileModal } from '../components/ProfileModal';
 import { FilterModal } from '../components/FilterModal';
 import AdvancedFilterModal, { AdvancedFilterOptions } from '../components/AdvancedFilterModal';
+import EnhancedFilterSystem, { EnhancedFilterOptions } from '../components/EnhancedFilterSystem';
+import QuickFilterBar from '../components/QuickFilterBar';
 import RoutePlanning, { RouteInfo } from '../components/RoutePlanning';
 
 import Toast, { ToastType } from '../components/Toast';
@@ -28,6 +30,7 @@ import { chargingStationService } from '../services/chargingStationService';
 import { searchPlaces } from '../services/geocodingService';
 import { LocationService } from '../services/locationService';
 import { FilterService } from '../services/filterService';
+import EnhancedFilterService from '../services/enhancedFilterService';
 import NotificationService from '../services/NotificationService';
 import AnalyticsService from '../services/AnalyticsService';
 import MapboxClusteredMapView from '../components/MapboxClusteredMapView';
@@ -65,6 +68,7 @@ const SarjetMainScreen: React.FC<{
   const [profileVisible, setProfileVisible] = useState(false);
   const [filterVisible, setFilterVisible] = useState(false);
   const [advancedFilterVisible, setAdvancedFilterVisible] = useState(false);
+  const [enhancedFilterVisible, setEnhancedFilterVisible] = useState(false);
   const [routePlanningVisible, setRoutePlanningVisible] = useState(false);
 
   const [themeSettingsVisible, setThemeSettingsVisible] = useState(false);
@@ -84,6 +88,10 @@ const SarjetMainScreen: React.FC<{
     fastCharging: false,
     freeCharging: false,
   });
+  
+  const [enhancedFilters, setEnhancedFilters] = useState<EnhancedFilterOptions>(
+    EnhancedFilterService.getDefaultFilters()
+  );
   
   // Filter state for quick filter buttons
   const [activeQuickFilters, setActiveQuickFilters] = useState<string[]>([]);
@@ -172,7 +180,7 @@ const SarjetMainScreen: React.FC<{
       const nearbyStations = await chargingStationService.getNearbyStations(
         userLocation.latitude,
         userLocation.longitude,
-        100
+        200 // Daha geniş radius - 200km
       );
       
       setAllStations(nearbyStations);
@@ -315,6 +323,74 @@ const SarjetMainScreen: React.FC<{
     setToast({ visible: true, message, type });
   }, []);
 
+  // Handle quick filter toggle with enhanced filters
+  const handleQuickFilterToggle = useCallback((filter: string) => {
+    setActiveQuickFilters(prev => {
+      if (prev.includes(filter)) {
+        return prev.filter(f => f !== filter);
+      } else {
+        return [...prev, filter];
+      }
+    });
+    
+    // Enhanced filter sistemini de güncelle
+    const newEnhancedFilters = { ...enhancedFilters };
+    switch (filter) {
+      case 'available':
+        newEnhancedFilters.quickFilters.available = !enhancedFilters.quickFilters.available;
+        break;
+      case 'fast':
+        newEnhancedFilters.quickFilters.fastCharging = !enhancedFilters.quickFilters.fastCharging;
+        break;
+      case 'free':
+        newEnhancedFilters.quickFilters.free = !enhancedFilters.quickFilters.free;
+        break;
+      case 'nearby':
+        newEnhancedFilters.quickFilters.nearby = !enhancedFilters.quickFilters.nearby;
+        break;
+      case 'favorite':
+        newEnhancedFilters.quickFilters.favorite = !enhancedFilters.quickFilters.favorite;
+        break;
+    }
+    
+    setEnhancedFilters(newEnhancedFilters);
+    applyEnhancedFilters(newEnhancedFilters);
+    
+    AnalyticsService.trackUserBehavior(userId, sessionId, 'quick_filter_used', { filter });
+  }, [enhancedFilters]);
+
+  // Apply enhanced filters
+  const applyEnhancedFilters = useCallback((filtersToApply: EnhancedFilterOptions) => {
+    let filtered = EnhancedFilterService.applyFilters(allStations, filtersToApply, userLocation);
+    filtered = EnhancedFilterService.sortStations(
+      filtered,
+      filtersToApply.sorting.by,
+      filtersToApply.sorting.order,
+      userLocation
+    );
+    setStations(filtered);
+  }, [allStations, userLocation]);
+
+  // Handle enhanced filter apply
+  const handleEnhancedFilterApply = useCallback((newFilters: EnhancedFilterOptions) => {
+    setEnhancedFilters(newFilters);
+    applyEnhancedFilters(newFilters);
+    
+    // Quick filter state'ini de güncelle
+    const newQuickFilters: string[] = [];
+    if (newFilters.quickFilters.available) newQuickFilters.push('available');
+    if (newFilters.quickFilters.fastCharging) newQuickFilters.push('fast');
+    if (newFilters.quickFilters.free) newQuickFilters.push('free');
+    if (newFilters.quickFilters.nearby) newQuickFilters.push('nearby');
+    if (newFilters.quickFilters.favorite) newQuickFilters.push('favorite');
+    
+    setActiveQuickFilters(newQuickFilters);
+    
+    AnalyticsService.trackUserBehavior(userId, sessionId, 'enhanced_filter_applied', { 
+      filterCount: EnhancedFilterService.getActiveFilterCount(newFilters) 
+    });
+  }, [applyEnhancedFilters]);
+
 
 
   // Handle map height change
@@ -365,6 +441,69 @@ const SarjetMainScreen: React.FC<{
         onSuggestionSelect={() => setRoutePlanningVisible(true)}
         onSuggestionDismiss={() => setPresetDestination(null)}
       />
+
+      {/* Quick Filters */}
+      <QuickFilterBar
+        filters={[
+          { 
+            id: 'available', 
+            title: 'Müsait', 
+            icon: 'checkmark-circle', 
+            color: colors.success,
+            active: activeQuickFilters.includes('available')
+          },
+          { 
+            id: 'fast', 
+            title: 'Hızlı', 
+            icon: 'flash', 
+            color: colors.warning,
+            active: activeQuickFilters.includes('fast')
+          },
+          { 
+            id: 'free', 
+            title: 'Ücretsiz', 
+            icon: 'gift', 
+            color: colors.accent1,
+            active: activeQuickFilters.includes('free')
+          },
+          { 
+            id: 'nearby', 
+            title: 'Yakın', 
+            icon: 'location', 
+            color: colors.primary,
+            active: activeQuickFilters.includes('nearby')
+          },
+          { 
+            id: 'favorite', 
+            title: 'Favoriler', 
+            icon: 'heart', 
+            color: colors.accent2,
+            active: activeQuickFilters.includes('favorite')
+          },
+        ]}
+        onFilterToggle={handleQuickFilterToggle}
+        isDarkMode={isDarkMode}
+      />
+
+      {/* Enhanced Filter Button */}
+      <View style={styles.enhancedFilterContainer}>
+        <TouchableOpacity
+          style={styles.enhancedFilterButton}
+          onPress={() => setEnhancedFilterVisible(true)}
+        >
+          <Ionicons name="options-outline" size={20} color={colors.primary} />
+          <Text style={styles.enhancedFilterText}>
+            Gelişmiş Filtreler
+          </Text>
+          {EnhancedFilterService.getActiveFilterCount(enhancedFilters) > 0 && (
+            <View style={styles.filterBadge}>
+              <Text style={styles.filterBadgeText}>
+                {EnhancedFilterService.getActiveFilterCount(enhancedFilters)}
+              </Text>
+            </View>
+          )}
+        </TouchableOpacity>
+      </View>
       
       {/* Map Container */}
       <Animated.View 
@@ -477,6 +616,17 @@ const SarjetMainScreen: React.FC<{
         currentFilters={advancedFilters}
         stations={allStations}
       />
+
+      {/* Enhanced Filter System */}
+      <EnhancedFilterSystem
+        visible={enhancedFilterVisible}
+        onClose={() => setEnhancedFilterVisible(false)}
+        onApplyFilters={handleEnhancedFilterApply}
+        currentFilters={enhancedFilters}
+        stations={allStations}
+        userLocation={userLocation}
+        isDarkMode={isDarkMode}
+      />
       
       <RoutePlanning
         visible={routePlanningVisible}
@@ -574,6 +724,43 @@ const styles = StyleSheet.create({
     backgroundColor: colors.gray600,
     padding: 8,
     borderRadius: 8,
+  },
+  enhancedFilterContainer: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.gray200,
+  },
+  enhancedFilterButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.gray50,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: colors.primary,
+  },
+  enhancedFilterText: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: colors.primary,
+    marginLeft: 8,
+  },
+  filterBadge: {
+    backgroundColor: colors.primary,
+    borderRadius: 10,
+    minWidth: 20,
+    height: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: 8,
+  },
+  filterBadgeText: {
+    color: colors.white,
+    fontSize: 12,
+    fontWeight: '600',
   },
 });
 

@@ -11,7 +11,7 @@ class ChargingStationController {
         latitude: Joi.number().min(-90).max(90).required(),
         longitude: Joi.number().min(-180).max(180).required(),
         radius: Joi.number().min(1).max(500).default(50), // km - Türkiye geneli için artırıldı
-        limit: Joi.number().min(1).max(100).default(20)
+        limit: Joi.number().min(1).max(10000).default(1000) // Maksimum istasyon sınırını artır
       });
 
       const { error, value } = schema.validate(req.query);
@@ -57,7 +57,7 @@ class ChargingStationController {
     try {
       const schema = Joi.object({
         city: Joi.string().min(2).required(),
-        limit: Joi.number().min(1).max(100).default(50)
+        limit: Joi.number().min(1).max(10000).default(1000) // Maksimum istasyon sınırını artır
       });
 
       const { error, value } = schema.validate(req.query);

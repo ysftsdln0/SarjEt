@@ -70,11 +70,12 @@ export class ChargingStationService {
     latitude: number,
     longitude: number,
     radiusKM: number = 25,
-    maxResults: number = 20
+    maxResults: number = 1000
   ): Promise<ChargingStation[]> {
     // Backend radius limitini kontrol et (maksimum 500km)
     const actualRadius = Math.min(radiusKM, 500);
-    const actualLimit = Math.min(maxResults, 100);
+    // Maksimum istasyon sayısı sınırını kaldır
+    const actualLimit = maxResults;
     
     // Önce bağlantıyı kontrol et
     const isConnected = await this.checkConnection();
@@ -123,7 +124,7 @@ export class ChargingStationService {
   /**
    * Tüm Türkiye'deki istasyonları getirir (eski metodla uyumluluk için)
    */
-  async getAllStationsInTurkey(maxResults: number = 100): Promise<ChargingStation[]> {
+  async getAllStationsInTurkey(maxResults: number = 1000): Promise<ChargingStation[]> {
     const isConnected = await this.checkConnection();
     
     if (!isConnected || !BACKEND_BASE_URL) {
@@ -131,12 +132,12 @@ export class ChargingStationService {
         // eslint-disable-next-line no-console
         console.warn('İnternet bağlantısı yok veya BACKEND URL tanımlı değil, demo veriler kullanılıyor');
       }
-      return mockChargingStations.slice(0, maxResults);
+      return mockChargingStations; // Tüm mock istasyonları döndür
     }
 
     try {
-      // Backend maksimum limit 100, bu yüzden 100 ile sınırlıyoruz
-      const actualLimit = Math.min(maxResults, 100);
+      // Maksimum istasyon sayısı sınırını kaldır
+      const actualLimit = maxResults;
       // Backend maksimum radius 500km, bu yüzden 450km ile sınırlıyoruz
       const maxRadius = 450;
       
@@ -156,7 +157,7 @@ export class ChargingStationService {
         // eslint-disable-next-line no-console
         console.error('Tüm istasyonlar alınamadı, demo veriler kullanılıyor:', error);
       }
-      return mockChargingStations.slice(0, maxResults);
+      return mockChargingStations; // Tüm mock istasyonları döndür
     }
   }
 
@@ -323,21 +324,21 @@ export class ChargingStationService {
 
     return stationsWithDistance
       .filter((station: any) => station.AddressInfo.Distance <= radiusKM)
-      .sort((a: any, b: any) => a.AddressInfo.Distance - b.AddressInfo.Distance)
-      .slice(0, maxResults);
+      .sort((a: any, b: any) => a.AddressInfo.Distance - b.AddressInfo.Distance);
+      // Maksimum istasyon sayısı sınırını kaldır - tüm sonuçları döndür
   }
 
   /**
    * Mock verilerden şehre göre istasyonları getirir
    */
-  private getMockStationsByCity(city: string, limit: number): ChargingStation[] {
+  private getMockStationsByCity(city: string, limit: number = 1000): ChargingStation[] {
     return mockChargingStations
       .map(s => ({ ...s, StatusType: mapStatusType(s.StatusTypeID) || s.StatusType }))
       .filter((station: any) => 
         station.AddressInfo.Town?.toLowerCase().includes(city.toLowerCase()) ||
         station.AddressInfo.StateOrProvince?.toLowerCase().includes(city.toLowerCase())
-      )
-      .slice(0, limit);
+      );
+      // Maksimum istasyon sayısı sınırını kaldır - tüm eşleşen istasyonları döndür
   }
 
   /**

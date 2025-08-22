@@ -457,7 +457,7 @@ const RoutePlanning: React.FC<RoutePlanningProps> = ({
             </Text>
             
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.stationsScroll}>
-              {stations.slice(0, 10).map((station) => (
+              {stations.map((station) => (
                 <TouchableOpacity
                   key={station.ID}
                   style={[

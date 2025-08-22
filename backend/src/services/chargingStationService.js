@@ -229,7 +229,7 @@ class ChargingStationService {
   }
 
   // Koordinatlara göre yakın istasyonları bul
-  findNearbyStations(latitude, longitude, radiusKm = 50, limit = 20) {
+  findNearbyStations(latitude, longitude, radiusKm = 50, limit = 1000) {
     const cacheKey = this._buildNearbyCacheKey(latitude, longitude, radiusKm, limit);
     const now = Date.now();
 
@@ -259,10 +259,10 @@ class ChargingStationService {
       }
     }
     
-    // Mesafeye göre sırala ve limit uygula
+    // Mesafeye göre sırala - maksimum istasyon sınırını kaldır
     const result = nearby
-      .sort((a, b) => a.distance - b.distance)
-      .slice(0, limit);
+      .sort((a, b) => a.distance - b.distance);
+      // .slice(0, limit) satırını kaldırdık - tüm sonuçları döndür
 
     // Cache'e yaz
     this.nearbyCache.set(cacheKey, {
@@ -274,7 +274,7 @@ class ChargingStationService {
   }
 
   // Şehre göre istasyonları bul
-  findStationsByCity(cityName, limit = 50) {
+  findStationsByCity(cityName, limit = 1000) {
     const stations = [];
     
     for (const station of this.stations.values()) {
@@ -284,7 +284,8 @@ class ChargingStationService {
       }
     }
     
-    return stations.slice(0, limit);
+    // Maksimum istasyon sınırını kaldır - tüm eşleşen istasyonları döndür
+    return stations;
   }
 
   // İstasyon ID'ye göre detay getir
