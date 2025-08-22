@@ -89,35 +89,7 @@ router.get('/variants/:variantId', async (req, res) => {
   }
 });
 
-// Kullanıcının araçlarını getir (authentication gerekir)
-router.get('/user-vehicles', auth, async (req, res) => {
-  try {
-    const userId = req.user.id;
-    
-    const userVehicles = await prisma.userVehicle.findMany({
-      where: { userId, isActive: true },
-      include: {
-        variant: {
-          include: {
-            model: {
-              include: {
-                brand: true
-              }
-            }
-          }
-        }
-      },
-      orderBy: { createdAt: 'desc' }
-    });
-    
-    res.json(userVehicles);
-  } catch (error) {
-    console.error('Get user vehicles error:', error);
-    res.status(500).json({ error: 'Kullanıcı araçları alınamadı' });
-  }
-});
-
-// Kullanıcının varsayılan/ana aracını getir (rota planlama için)
+// Kullanıcının varsayılan/ana aracını getir (rota planlama için) - ÖNCE GELMELİ
 router.get('/user-vehicle/primary', auth, async (req, res) => {
   try {
     const userId = req.user.id;
@@ -176,6 +148,34 @@ router.get('/user-vehicle/primary', auth, async (req, res) => {
   } catch (error) {
     console.error('Get primary vehicle error:', error);
     res.status(500).json({ error: 'Ana araç bilgileri alınamadı' });
+  }
+});
+
+// Kullanıcının araçlarını getir (authentication gerekir) - SONRA GELMELİ
+router.get('/user-vehicles', auth, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    
+    const userVehicles = await prisma.userVehicle.findMany({
+      where: { userId, isActive: true },
+      include: {
+        variant: {
+          include: {
+            model: {
+              include: {
+                brand: true
+              }
+            }
+          }
+        }
+      },
+      orderBy: { createdAt: 'desc' }
+    });
+    
+    res.json(userVehicles);
+  } catch (error) {
+    console.error('Get user vehicles error:', error);
+    res.status(500).json({ error: 'Kullanıcı araçları alınamadı' });
   }
 });
 
