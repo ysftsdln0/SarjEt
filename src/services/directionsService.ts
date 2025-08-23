@@ -76,6 +76,7 @@ export async function getRouteWithStops(
     ];
 
     console.log('Getting route with waypoints:', allWaypoints.length);
+    console.log('All waypoints:', allWaypoints.map(wp => `${wp.latitude}, ${wp.longitude}`));
 
     // Eğer çok fazla waypoint varsa, segmentler halinde rota al ve birleştir
     if (allWaypoints.length > 25) { // Mapbox limiti ~25 waypoint

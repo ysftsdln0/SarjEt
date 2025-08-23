@@ -89,9 +89,10 @@ export class ChargingStationService {
     }
 
     try {
-      if (__DEV__) {
+      // Detay log seviyesini azalt
+      if (__DEV__ && process.env.NODE_ENV !== 'production') {
         // eslint-disable-next-line no-console
-        console.log('Backend API çağrısı:', {
+        console.debug('Backend API çağrısı:', {
           url: `${BACKEND_URL}/nearby`,
           params: { latitude, longitude, radius: actualRadius, limit: actualLimit }
         });

@@ -48,8 +48,149 @@ const MapboxClusteredMapView: React.FC<Props> = ({
     [initialRegion.longitudeDelta]
   );
 
+  // Waypoint istasyonlarını stations array'ine ekle (görünür alan dışındaki waypoint'ler için)
+  const enhancedStations = useMemo(() => {
+    const waypointStations: ChargingStation[] = [];
+    const waypointStops = plannedRoute?.points?.filter(p => p.type === 'waypoint') || [];
+    
+    console.log('=== WAYPOINT ENHANCEMENT DEBUG ===');
+    console.log('Planned route exists:', !!plannedRoute);
+    console.log('Planned route points:', plannedRoute?.points);
+    console.log('Waypoint stops found:', waypointStops.length);
+    console.log('Waypoint stops data:', waypointStops);
+    
+    for (const waypoint of waypointStops) {
+      // Bu waypoint zaten stations içinde var mı?
+      const existsInStations = stations.some(s => 
+        s.AddressInfo?.Latitude === waypoint.latitude && 
+        s.AddressInfo?.Longitude === waypoint.longitude
+      );
+      
+      console.log(`Waypoint ${waypoint.title}: exists in stations = ${existsInStations}`);
+      
+      if (!existsInStations && waypoint.title) {
+        // Waypoint için mock bir ChargingStation oluştur
+        const waypointId = Math.floor(Math.random() * 999999) + 500000;
+        const mockStation: ChargingStation = {
+          ID: waypointId,
+          UUID: `waypoint_${waypointId}`,
+          DataProviderID: 999,
+          OperatorID: 999,
+          AddressInfo: {
+            ID: waypointId + 1000000,
+            Title: waypoint.title,
+            AddressLine1: waypoint.title,
+            Town: 'Waypoint',
+            StateOrProvince: '',
+            Postcode: '',
+            CountryID: 229,
+            Latitude: waypoint.latitude,
+            Longitude: waypoint.longitude,
+            Distance: 0
+          },
+          Connections: waypoint.powerKW ? [{ 
+            ID: waypointId + 2000000,
+            ConnectionTypeID: 25,
+            PowerKW: waypoint.powerKW,
+            LevelID: 2,
+            CurrentTypeID: 20,
+            Quantity: 1
+          }] : [],
+          NumberOfPoints: 1,
+          StatusTypeID: 50,
+          GeneralComments: 'Rota planlama waypoint istasyonu',
+          UserComments: [],
+          MediaItems: [],
+          IsRecentlyVerified: true
+        };
+        waypointStations.push(mockStation);
+        console.log('Created mock station for waypoint:', mockStation);
+      }
+    }
+    
+    // Test için Manuel waypoint istasyonları ekle (Harita dışında)
+    const testWaypoints: ChargingStation[] = [
+      {
+        ID: 900001,
+        UUID: 'test_waypoint_1',
+        DataProviderID: 999,
+        OperatorID: 999,
+        AddressInfo: {
+          ID: 900001,
+          Title: 'TEST Waypoint İstasyon - Ankara',
+          AddressLine1: 'Test Adresi',
+          Town: 'Ankara',
+          StateOrProvince: 'Ankara',
+          Postcode: '06000',
+          CountryID: 229,
+          Latitude: 39.9208,
+          Longitude: 32.8541,
+          Distance: 0
+        },
+        Connections: [{
+          ID: 900001,
+          ConnectionTypeID: 25,
+          PowerKW: 50,
+          LevelID: 3,
+          CurrentTypeID: 30,
+          Quantity: 2
+        }],
+        NumberOfPoints: 1,
+        StatusTypeID: 50,
+        GeneralComments: 'Test waypoint istasyonu - Ankara',
+        UserComments: [],
+        MediaItems: [],
+        IsRecentlyVerified: true
+      },
+      {
+        ID: 900002,
+        UUID: 'test_waypoint_2',
+        DataProviderID: 999,
+        OperatorID: 999,
+        AddressInfo: {
+          ID: 900002,
+          Title: 'TEST Waypoint İstasyon - İzmir',
+          AddressLine1: 'Test Adresi',
+          Town: 'İzmir',
+          StateOrProvince: 'İzmir',
+          Postcode: '35000',
+          CountryID: 229,
+          Latitude: 38.4192,
+          Longitude: 27.1287,
+          Distance: 0
+        },
+        Connections: [{
+          ID: 900002,
+          ConnectionTypeID: 33,
+          PowerKW: 75,
+          LevelID: 3,
+          CurrentTypeID: 30,
+          Quantity: 1
+        }],
+        NumberOfPoints: 1,
+        StatusTypeID: 50,
+        GeneralComments: 'Test waypoint istasyonu - İzmir',
+        UserComments: [],
+        MediaItems: [],
+        IsRecentlyVerified: true
+      }
+    ];
+    
+    console.log('Created', waypointStations.length, 'waypoint stations from route');
+    console.log('Adding', testWaypoints.length, 'test waypoint stations');
+    console.log('=== END WAYPOINT DEBUG ===');
+    
+    console.log('Created', waypointStations.length, 'waypoint stations from route');
+    console.log('Adding', testWaypoints.length, 'test waypoint stations');
+    console.log('=== END WAYPOINT DEBUG ===');
+    
+    // Orijinal stations ile waypoint stations'ları ve test stations'ları birleştir
+    return [...stations, ...waypointStations, ...testWaypoints];
+  }, [stations, plannedRoute?.points]);
+
   const stationFeatures = useMemo(() => {
-    const feats = stations
+    // enhancedStations kullan (waypoint mock'ları dahil)
+    const feats = enhancedStations
       .filter(s => !!s.AddressInfo?.Latitude && !!s.AddressInfo?.Longitude)
       .map(s => ({
         type: 'Feature',
@@ -57,14 +198,15 @@ const MapboxClusteredMapView: React.FC<Props> = ({
         properties: { 
           id: s.ID?.toString() || '0',
           stationId: s.ID,
-          symbol: 'E'  // E for Electric - simple and clear
+          symbol: 'E',  // E for Electric - simple and clear
+          isWaypoint: s.DataProviderID === 999 // Waypoint mock istasyonlarını işaretle
         },
       }));
     return {
       type: 'FeatureCollection',
       features: feats,
     } as const;
-  }, [stations]);
+  }, [enhancedStations]);
 
   const routeFeature = useMemo(() => {
     // Önce gerçek rota koordinatlarını kontrol et
@@ -119,7 +261,8 @@ const MapboxClusteredMapView: React.FC<Props> = ({
       }
     } else {
       const stationId = feat.properties.id;
-      const st = stations.find(s => s.ID?.toString() === stationId);
+      // enhancedStations içinden ara (waypoint mock'ları dahil)
+      const st = enhancedStations.find(s => s.ID?.toString() === stationId);
       if (st) onStationPress(st);
     }
   };
@@ -186,6 +329,23 @@ const MapboxClusteredMapView: React.FC<Props> = ({
             }}
           />
 
+          {/* Waypoint mock stations with different styling */}
+          <MapboxGL.CircleLayer
+            id="waypoint-points"
+            filter={[
+              'all',
+              ['!', ['has', 'point_count']],
+              ['==', ['get', 'isWaypoint'], true]
+            ]}
+            style={{
+              circleColor: colors.warning,
+              circleRadius: 18,
+              circleStrokeColor: colors.white,
+              circleStrokeWidth: 4,
+              circleOpacity: 1.0,
+            }}
+          />
+
           {/* Selected station highlight */}
           <MapboxGL.CircleLayer
             id="selected-point"
@@ -193,7 +353,11 @@ const MapboxClusteredMapView: React.FC<Props> = ({
               'all',
               ['!', ['has', 'point_count']],
               ['==', ['get', 'id'], selectedStation.ID?.toString() || '0']
-            ] : ['==', ['literal', false], ['literal', true]]}
+            ] : [
+              '==', 
+              ['get', 'id'], 
+              'NO_SELECTION'
+            ]}
             style={{
               circleColor: colors.accent1,
               circleRadius: 20,
@@ -231,22 +395,57 @@ const MapboxClusteredMapView: React.FC<Props> = ({
           </MapboxGL.ShapeSource>
         )}
 
-        {/* Planned route charging stops */}
-        {plannedRoute?.points?.filter(p => p.type === 'charging').map((stop, index) => (
+        {/* TEST MARKER - Geçici olarak kapalı */}
+        {false && (
           <MapboxGL.PointAnnotation
-            key={`charging-stop-${index}`}
-            id={`charging-stop-${index}`}
-            coordinate={[stop.longitude, stop.latitude]}
+            key="test-marker"
+            id="test-marker"
+            coordinate={[30.7030242, 36.8865728]} // Antalya yakınları
           >
-            <View style={styles.chargingStopMarker}>
-              <Text style={styles.chargingStopText}>{index + 1}</Text>
-              <Text style={styles.chargingStopEmoji}>⚡</Text>
+            <View style={{
+              backgroundColor: 'red',
+              width: 30,
+              height: 30,
+              borderRadius: 15,
+              justifyContent: 'center',
+              alignItems: 'center'
+            }}>
+              <Text style={{ color: 'white', fontSize: 12, fontWeight: 'bold' }}>T</Text>
             </View>
           </MapboxGL.PointAnnotation>
-        ))}
+        )}
 
-        {/* Start point marker */}
-        {plannedRoute?.points?.find(p => p.type === 'start') && (
+        {/* Planned route charging stops - Geçici olarak kapalı */}
+        {false && (() => {
+          // RoutePoint type'ında 'charging' yok, 'waypoint' var (bu şarj istasyonları)
+          const chargingStops = plannedRoute?.points?.filter(p => p.type === 'waypoint') || [];
+          console.log('=== MAPBOX CHARGING STOPS DEBUG ===');
+          console.log('Planned route exists:', !!plannedRoute);
+          console.log('Planned route points:', plannedRoute?.points);
+          console.log('All points count:', plannedRoute?.points?.length || 0);
+          console.log('Points types:', plannedRoute?.points?.map(p => ({ type: p.type, title: p.title })));
+          console.log('Waypoint stops (charging) count:', chargingStops.length);
+          console.log('Waypoint stops (charging):', chargingStops);
+          console.log('=== END DEBUG ===');
+          
+          return chargingStops.map((stop, index) => {
+            console.log(`Rendering charging stop ${index}:`, stop);
+            return (
+              <MapboxGL.PointAnnotation
+                key={`charging-stop-${index}`}
+                id={`charging-stop-${index}`}
+                coordinate={[stop.longitude, stop.latitude]}
+              >
+                <View style={styles.chargingStopMarker}>
+                  <Text style={styles.chargingStopText}>⚡{index + 1}</Text>
+                </View>
+              </MapboxGL.PointAnnotation>
+            );
+          });
+        })()}
+
+        {/* Start point marker - Geçici olarak kapalı */}
+        {false && plannedRoute?.points?.find(p => p.type === 'start') && (
           <MapboxGL.PointAnnotation
             id="route-start"
             coordinate={[
@@ -260,8 +459,8 @@ const MapboxClusteredMapView: React.FC<Props> = ({
           </MapboxGL.PointAnnotation>
         )}
 
-        {/* End point marker */}
-        {plannedRoute?.points?.find(p => p.type === 'destination') && (
+        {/* End point marker - Geçici olarak kapalı */}
+        {false && plannedRoute?.points?.find(p => p.type === 'destination') && (
           <MapboxGL.PointAnnotation
             id="route-end"
             coordinate={[
@@ -275,8 +474,8 @@ const MapboxClusteredMapView: React.FC<Props> = ({
           </MapboxGL.PointAnnotation>
         )}
 
-        {/* User location custom marker */}
-        {userLocation && (
+        {/* User location custom marker - Geçici olarak kapalı */}
+        {false && userLocation && (
           <MapboxGL.PointAnnotation
             id="user"
             coordinate={[userLocation.longitude, userLocation.latitude]}
@@ -342,12 +541,6 @@ const styles = StyleSheet.create({
     height: 16,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  chargingStopEmoji: {
-    fontSize: 8,
-    position: 'absolute',
-    bottom: -2,
-    right: -2,
   },
   startMarker: {
     backgroundColor: colors.success,

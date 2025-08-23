@@ -299,6 +299,20 @@ const SarjetMainScreen: React.FC<{
   const handleRouteCreated = useCallback((route: RouteInfo) => {
     showToast('Rota oluşturuldu!', 'success');
     
+    console.log('=== ROUTE CREATED DEBUG ===');
+    console.log('Route received:', route);
+    console.log('Route waypoints:', route.waypoints);
+    console.log('Route waypoints count:', route.waypoints?.length);
+    
+    // Her waypoint'in detaylarını logla
+    route.waypoints?.forEach((w, index) => {
+      console.log(`Waypoint ${index}:`, {
+        type: w.type,
+        name: w.name,
+        coordinates: w.coordinates
+      });
+    });
+    
     // Backend'den gelen şarj durakları ile birlikte tüm nokta bilgilerini al
     const allPoints = route.waypoints.map(w => ({ 
       latitude: w.coordinates.latitude, 
@@ -307,13 +321,20 @@ const SarjetMainScreen: React.FC<{
       title: w.name
     }));
     
+    console.log('Processed points:', allPoints);
+    console.log('Waypoint points (charging stops):', allPoints.filter(p => p.type === 'waypoint'));
+    
     // Gerçek rota koordinatları varsa onları kullan, yoksa fallback olarak waypoint'leri kullan
-    setPlannedRoute({ 
+    const routeData = { 
       points: allPoints,
       routeCoordinates: route.routeCoordinates // Mapbox Directions'dan gelen gerçek rota
-    });
+    };
     
-    console.log('Route set with', allPoints.length, 'points and', route.routeCoordinates?.length || 0, 'route coordinates');
+    console.log('Setting planned route:', routeData);
+    console.log('Route data points count:', routeData.points?.length);
+    console.log('Route coordinates count:', routeData.routeCoordinates?.length);
+    setPlannedRoute(routeData);
+    console.log('=== END ROUTE DEBUG ===');
     
     AnalyticsService.trackUserBehavior(userId, sessionId, 'route_created', { route });
   }, []);

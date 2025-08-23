@@ -61,7 +61,7 @@ const RoutePlanning: React.FC<RoutePlanningProps> = ({
   const [startPoint, setStartPoint] = useState<RoutePoint | null>(null);
   const [destination, setDestination] = useState<RoutePoint | null>(null);
   const [waypoints, setWaypoints] = useState<RoutePoint[]>([]);
-  const [transportMode, setTransportMode] = useState<'driving' | 'walking' | 'bicycling' | 'transit'>('driving');
+  const transportMode = 'driving'; // Sabit olarak araç modu
   const [selectedStations, setSelectedStations] = useState<ChargingStation[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [routeResult, setRouteResult] = useState<any>(null);
@@ -221,26 +221,39 @@ const RoutePlanning: React.FC<RoutePlanningProps> = ({
       if (response.success && response.data) {
         setRouteResult(response.data);
         
+        console.log('=== BACKEND RESPONSE DEBUG ===');
+        console.log('Full response:', JSON.stringify(response.data, null, 2));
+        console.log('Points array:', response.data.points);
+        console.log('Points count:', response.data.points?.length);
+        console.log('=== END DEBUG ===');
+        
         // Backend'den gelen noktaları RoutePoint formatına çevir
-        const routeWaypoints: RoutePoint[] = response.data.points
+        const routeWaypoints: RoutePoint[] = (response.data.points || [])
           .filter(p => p.type === 'charging')
-          .map((point, index) => ({
-            id: point.stationId?.toString() || `waypoint-${index}`,
-            name: point.title || 'Şarj İstasyonu',
-            type: 'waypoint' as const,
-            coordinates: {
-              latitude: point.latitude,
-              longitude: point.longitude
-            }
-          }));
+          .map((point, index) => {
+            console.log('Processing charging point:', point);
+            return {
+              id: point.stationId?.toString() || `waypoint-${index}`,
+              name: point.title || 'Şarj İstasyonu',
+              type: 'waypoint' as const,
+              coordinates: {
+                latitude: point.latitude,
+                longitude: point.longitude
+              }
+            };
+          });
 
         console.log('Route planning successful, getting real road route...');
-        console.log('Backend response points:', response.data.points);
+        console.log('Processed route waypoints:', routeWaypoints);
         
         // Mapbox Directions API'den gerçek yol rotasını al
-        const chargingStops = response.data.points
+        const chargingStops = (response.data.points || [])
           .filter(p => p.type === 'charging')
-          .map(p => ({ latitude: p.latitude, longitude: p.longitude, title: p.title }));
+          .map(p => ({ 
+            latitude: p.latitude, 
+            longitude: p.longitude, 
+            title: p.title || 'Şarj İstasyonu'
+          }));
 
         console.log('Charging stops for directions:', chargingStops);
 
@@ -255,12 +268,16 @@ const RoutePlanning: React.FC<RoutePlanningProps> = ({
           duration: directionsResult?.duration ? directionsResult.duration / 60 : response.data.summary.durationMin, // s'den dk'ya çevir
           transportMode,
           waypoints: [startPoint, ...routeWaypoints, destination],
-          estimatedCost: transportMode === 'transit' ? 15 : 0,
+          estimatedCost: 0, // Araç için her zaman 0
           chargingStops: response.data.summary.chargingStops,
           routeCoordinates: directionsResult?.coordinates || undefined, // Gerçek rota koordinatları
         };
 
+        // Backend'den gelen waypoint'leri local state'e de ekle (Google Maps için)
+        setWaypoints(routeWaypoints);
+
         console.log('Route created with real coordinates:', mockRoute.routeCoordinates?.length, 'points');
+        console.log('Updated waypoints state for Google Maps:', routeWaypoints);
 
         onRouteCreated(mockRoute);
         onClose();
@@ -332,90 +349,117 @@ const RoutePlanning: React.FC<RoutePlanningProps> = ({
         </View>
 
         <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-          {/* Transport Mode Selection */}
+          {/* Vehicle and Battery Settings - Güzelleştirilmiş tasarım */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Ulaşım Modu</Text>
-            <View style={styles.transportModesGrid}>
-              {transportModes.map((mode) => (
-                <TouchableOpacity
-                  key={mode.key}
-                  style={[
-                    styles.transportModeButton,
-                    transportMode === mode.key && styles.transportModeActive,
-                    { borderColor: mode.color },
-                  ]}
-                  onPress={() => setTransportMode(mode.key as any)}
-                >
-                  <Ionicons 
-                    name={mode.icon as any} 
-                    size={24} 
-                    color={transportMode === mode.key ? colors.white : mode.color} 
-                  />
-                  <Text style={[
-                    styles.transportModeLabel,
-                    transportMode === mode.key && styles.transportModeLabelActive,
-                  ]}>
-                    {mode.label}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          </View>
-
-          {/* Vehicle and Battery Settings - Basitleştirilmiş versiyon */}
-          {transportMode === 'driving' && (
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Araç ve Batarya Ayarları</Text>
-              
-              {/* Vehicle Info Display */}
-              {vehicleLoading ? (
+            <Text style={styles.sectionTitle}>Araç ve Batarya Ayarları</Text>
+            
+            {/* Vehicle Info Display */}
+            {vehicleLoading ? (
+              <View style={styles.loadingContainer}>
+                <Ionicons name="car" size={24} color={colors.primary} />
                 <Text style={styles.loadingText}>Araç bilgileri yükleniyor...</Text>
-              ) : userVehicle ? (
-                <View style={styles.vehicleInfo}>
-                  <Text style={styles.vehicleTitle}>
-                    {userVehicle.brand} {userVehicle.model} {userVehicle.variant} ({userVehicle.year})
-                  </Text>
-                  <Text style={styles.vehicleSpecs}>
-                    Menzil: {userVehicle.range} km • Batarya: {userVehicle.batteryCapacity} kWh
-                  </Text>
-                  {userVehicle.nickname && (
+              </View>
+            ) : userVehicle ? (
+              <View style={styles.vehicleInfoCard}>
+                <View style={styles.vehicleHeader}>
+                  <Ionicons name="car-sport" size={24} color={colors.primary} />
+                  <View style={styles.vehicleDetails}>
+                    <Text style={styles.vehicleTitle}>
+                      {userVehicle.brand} {userVehicle.model}
+                    </Text>
+                    <Text style={styles.vehicleSubtitle}>
+                      {userVehicle.variant} ({userVehicle.year})
+                    </Text>
+                  </View>
+                </View>
+                <View style={styles.vehicleSpecs}>
+                  <View style={styles.specItem}>
+                    <Ionicons name="speedometer" size={16} color={colors.gray600} />
+                    <Text style={styles.specText}>{userVehicle.range} km</Text>
+                  </View>
+                  <View style={styles.specItem}>
+                    <Ionicons name="battery-charging" size={16} color={colors.gray600} />
+                    <Text style={styles.specText}>{userVehicle.batteryCapacity} kWh</Text>
+                  </View>
+                </View>
+                {userVehicle.nickname && (
+                  <View style={styles.nicknameContainer}>
+                    <Ionicons name="heart" size={14} color={colors.primary} />
                     <Text style={styles.vehicleNickname}>"{userVehicle.nickname}"</Text>
-                  )}
-                </View>
-              ) : (
-                <View style={styles.noVehicleInfo}>
-                  <Text style={styles.noVehicleText}>
-                    Araç bilgileri bulunamadı. Lütfen profil ayarlarınızdan bir araç ekleyin.
-                  </Text>
-                </View>
-              )}
+                  </View>
+                )}
+              </View>
+            ) : (
+              <View style={styles.noVehicleCard}>
+                <Ionicons name="warning" size={24} color={colors.warning} />
+                <Text style={styles.noVehicleText}>
+                  Araç bilgileri bulunamadı. Lütfen profil ayarlarınızdan bir araç ekleyin.
+                </Text>
+              </View>
+            )}
+            
+            {/* Enhanced Battery Settings */}
+            <View style={styles.batterySettingsCard}>
+              <Text style={styles.batterySettingsTitle}>Batarya Ayarları</Text>
               
-              {/* Simplified Battery Settings */}
-              <View style={styles.batterySettings}>
-                <View style={styles.batterySettingItem}>
-                  <Text style={styles.batteryLabel}>Mevcut Batarya (%)</Text>
-                  <TextInput
-                    style={styles.batteryInput}
-                    value={currentSoC}
-                    onChangeText={setCurrentSoC}
-                    keyboardType="numeric"
-                    placeholder="80"
-                  />
+              <View style={styles.batteryInputsContainer}>
+                <View style={styles.batteryInputCard}>
+                  <View style={styles.batteryInputHeader}>
+                    <Ionicons name="battery-half" size={20} color={colors.success} />
+                    <Text style={styles.batteryInputLabel}>Mevcut Batarya</Text>
+                  </View>
+                  <View style={styles.batteryInputWrapper}>
+                    <TextInput
+                      style={styles.batteryInput}
+                      value={currentSoC}
+                      onChangeText={setCurrentSoC}
+                      keyboardType="numeric"
+                      placeholder="80"
+                      maxLength={3}
+                    />
+                    <Text style={styles.batteryUnit}>%</Text>
+                  </View>
+                  <View style={styles.batteryProgressBar}>
+                    <View 
+                      style={[
+                        styles.batteryProgress, 
+                        { width: `${Math.min(parseInt(currentSoC) || 0, 100)}%` }
+                      ]} 
+                    />
+                  </View>
                 </View>
                 
-                <View style={styles.batterySettingItem}>
-                  <Text style={styles.batteryLabel}>Varış Noktasında İstenen Batarya (%)</Text>
-                  <TextInput
-                    style={styles.batteryInput}
-                    value={desiredArrivalSoC}
-                    onChangeText={setDesiredArrivalSoC}
-                    keyboardType="numeric"
-                    placeholder="20"
-                  />
+                <View style={styles.batteryInputCard}>
+                  <View style={styles.batteryInputHeader}>
+                    <Ionicons name="flag" size={20} color={colors.primary} />
+                    <Text style={styles.batteryInputLabel}>Varış Bataryası</Text>
+                  </View>
+                  <View style={styles.batteryInputWrapper}>
+                    <TextInput
+                      style={styles.batteryInput}
+                      value={desiredArrivalSoC}
+                      onChangeText={setDesiredArrivalSoC}
+                      keyboardType="numeric"
+                      placeholder="20"
+                      maxLength={3}
+                    />
+                    <Text style={styles.batteryUnit}>%</Text>
+                  </View>
+                  <View style={styles.batteryProgressBar}>
+                    <View 
+                      style={[
+                        styles.batteryProgress, 
+                        { 
+                          width: `${Math.min(parseInt(desiredArrivalSoC) || 0, 100)}%`,
+                          backgroundColor: colors.primary 
+                        }
+                      ]} 
+                    />
+                  </View>
                 </View>
               </View>
             </View>
-          )}
+          </View>
 
           {/* Route Points */}
           <View style={styles.section}>
@@ -527,13 +571,7 @@ const RoutePlanning: React.FC<RoutePlanningProps> = ({
                     {routeResult ? routeResult.summary.chargingStops : waypoints.length}
                   </Text>
                 </View>
-                {transportMode === 'transit' && (
-                  <View style={styles.routeInfoRow}>
-                    <Ionicons name="card" size={20} color={colors.primary} />
-                    <Text style={styles.routeInfoLabel}>Tahmini Ücret:</Text>
-                    <Text style={styles.routeInfoValue}>~15 ₺</Text>
-                  </View>
-                )}
+                {/* Toplu taşıma modu kaldırıldı */}
               </View>
             </View>
           )}
@@ -767,11 +805,6 @@ const styles = StyleSheet.create({
     color: colors.black,
     marginBottom: 4,
   },
-  vehicleSpecs: {
-    fontSize: 14,
-    color: colors.gray600,
-    marginBottom: 4,
-  },
   vehicleNickname: {
     fontSize: 14,
     color: colors.primary,
@@ -811,6 +844,141 @@ const styles = StyleSheet.create({
     fontSize: 16,
     backgroundColor: colors.white,
     textAlign: 'center',
+  },
+  // Yeni güzelleştirilmiş stiller
+  loadingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 20,
+    backgroundColor: colors.gray50,
+    borderRadius: 12,
+    marginBottom: 16,
+  },
+  vehicleInfoCard: {
+    backgroundColor: colors.white,
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 20,
+    shadowColor: colors.black,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  vehicleHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  vehicleDetails: {
+    marginLeft: 12,
+    flex: 1,
+  },
+  vehicleSubtitle: {
+    fontSize: 14,
+    color: colors.gray600,
+    marginTop: 2,
+  },
+  vehicleSpecs: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginBottom: 12,
+  },
+  specItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.gray50,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+  },
+  specText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: colors.black,
+    marginLeft: 6,
+  },
+  nicknameContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 8,
+  },
+  noVehicleCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.warning + '20',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: colors.warning,
+  },
+  batterySettingsCard: {
+    backgroundColor: colors.white,
+    borderRadius: 16,
+    padding: 20,
+    shadowColor: colors.black,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  batterySettingsTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: colors.black,
+    marginBottom: 16,
+    textAlign: 'center',
+  },
+  batteryInputsContainer: {
+    flexDirection: 'row',
+    gap: 16,
+  },
+  batteryInputCard: {
+    flex: 1,
+    backgroundColor: colors.gray50,
+    borderRadius: 12,
+    padding: 16,
+  },
+  batteryInputHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  batteryInputLabel: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: colors.black,
+    marginLeft: 8,
+  },
+  batteryInputWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.white,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.gray300,
+    paddingHorizontal: 12,
+    marginBottom: 12,
+  },
+  batteryUnit: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: colors.gray600,
+    marginLeft: 8,
+  },
+  batteryProgressBar: {
+    height: 4,
+    backgroundColor: colors.gray200,
+    borderRadius: 2,
+    overflow: 'hidden',
+  },
+  batteryProgress: {
+    height: '100%',
+    backgroundColor: colors.success,
+    borderRadius: 2,
   },
 });
 
