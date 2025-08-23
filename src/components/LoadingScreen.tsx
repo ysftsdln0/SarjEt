@@ -4,13 +4,10 @@ import {
   Text,
   StyleSheet,
   Animated,
-  Dimensions,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import colors from '../constants/colors';
 import { spin, pulse } from '../utils/animationUtils';
-
-const { width, height } = Dimensions.get('window');
 
 interface LoadingScreenProps {
   message?: string;
@@ -136,98 +133,98 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    alignItems: 'center',
     backgroundColor: colors.white,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
-  spinnerContainer: {
-    alignItems: 'center',
-  },
-  spinner: {
-    marginBottom: 20,
-  },
-  pulseContainer: {
-    alignItems: 'center',
-  },
-  pulseCircle: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: colors.primary,
-    marginBottom: 20,
-  },
-  skeletonContainer: {
     flex: 1,
-    width: '100%',
-    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 20,
   },
   logo: {
     marginBottom: 40,
   },
   logoText: {
+    color: colors.primary,
     fontSize: 32,
     fontWeight: 'bold',
-    color: colors.primary,
+  },
+  message: {
+    color: colors.gray600,
+    fontSize: 16,
+    marginTop: 10,
+    textAlign: 'center',
+  },
+  pulseCircle: {
+    backgroundColor: colors.primary,
+    borderRadius: 40,
+    height: 80,
+    marginBottom: 20,
+    width: 80,
+  },
+  pulseContainer: {
+    alignItems: 'center',
   },
   skeletonCard: {
     backgroundColor: colors.gray100,
     borderRadius: 12,
-    padding: 16,
     marginBottom: 16,
+    padding: 16,
     width: '100%',
   },
-  skeletonHeader: {
-    flexDirection: 'row',
+  skeletonContainer: {
     alignItems: 'center',
-    marginBottom: 12,
+    flex: 1,
+    width: '100%',
   },
-  skeletonLogo: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+  skeletonDistance: {
     backgroundColor: colors.gray200,
-    marginRight: 12,
+    borderRadius: 4,
+    height: 12,
+    width: 80,
+  },
+  skeletonHeader: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    marginBottom: 12,
   },
   skeletonInfo: {
     flex: 1,
   },
-  skeletonTitle: {
-    height: 16,
+  skeletonLogo: {
+    backgroundColor: colors.gray200,
+    borderRadius: 20,
+    height: 40,
+    marginRight: 12,
+    width: 40,
+  },
+  skeletonMeta: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  skeletonRating: {
     backgroundColor: colors.gray200,
     borderRadius: 4,
+    height: 12,
+    width: 60,
+  },
+  skeletonSubtitle: {
+    backgroundColor: colors.gray200,
+    borderRadius: 4,
+    height: 12,
+    width: '60%',
+  },
+  skeletonTitle: {
+    backgroundColor: colors.gray200,
+    borderRadius: 4,
+    height: 16,
     marginBottom: 8,
     width: '80%',
   },
-  skeletonSubtitle: {
-    height: 12,
-    backgroundColor: colors.gray200,
-    borderRadius: 4,
-    width: '60%',
+  spinner: {
+    marginBottom: 20,
   },
-  skeletonMeta: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  spinnerContainer: {
     alignItems: 'center',
-  },
-  skeletonRating: {
-    height: 12,
-    backgroundColor: colors.gray200,
-    borderRadius: 4,
-    width: 60,
-  },
-  skeletonDistance: {
-    height: 12,
-    backgroundColor: colors.gray200,
-    borderRadius: 4,
-    width: 80,
-  },
-  message: {
-    fontSize: 16,
-    color: colors.gray600,
-    textAlign: 'center',
-    marginTop: 10,
   },
 });
 

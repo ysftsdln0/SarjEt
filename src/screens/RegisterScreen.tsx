@@ -19,7 +19,7 @@ import VehicleSelection from '../components/VehicleSelection';
 const { width, height } = Dimensions.get('window');
 
 interface RegisterScreenProps {
-  onRegisterSuccess: (token: string, user: any) => void;
+  onRegisterSuccess: (token: string, user: { name?: string; email?: string }) => void;
   onSwitchToLogin: () => void;
 }
 
@@ -319,96 +319,49 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.white,
+  appName: {
+    color: colors.gray900,
+    fontSize: 32,
+    fontWeight: '700',
+    marginBottom: 8,
+    marginTop: 16,
   },
-  scrollContent: {
-    flexGrow: 1,
+  backButton: {
+    padding: 8,
+  },
+  container: {
+    backgroundColor: colors.white,
+    flex: 1,
+  },
+  formContainer: {
     paddingBottom: 40,
+    paddingHorizontal: 24,
   },
   header: {
     alignItems: 'center',
+    paddingBottom: 40,
     paddingTop: height * 0.1,
-    paddingBottom: 40,
   },
-  logoContainer: {
+  inputContainer: {
     alignItems: 'center',
-  },
-  appName: {
-    fontSize: 32,
-    fontWeight: '700',
-    color: colors.gray900,
-    marginTop: 16,
-    marginBottom: 8,
-  },
-  tagline: {
-    fontSize: 16,
-    color: colors.gray600,
-    textAlign: 'center',
-  },
-  formContainer: {
-    paddingHorizontal: 24,
-    paddingBottom: 40,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: '700',
-    color: colors.gray900,
-    textAlign: 'center',
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: colors.gray600,
-    textAlign: 'center',
-    marginBottom: 32,
+    backgroundColor: colors.white,
+    borderColor: colors.gray300,
+    borderRadius: 12,
+    borderWidth: 1,
+    flexDirection: 'row',
   },
   inputGroup: {
     marginBottom: 20,
-  },
-  inputLabel: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: colors.gray800,
-    marginBottom: 8,
-  },
-  inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: colors.gray300,
-    borderRadius: 12,
-    backgroundColor: colors.white,
   },
   inputIcon: {
     marginLeft: 16,
     marginRight: 12,
   },
-  textInput: {
-    flex: 1,
-    paddingVertical: 16,
-    fontSize: 16,
-    color: colors.gray900,
-  },
-  passwordToggle: {
-    padding: 16,
-  },
-  nextButton: {
-    backgroundColor: colors.primary,
-    borderRadius: 12,
-    paddingVertical: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 8,
-    marginBottom: 16,
-    gap: 8,
-  },
-  nextButtonText: {
-    color: colors.white,
-    fontSize: 16,
+  inputLabel: {
+    color: colors.gray800,
+    fontSize: 14,
     fontWeight: '600',
+    marginBottom: 8,
   },
   loginButton: {
     alignItems: 'center',
@@ -418,61 +371,33 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '500',
   },
-  vehicleContainer: {
-    flex: 1,
-    paddingHorizontal: 24,
-  },
-  vehicleHeader: {
-    flexDirection: 'row',
+  logoContainer: {
     alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingTop: 20,
-    paddingBottom: 16,
   },
-  backButton: {
-    padding: 8,
+  nextButton: {
+    alignItems: 'center',
+    backgroundColor: colors.primary,
+    borderRadius: 12,
+    flexDirection: 'row',
+    gap: 8,
+    justifyContent: 'center',
+    marginBottom: 16,
+    marginTop: 8,
+    paddingVertical: 16,
   },
-  vehicleTitle: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: colors.gray900,
-  },
-  vehicleSubtitle: {
-    fontSize: 16,
-    color: colors.gray600,
-    textAlign: 'center',
-    marginBottom: 24,
-  },
-  selectedVehicleCard: {
-    backgroundColor: colors.gray50,
-    borderRadius: 16,
-    padding: 20,
-    marginTop: 20,
-    borderWidth: 1,
-    borderColor: colors.gray200,
-  },
-  selectedVehicleTitle: {
+  nextButtonText: {
+    color: colors.white,
     fontSize: 16,
     fontWeight: '600',
-    color: colors.gray800,
-    marginBottom: 8,
   },
-  selectedVehicleInfo: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: colors.primary,
-    marginBottom: 4,
-  },
-  selectedVehicleSpecs: {
-    fontSize: 14,
-    color: colors.gray600,
-    marginBottom: 20,
+  passwordToggle: {
+    padding: 16,
   },
   registerButton: {
+    alignItems: 'center',
     backgroundColor: colors.primary,
     borderRadius: 12,
     paddingVertical: 16,
-    alignItems: 'center',
   },
   registerButtonDisabled: {
     backgroundColor: colors.gray400,
@@ -481,6 +406,81 @@ const styles = StyleSheet.create({
     color: colors.white,
     fontSize: 16,
     fontWeight: '600',
+  },
+  scrollContent: {
+    flexGrow: 1,
+    paddingBottom: 40,
+  },
+  selectedVehicleCard: {
+    backgroundColor: colors.gray50,
+    borderColor: colors.gray200,
+    borderRadius: 16,
+    borderWidth: 1,
+    marginTop: 20,
+    padding: 20,
+  },
+  selectedVehicleInfo: {
+    color: colors.primary,
+    fontSize: 18,
+    fontWeight: '700',
+    marginBottom: 4,
+  },
+  selectedVehicleSpecs: {
+    color: colors.gray600,
+    fontSize: 14,
+    marginBottom: 20,
+  },
+  selectedVehicleTitle: {
+    color: colors.gray800,
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 8,
+  },
+  subtitle: {
+    color: colors.gray600,
+    fontSize: 16,
+    marginBottom: 32,
+    textAlign: 'center',
+  },
+  tagline: {
+    color: colors.gray600,
+    fontSize: 16,
+    textAlign: 'center',
+  },
+  textInput: {
+    color: colors.gray900,
+    flex: 1,
+    fontSize: 16,
+    paddingVertical: 16,
+  },
+  title: {
+    color: colors.gray900,
+    fontSize: 28,
+    fontWeight: '700',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  vehicleContainer: {
+    flex: 1,
+    paddingHorizontal: 24,
+  },
+  vehicleHeader: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingBottom: 16,
+    paddingTop: 20,
+  },
+  vehicleSubtitle: {
+    color: colors.gray600,
+    fontSize: 16,
+    marginBottom: 24,
+    textAlign: 'center',
+  },
+  vehicleTitle: {
+    color: colors.gray900,
+    fontSize: 24,
+    fontWeight: '700',
   },
 });
 

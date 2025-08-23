@@ -15,10 +15,10 @@ import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../constants/colors';
 import { post } from '../services/apiClient';
 
-const { width, height } = Dimensions.get('window');
+const { height } = Dimensions.get('window');
 
 interface LoginScreenProps {
-  onLoginSuccess: (token: string, user: any) => void;
+  onLoginSuccess: (token: string, user: { name?: string; email?: string }) => void;
   onSwitchToRegister: () => void;
 }
 
@@ -173,96 +173,45 @@ const LoginScreen: React.FC<LoginScreenProps> = ({
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.white,
-  },
-  scrollContent: {
-    flexGrow: 1,
-    paddingBottom: 40,
-  },
-  header: {
-    alignItems: 'center',
-    paddingTop: height * 0.1,
-    paddingBottom: 40,
-  },
-  logoContainer: {
-    alignItems: 'center',
-  },
   appName: {
+    color: colors.gray900,
     fontSize: 32,
     fontWeight: '700',
-    color: colors.gray900,
+    marginBottom: 8,
     marginTop: 16,
-    marginBottom: 8,
   },
-  tagline: {
-    fontSize: 16,
-    color: colors.gray600,
-    textAlign: 'center',
-  },
-  formContainer: {
-    paddingHorizontal: 24,
-    paddingBottom: 40,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: '700',
-    color: colors.gray900,
-    textAlign: 'center',
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: colors.gray600,
-    textAlign: 'center',
-    marginBottom: 32,
-  },
-  inputGroup: {
-    marginBottom: 20,
-  },
-  inputLabel: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: colors.gray800,
-    marginBottom: 8,
-  },
-  inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: colors.gray300,
-    borderRadius: 12,
+  container: {
     backgroundColor: colors.white,
-  },
-  inputIcon: {
-    marginLeft: 16,
-    marginRight: 12,
-  },
-  textInput: {
     flex: 1,
-    paddingVertical: 16,
-    fontSize: 16,
-    color: colors.gray900,
   },
-  passwordToggle: {
-    padding: 16,
-  },
-  loginButton: {
-    backgroundColor: colors.primary,
-    borderRadius: 12,
-    paddingVertical: 16,
+  divider: {
     alignItems: 'center',
-    marginTop: 8,
-    marginBottom: 16,
+    flexDirection: 'row',
+    marginBottom: 24,
   },
-  loginButtonDisabled: {
-    backgroundColor: colors.gray400,
+  dividerLine: {
+    backgroundColor: colors.gray300,
+    flex: 1,
+    height: 1,
   },
-  loginButtonText: {
-    color: colors.white,
-    fontSize: 16,
-    fontWeight: '600',
+  dividerText: {
+    color: colors.gray500,
+    fontSize: 14,
+    marginHorizontal: 16,
+  },
+  footer: {
+    alignItems: 'center',
+    paddingHorizontal: 24,
+  },
+  footerLink: {
+    color: colors.primary,
+    fontWeight: '500',
+  },
+  footerText: {
+    color: colors.gray500,
+    fontSize: 12,
+    lineHeight: 18,
+    textAlign: 'center',
   },
   forgotPassword: {
     alignItems: 'center',
@@ -273,46 +222,97 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '500',
   },
-  divider: {
-    flexDirection: 'row',
+  formContainer: {
+    paddingBottom: 40,
+    paddingHorizontal: 24,
+  },
+  header: {
     alignItems: 'center',
-    marginBottom: 24,
+    paddingBottom: 40,
+    paddingTop: height * 0.1,
   },
-  dividerLine: {
-    flex: 1,
-    height: 1,
-    backgroundColor: colors.gray300,
+  inputContainer: {
+    alignItems: 'center',
+    backgroundColor: colors.white,
+    borderColor: colors.gray300,
+    borderRadius: 12,
+    borderWidth: 1,
+    flexDirection: 'row',
   },
-  dividerText: {
-    marginHorizontal: 16,
-    color: colors.gray500,
+  inputGroup: {
+    marginBottom: 20,
+  },
+  inputIcon: {
+    marginLeft: 16,
+    marginRight: 12,
+  },
+  inputLabel: {
+    color: colors.gray800,
     fontSize: 14,
+    fontWeight: '600',
+    marginBottom: 8,
+  },
+  loginButton: {
+    alignItems: 'center',
+    backgroundColor: colors.primary,
+    borderRadius: 12,
+    marginBottom: 16,
+    marginTop: 8,
+    paddingVertical: 16,
+  },
+  loginButtonDisabled: {
+    backgroundColor: colors.gray400,
+  },
+  loginButtonText: {
+    color: colors.white,
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  logoContainer: {
+    alignItems: 'center',
+  },
+  passwordToggle: {
+    padding: 16,
   },
   registerButton: {
-    borderWidth: 2,
+    alignItems: 'center',
     borderColor: colors.primary,
     borderRadius: 12,
+    borderWidth: 2,
     paddingVertical: 16,
-    alignItems: 'center',
   },
   registerButtonText: {
     color: colors.primary,
     fontSize: 16,
     fontWeight: '600',
   },
-  footer: {
-    paddingHorizontal: 24,
-    alignItems: 'center',
+  scrollContent: {
+    flexGrow: 1,
+    paddingBottom: 40,
   },
-  footerText: {
-    fontSize: 12,
-    color: colors.gray500,
+  subtitle: {
+    color: colors.gray600,
+    fontSize: 16,
+    marginBottom: 32,
     textAlign: 'center',
-    lineHeight: 18,
   },
-  footerLink: {
-    color: colors.primary,
-    fontWeight: '500',
+  tagline: {
+    color: colors.gray600,
+    fontSize: 16,
+    textAlign: 'center',
+  },
+  textInput: {
+    color: colors.gray900,
+    flex: 1,
+    fontSize: 16,
+    paddingVertical: 16,
+  },
+  title: {
+    color: colors.gray900,
+    fontSize: 28,
+    fontWeight: '700',
+    marginBottom: 8,
+    textAlign: 'center',
   },
 });
 

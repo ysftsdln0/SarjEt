@@ -1,18 +1,14 @@
 import React, { useEffect, useRef } from 'react';
 import {
-  View,
   Text,
   StyleSheet,
   Animated,
-  Dimensions,
   TouchableOpacity,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import colors from '../constants/colors';
 import { fadeIn, fadeOut, slideUp, slideDown } from '../utils/animationUtils';
-
-const { width } = Dimensions.get('window');
 
 export type ToastType = 'success' | 'error' | 'info' | 'warning';
 
@@ -95,7 +91,7 @@ const Toast: React.FC<ToastProps> = ({
         onPress={onPress}
         activeOpacity={0.8}
       >
-        <Ionicons name={toastStyle.icon as any} size={24} color={colors.white} />
+                <Ionicons name={toastStyle.icon as keyof typeof Ionicons['glyphMap']} size={24} color={colors.white} />
         <Text style={styles.message}>{message}</Text>
         <TouchableOpacity onPress={hideToast} style={styles.closeButton}>
           <Ionicons name="close" size={20} color={colors.white} />
@@ -106,33 +102,33 @@ const Toast: React.FC<ToastProps> = ({
 };
 
 const styles = StyleSheet.create({
+  closeButton: {
+    padding: 4,
+  },
   container: {
-    position: 'absolute',
     left: 20,
+    position: 'absolute',
     right: 20,
     zIndex: 1000,
   },
-  toast: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderRadius: 8,
-    shadowColor: colors.black,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
   message: {
-    flex: 1,
     color: colors.white,
+    flex: 1,
     fontSize: 14,
     fontWeight: '500',
     marginLeft: 12,
   },
-  closeButton: {
-    padding: 4,
+  toast: {
+    alignItems: 'center',
+    borderRadius: 8,
+    elevation: 5,
+    flexDirection: 'row',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    shadowColor: colors.black,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
   },
 });
 

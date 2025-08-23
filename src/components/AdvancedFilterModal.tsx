@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -395,25 +395,124 @@ const AdvancedFilterModal: React.FC<AdvancedFilterModalProps> = ({
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.white,
+  activeTab: {
+    borderBottomColor: colors.primary,
+    borderBottomWidth: 2,
   },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.gray200,
-  },
-  title: {
-    fontSize: 18,
+  activeTabLabel: {
+    color: colors.primary,
     fontWeight: '600',
-    color: colors.black,
+  },
+  applyButton: {
+    alignItems: 'center',
+    backgroundColor: colors.primary,
+    borderRadius: 12,
+    paddingVertical: 16,
+  },
+  applyButtonText: {
+    color: colors.white,
+    fontSize: 16,
+    fontWeight: '600',
   },
   closeButton: {
     padding: 4,
+  },
+  connectionTypeActive: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
+  },
+  connectionTypeButton: {
+    alignItems: 'center',
+    backgroundColor: colors.white,
+    borderColor: colors.gray300,
+    borderRadius: 20,
+    borderWidth: 1,
+    flexDirection: 'row',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
+  connectionTypeLabel: {
+    color: colors.gray600,
+    fontSize: 14,
+    marginLeft: 8,
+  },
+  connectionTypeLabelActive: {
+    color: colors.white,
+    fontWeight: '500',
+  },
+  connectionTypesGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+  },
+  container: {
+    backgroundColor: colors.white,
+    flex: 1,
+  },
+  content: {
+    flex: 1,
+  },
+  distanceButton: {
+    backgroundColor: colors.white,
+    borderColor: colors.gray300,
+    borderRadius: 16,
+    borderWidth: 1,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+  },
+  distanceButtonActive: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
+  },
+  distanceButtonText: {
+    color: colors.gray600,
+    fontSize: 14,
+  },
+  distanceButtonTextActive: {
+    color: colors.white,
+    fontWeight: '500',
+  },
+  footer: {
+    borderTopColor: colors.gray200,
+    borderTopWidth: 1,
+    padding: 20,
+  },
+  header: {
+    alignItems: 'center',
+    borderBottomColor: colors.gray200,
+    borderBottomWidth: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    padding: 20,
+  },
+  priceContainer: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 12,
+  },
+  priceInput: {
+    borderColor: colors.gray300,
+    borderRadius: 8,
+    borderWidth: 1,
+    flex: 1,
+    fontSize: 16,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  priceSeparator: {
+    color: colors.gray600,
+    fontSize: 18,
+  },
+  ratingButton: {
+    padding: 8,
+  },
+  ratingButtonActive: {
+    backgroundColor: colors.accent1 + '20',
+    borderRadius: 20,
+  },
+  ratingContainer: {
+    flexDirection: 'row',
+    gap: 8,
   },
   resetButton: {
     padding: 4,
@@ -423,161 +522,62 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '500',
   },
-  tabsContainer: {
-    flexDirection: 'row',
-    borderBottomWidth: 1,
-    borderBottomColor: colors.gray200,
+  resultsInfo: {
+    marginBottom: 16,
   },
-  tab: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 16,
-    paddingHorizontal: 12,
-  },
-  activeTab: {
-    borderBottomWidth: 2,
-    borderBottomColor: colors.primary,
-  },
-  tabLabel: {
-    marginLeft: 8,
-    fontSize: 14,
-    fontWeight: '500',
+  resultsText: {
     color: colors.gray600,
-  },
-  activeTabLabel: {
-    color: colors.primary,
-    fontWeight: '600',
-  },
-  content: {
-    flex: 1,
-  },
-  tabContent: {
-    padding: 20,
+    fontSize: 14,
+    textAlign: 'center',
   },
   section: {
     marginBottom: 24,
   },
   sectionTitle: {
+    color: colors.black,
     fontSize: 16,
     fontWeight: '600',
-    color: colors.black,
     marginBottom: 16,
-  },
-  connectionTypesGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12,
-  },
-  connectionTypeButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: colors.gray300,
-    backgroundColor: colors.white,
-  },
-  connectionTypeActive: {
-    backgroundColor: colors.primary,
-    borderColor: colors.primary,
-  },
-  connectionTypeLabel: {
-    marginLeft: 8,
-    fontSize: 14,
-    color: colors.gray600,
-  },
-  connectionTypeLabelActive: {
-    color: colors.white,
-    fontWeight: '500',
   },
   sliderContainer: {
     flexDirection: 'row',
     gap: 8,
   },
-  distanceButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: colors.gray300,
-    backgroundColor: colors.white,
-  },
-  distanceButtonActive: {
-    backgroundColor: colors.primary,
-    borderColor: colors.primary,
-  },
-  distanceButtonText: {
-    fontSize: 14,
-    color: colors.gray600,
-  },
-  distanceButtonTextActive: {
-    color: colors.white,
-    fontWeight: '500',
-  },
-  priceContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  priceInput: {
-    flex: 1,
-    borderWidth: 1,
-    borderColor: colors.gray300,
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
+  switchLabel: {
+    color: colors.black,
     fontSize: 16,
-  },
-  priceSeparator: {
-    fontSize: 18,
-    color: colors.gray600,
   },
   switchRow: {
+    alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
     paddingVertical: 12,
   },
-  switchLabel: {
-    fontSize: 16,
-    color: colors.black,
-  },
-  ratingContainer: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-  ratingButton: {
-    padding: 8,
-  },
-  ratingButtonActive: {
-    backgroundColor: colors.accent1 + '20',
-    borderRadius: 20,
-  },
-  footer: {
-    padding: 20,
-    borderTopWidth: 1,
-    borderTopColor: colors.gray200,
-  },
-  resultsInfo: {
-    marginBottom: 16,
-  },
-  resultsText: {
-    fontSize: 14,
-    color: colors.gray600,
-    textAlign: 'center',
-  },
-  applyButton: {
-    backgroundColor: colors.primary,
-    paddingVertical: 16,
-    borderRadius: 12,
+  tab: {
     alignItems: 'center',
+    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 16,
   },
-  applyButtonText: {
-    color: colors.white,
-    fontSize: 16,
+  tabContent: {
+    padding: 20,
+  },
+  tabLabel: {
+    color: colors.gray600,
+    fontSize: 14,
+    fontWeight: '500',
+    marginLeft: 8,
+  },
+  tabsContainer: {
+    borderBottomColor: colors.gray200,
+    borderBottomWidth: 1,
+    flexDirection: 'row',
+  },
+  title: {
+    color: colors.black,
+    fontSize: 18,
     fontWeight: '600',
   },
 });

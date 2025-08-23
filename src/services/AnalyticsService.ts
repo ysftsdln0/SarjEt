@@ -1,5 +1,4 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { ChargingStation } from '../types';
 
 export interface UserBehavior {
   userId: string;

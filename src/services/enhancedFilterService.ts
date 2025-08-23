@@ -52,7 +52,7 @@ export class EnhancedFilterService {
       .map(conn => conn.ConnectionType!.Title!);
   }
 
-  private static getStationRating(station: ChargingStation): number {
+  private static getStationRating(_: ChargingStation): number {
     // Mock rating - gerçek implementasyon user rating sistemine göre yapılacak
     return Math.random() * 5;
   }

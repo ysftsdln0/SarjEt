@@ -52,6 +52,7 @@ export const colors = {
   red500: '#EF4444',
   
   // Semi-transparent colors for overlays
+  transparent: 'transparent',
   overlay: 'rgba(0, 0, 0, 0.5)',
   overlayLight: 'rgba(0, 0, 0, 0.2)',
 

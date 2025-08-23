@@ -191,43 +191,73 @@ const ThemeSettings: React.FC<ThemeSettingsProps> = ({ visible, onClose }) => {
 };
 
 const styles = StyleSheet.create({
+  closeButton: {
+    padding: 4,
+  },
   container: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
+    alignItems: 'center',
     bottom: 0,
     justifyContent: 'center',
-    alignItems: 'center',
+    left: 0,
+    position: 'absolute',
+    right: 0,
+    top: 0,
     zIndex: 1000,
   },
+  content: {
+    padding: 20,
+  },
+  fontSizePreview: {
+    fontWeight: 'bold',
+  },
+  header: {
+    alignItems: 'center',
+    borderBottomColor: colors.gray200,
+    borderBottomWidth: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    padding: 20,
+  },
   modal: {
-    width: '90%',
-    maxHeight: '80%',
     borderRadius: 20,
+    elevation: 10,
+    maxHeight: '80%',
     shadowColor: colors.black,
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.25,
     shadowRadius: 20,
-    elevation: 10,
+    width: '90%',
   },
-  header: {
+  optionLabel: {
+    fontSize: 16,
+    marginLeft: 12,
+  },
+  optionLeft: {
+    alignItems: 'center',
+    flexDirection: 'row',
+  },
+  optionRow: {
+    alignItems: 'center',
+    borderRadius: 12,
     flexDirection: 'row',
     justifyContent: 'space-between',
+    marginBottom: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
+  quickToggle: {
     alignItems: 'center',
-    padding: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.gray200,
+    borderRadius: 12,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
   },
-  title: {
-    fontSize: 20,
+  quickToggleText: {
+    color: colors.white,
+    fontSize: 16,
     fontWeight: '600',
-  },
-  closeButton: {
-    padding: 4,
-  },
-  content: {
-    padding: 20,
+    marginLeft: 12,
   },
   section: {
     marginBottom: 24,
@@ -237,48 +267,18 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginBottom: 12,
   },
-  optionRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 12,
-    marginBottom: 8,
-  },
   selectedOption: {
     backgroundColor: colors.primary + '10',
-    borderWidth: 1,
     borderColor: colors.primary + '30',
-  },
-  optionLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  optionLabel: {
-    fontSize: 16,
-    marginLeft: 12,
+    borderWidth: 1,
   },
   selectedOptionText: {
     color: colors.primary,
     fontWeight: '600',
   },
-  fontSizePreview: {
-    fontWeight: 'bold',
-  },
-  quickToggle: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 16,
-    paddingHorizontal: 20,
-    borderRadius: 12,
-  },
-  quickToggleText: {
-    color: colors.white,
-    fontSize: 16,
+  title: {
+    fontSize: 20,
     fontWeight: '600',
-    marginLeft: 12,
   },
 });
 

@@ -704,369 +704,37 @@ const EnhancedFilterSystem: React.FC<EnhancedFilterSystemProps> = ({
 
 const getStyles = (isDarkMode: boolean) =>
   StyleSheet.create({
-    overlay: {
-      flex: 1,
-      backgroundColor: 'rgba(0, 0, 0, 0.5)',
-      justifyContent: 'flex-end',
-    },
-    container: {
-      backgroundColor: isDarkMode ? colors.darkCard : colors.white,
-      borderTopLeftRadius: 20,
-      borderTopRightRadius: 20,
-      maxHeight: height * 0.9,
-      minHeight: height * 0.7,
-    },
-    header: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      paddingHorizontal: 20,
-      paddingVertical: 16,
-      borderBottomWidth: 1,
-      borderBottomColor: isDarkMode ? colors.gray700 : colors.gray200,
-    },
-    closeButton: {
-      padding: 4,
-    },
-    headerTitle: {
-      fontSize: 18,
-      fontWeight: '600',
-      color: isDarkMode ? colors.white : colors.black,
-    },
-    resetButton: {
-      padding: 4,
-    },
-    resetText: {
-      fontSize: 16,
-      color: colors.primary,
-      fontWeight: '500',
-    },
-    tabsContainer: {
-      borderBottomWidth: 1,
-      borderBottomColor: isDarkMode ? colors.gray700 : colors.gray200,
-    },
-    tab: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      paddingHorizontal: 16,
-      paddingVertical: 12,
-      marginRight: 8,
-    },
-    tabActive: {
-      backgroundColor: colors.primary,
-      borderRadius: 20,
-      marginVertical: 8,
-    },
-    tabText: {
-      fontSize: 14,
-      marginLeft: 6,
-      color: isDarkMode ? colors.gray300 : colors.gray600,
-    },
-    tabTextActive: {
-      color: colors.white,
-      fontWeight: '500',
-    },
-    content: {
-      flex: 1,
-    },
-    tabContent: {
-      padding: 20,
-    },
-    sectionTitle: {
-      fontSize: 20,
-      fontWeight: '600',
-      color: isDarkMode ? colors.white : colors.black,
-      marginBottom: 8,
-    },
-    sectionDescription: {
-      fontSize: 14,
-      color: isDarkMode ? colors.gray300 : colors.gray600,
-      marginBottom: 20,
-    },
-    subsectionTitle: {
-      fontSize: 16,
-      fontWeight: '500',
-      color: isDarkMode ? colors.white : colors.black,
-      marginBottom: 12,
-    },
-    quickFilterGrid: {
-      flexDirection: 'row',
-      flexWrap: 'wrap',
-      justifyContent: 'space-between',
-      marginBottom: 24,
-    },
-    quickFilterCard: {
-      width: '48%',
-      backgroundColor: isDarkMode ? colors.gray800 : colors.gray50,
-      borderRadius: 12,
-      padding: 16,
-      alignItems: 'center',
-      marginBottom: 12,
-      borderWidth: 1,
-      borderColor: 'transparent',
-    },
-    quickFilterCardActive: {
-      backgroundColor: colors.primary,
-      borderColor: colors.primary,
-    },
-    quickFilterText: {
-      fontSize: 14,
-      marginTop: 8,
-      fontWeight: '500',
-      color: isDarkMode ? colors.white : colors.black,
-    },
-    quickFilterTextActive: {
-      color: colors.white,
-    },
-    sortingSection: {
-      marginTop: 8,
-    },
-    sortingOptions: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-    },
-    sortingOption: {
-      flex: 1,
-      backgroundColor: isDarkMode ? colors.gray800 : colors.gray50,
-      borderRadius: 8,
-      paddingVertical: 12,
-      marginHorizontal: 4,
-      alignItems: 'center',
-    },
-    sortingOptionActive: {
-      backgroundColor: colors.primary,
-    },
-    sortingOptionText: {
-      fontSize: 14,
-      color: isDarkMode ? colors.white : colors.black,
-    },
-    sortingOptionTextActive: {
-      color: colors.white,
-      fontWeight: '500',
-    },
-    distanceSection: {
-      marginBottom: 24,
-    },
-    distanceButtons: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-    },
-    distanceButton: {
-      backgroundColor: isDarkMode ? colors.gray800 : colors.gray50,
-      borderRadius: 8,
-      paddingVertical: 10,
-      paddingHorizontal: 16,
-      borderWidth: 1,
-      borderColor: 'transparent',
-    },
-    distanceButtonActive: {
-      backgroundColor: colors.primary,
-      borderColor: colors.primary,
-    },
-    distanceButtonText: {
-      fontSize: 14,
-      color: isDarkMode ? colors.white : colors.black,
-    },
-    distanceButtonTextActive: {
-      color: colors.white,
-      fontWeight: '500',
-    },
-    switchRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      paddingVertical: 12,
-    },
-    switchInfo: {
-      flex: 1,
-    },
-    switchTitle: {
-      fontSize: 16,
-      color: isDarkMode ? colors.white : colors.black,
-      marginBottom: 4,
-    },
-    switchDescription: {
-      fontSize: 14,
-      color: isDarkMode ? colors.gray300 : colors.gray600,
-    },
-    connectionTypesSection: {
-      marginBottom: 24,
-    },
-    connectionGrid: {
-      flexDirection: 'row',
-      flexWrap: 'wrap',
-      justifyContent: 'space-between',
-    },
-    connectionCard: {
-      width: '48%',
-      backgroundColor: isDarkMode ? colors.gray800 : colors.gray50,
-      borderRadius: 8,
-      padding: 12,
-      alignItems: 'center',
-      marginBottom: 8,
-      borderWidth: 1,
-      borderColor: 'transparent',
-    },
-    connectionCardActive: {
-      backgroundColor: colors.primary,
-      borderColor: colors.primary,
-    },
-    connectionText: {
-      fontSize: 14,
-      color: isDarkMode ? colors.white : colors.black,
-    },
-    connectionTextActive: {
-      color: colors.white,
-      fontWeight: '500',
-    },
-    powerSection: {
-      marginBottom: 24,
-    },
-    powerButtons: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-    },
-    powerButton: {
-      flex: 1,
-      backgroundColor: isDarkMode ? colors.gray800 : colors.gray50,
-      borderRadius: 8,
-      paddingVertical: 12,
-      marginHorizontal: 4,
-      alignItems: 'center',
-      borderWidth: 1,
-      borderColor: 'transparent',
-    },
-    powerButtonActive: {
-      backgroundColor: colors.primary,
-      borderColor: colors.primary,
-    },
-    powerButtonText: {
-      fontSize: 14,
-      color: isDarkMode ? colors.white : colors.black,
-    },
-    powerButtonTextActive: {
-      color: colors.white,
-      fontWeight: '500',
-    },
-    operatorSection: {
-      marginBottom: 24,
-    },
-    searchSection: {
-      marginBottom: 16,
-    },
-    searchInput: {
-      backgroundColor: isDarkMode ? colors.gray800 : colors.gray50,
-      borderRadius: 8,
-      paddingHorizontal: 16,
-      paddingVertical: 12,
-      fontSize: 16,
-      color: isDarkMode ? colors.white : colors.black,
-    },
-    operatorList: {
-      maxHeight: 200,
-    },
-    operatorRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      paddingVertical: 12,
-      borderBottomWidth: 1,
-      borderBottomColor: isDarkMode ? colors.gray700 : colors.gray200,
-    },
-    operatorText: {
-      fontSize: 16,
-      color: isDarkMode ? colors.white : colors.black,
-    },
-    priceSection: {
-      marginBottom: 24,
-    },
-    scheduleSection: {
-      marginBottom: 24,
-    },
-    scheduleOptions: {
-      marginBottom: 8,
-    },
-    ratingsSection: {
-      marginBottom: 24,
-    },
-    ratingLabel: {
-      fontSize: 14,
-      color: isDarkMode ? colors.gray300 : colors.gray600,
-      marginBottom: 12,
-    },
-    ratingButtons: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-    },
-    ratingButton: {
-      flex: 1,
-      backgroundColor: isDarkMode ? colors.gray800 : colors.gray50,
-      borderRadius: 8,
-      paddingVertical: 10,
-      marginHorizontal: 2,
-      alignItems: 'center',
-      borderWidth: 1,
-      borderColor: 'transparent',
-    },
-    ratingButtonActive: {
-      backgroundColor: colors.primary,
-      borderColor: colors.primary,
-    },
-    ratingButtonText: {
-      fontSize: 14,
-      color: isDarkMode ? colors.white : colors.black,
-    },
-    ratingButtonTextActive: {
-      color: colors.white,
-      fontWeight: '500',
-    },
-    amenitiesSection: {
-      marginBottom: 24,
-    },
     amenitiesGrid: {
       flexDirection: 'row',
       flexWrap: 'wrap',
       justifyContent: 'space-between',
     },
+    amenitiesSection: {
+      marginBottom: 24,
+    },
     amenityCard: {
-      width: '48%',
-      backgroundColor: isDarkMode ? colors.gray800 : colors.gray50,
-      borderRadius: 8,
-      padding: 12,
       alignItems: 'center',
-      marginBottom: 8,
-      borderWidth: 1,
+      backgroundColor: isDarkMode ? colors.gray800 : colors.gray50,
       borderColor: 'transparent',
+      borderRadius: 8,
+      borderWidth: 1,
+      marginBottom: 8,
+      padding: 12,
+      width: '48%',
     },
     amenityCardActive: {
       backgroundColor: colors.primary,
       borderColor: colors.primary,
     },
     amenityText: {
+      color: isDarkMode ? colors.white : colors.black,
       fontSize: 12,
       marginTop: 6,
-      color: isDarkMode ? colors.white : colors.black,
       textAlign: 'center',
     },
     amenityTextActive: {
       color: colors.white,
       fontWeight: '500',
-    },
-    footer: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      paddingHorizontal: 20,
-      paddingVertical: 16,
-      borderTopWidth: 1,
-      borderTopColor: isDarkMode ? colors.gray700 : colors.gray200,
-      backgroundColor: isDarkMode ? colors.darkCard : colors.white,
-    },
-    resultInfo: {
-      flex: 1,
-    },
-    resultText: {
-      fontSize: 14,
-      color: isDarkMode ? colors.gray300 : colors.gray600,
     },
     applyButton: {
       backgroundColor: colors.primary,
@@ -1078,6 +746,338 @@ const getStyles = (isDarkMode: boolean) =>
       color: colors.white,
       fontSize: 16,
       fontWeight: '600',
+    },
+    closeButton: {
+      padding: 4,
+    },
+    connectionCard: {
+      alignItems: 'center',
+      backgroundColor: isDarkMode ? colors.gray800 : colors.gray50,
+      borderColor: 'transparent',
+      borderRadius: 8,
+      borderWidth: 1,
+      marginBottom: 8,
+      padding: 12,
+      width: '48%',
+    },
+    connectionCardActive: {
+      backgroundColor: colors.primary,
+      borderColor: colors.primary,
+    },
+    connectionGrid: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      justifyContent: 'space-between',
+    },
+    connectionText: {
+      color: isDarkMode ? colors.white : colors.black,
+      fontSize: 14,
+    },
+    connectionTextActive: {
+      color: colors.white,
+      fontWeight: '500',
+    },
+    connectionTypesSection: {
+      marginBottom: 24,
+    },
+    container: {
+      backgroundColor: isDarkMode ? colors.darkCard : colors.white,
+      borderTopLeftRadius: 20,
+      borderTopRightRadius: 20,
+      maxHeight: height * 0.9,
+      minHeight: height * 0.7,
+    },
+    content: {
+      flex: 1,
+    },
+    distanceButton: {
+      backgroundColor: isDarkMode ? colors.gray800 : colors.gray50,
+      borderColor: 'transparent',
+      borderRadius: 8,
+      borderWidth: 1,
+      paddingHorizontal: 16,
+      paddingVertical: 10,
+    },
+    distanceButtonActive: {
+      backgroundColor: colors.primary,
+      borderColor: colors.primary,
+    },
+    distanceButtonText: {
+      color: isDarkMode ? colors.white : colors.black,
+      fontSize: 14,
+    },
+    distanceButtonTextActive: {
+      color: colors.white,
+      fontWeight: '500',
+    },
+    distanceButtons: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+    },
+    distanceSection: {
+      marginBottom: 24,
+    },
+    footer: {
+      alignItems: 'center',
+      backgroundColor: isDarkMode ? colors.darkCard : colors.white,
+      borderTopColor: isDarkMode ? colors.gray700 : colors.gray200,
+      borderTopWidth: 1,
+      flexDirection: 'row',
+      paddingHorizontal: 20,
+      paddingVertical: 16,
+    },
+    header: {
+      alignItems: 'center',
+      borderBottomColor: isDarkMode ? colors.gray700 : colors.gray200,
+      borderBottomWidth: 1,
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      paddingHorizontal: 20,
+      paddingVertical: 16,
+    },
+    headerTitle: {
+      color: isDarkMode ? colors.white : colors.black,
+      fontSize: 18,
+      fontWeight: '600',
+    },
+    operatorList: {
+      maxHeight: 200,
+    },
+    operatorRow: {
+      alignItems: 'center',
+      borderBottomColor: isDarkMode ? colors.gray700 : colors.gray200,
+      borderBottomWidth: 1,
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      paddingVertical: 12,
+    },
+    operatorSection: {
+      marginBottom: 24,
+    },
+    operatorText: {
+      color: isDarkMode ? colors.white : colors.black,
+      fontSize: 16,
+    },
+    overlay: {
+      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+      flex: 1,
+      justifyContent: 'flex-end',
+    },
+    powerButton: {
+      alignItems: 'center',
+      backgroundColor: isDarkMode ? colors.gray800 : colors.gray50,
+      borderColor: 'transparent',
+      borderRadius: 8,
+      borderWidth: 1,
+      flex: 1,
+      marginHorizontal: 4,
+      paddingVertical: 12,
+    },
+    powerButtonActive: {
+      backgroundColor: colors.primary,
+      borderColor: colors.primary,
+    },
+    powerButtonText: {
+      color: isDarkMode ? colors.white : colors.black,
+      fontSize: 14,
+    },
+    powerButtonTextActive: {
+      color: colors.white,
+      fontWeight: '500',
+    },
+    powerButtons: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+    },
+    powerSection: {
+      marginBottom: 24,
+    },
+    priceSection: {
+      marginBottom: 24,
+    },
+    quickFilterCard: {
+      alignItems: 'center',
+      backgroundColor: isDarkMode ? colors.gray800 : colors.gray50,
+      borderColor: 'transparent',
+      borderRadius: 12,
+      borderWidth: 1,
+      marginBottom: 12,
+      padding: 16,
+      width: '48%',
+    },
+    quickFilterCardActive: {
+      backgroundColor: colors.primary,
+      borderColor: colors.primary,
+    },
+    quickFilterGrid: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      justifyContent: 'space-between',
+      marginBottom: 24,
+    },
+    quickFilterText: {
+      color: isDarkMode ? colors.white : colors.black,
+      fontSize: 14,
+      fontWeight: '500',
+      marginTop: 8,
+    },
+    quickFilterTextActive: {
+      color: colors.white,
+    },
+    ratingButton: {
+      alignItems: 'center',
+      backgroundColor: isDarkMode ? colors.gray800 : colors.gray50,
+      borderColor: 'transparent',
+      borderRadius: 8,
+      borderWidth: 1,
+      flex: 1,
+      marginHorizontal: 2,
+      paddingVertical: 10,
+    },
+    ratingButtonActive: {
+      backgroundColor: colors.primary,
+      borderColor: colors.primary,
+    },
+    ratingButtonText: {
+      color: isDarkMode ? colors.white : colors.black,
+      fontSize: 14,
+    },
+    ratingButtonTextActive: {
+      color: colors.white,
+      fontWeight: '500',
+    },
+    ratingButtons: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+    },
+    ratingLabel: {
+      color: isDarkMode ? colors.gray300 : colors.gray600,
+      fontSize: 14,
+      marginBottom: 12,
+    },
+    ratingsSection: {
+      marginBottom: 24,
+    },
+    resetButton: {
+      padding: 4,
+    },
+    resetText: {
+      color: colors.primary,
+      fontSize: 16,
+      fontWeight: '500',
+    },
+    resultInfo: {
+      flex: 1,
+    },
+    resultText: {
+      color: isDarkMode ? colors.gray300 : colors.gray600,
+      fontSize: 14,
+    },
+    scheduleOptions: {
+      marginBottom: 8,
+    },
+    scheduleSection: {
+      marginBottom: 24,
+    },
+    searchInput: {
+      backgroundColor: isDarkMode ? colors.gray800 : colors.gray50,
+      borderRadius: 8,
+      color: isDarkMode ? colors.white : colors.black,
+      fontSize: 16,
+      paddingHorizontal: 16,
+      paddingVertical: 12,
+    },
+    searchSection: {
+      marginBottom: 16,
+    },
+    sectionDescription: {
+      color: isDarkMode ? colors.gray300 : colors.gray600,
+      fontSize: 14,
+      marginBottom: 20,
+    },
+    sectionTitle: {
+      color: isDarkMode ? colors.white : colors.black,
+      fontSize: 20,
+      fontWeight: '600',
+      marginBottom: 8,
+    },
+    sortingOption: {
+      alignItems: 'center',
+      backgroundColor: isDarkMode ? colors.gray800 : colors.gray50,
+      borderRadius: 8,
+      flex: 1,
+      marginHorizontal: 4,
+      paddingVertical: 12,
+    },
+    sortingOptionActive: {
+      backgroundColor: colors.primary,
+    },
+    sortingOptionText: {
+      color: isDarkMode ? colors.white : colors.black,
+      fontSize: 14,
+    },
+    sortingOptionTextActive: {
+      color: colors.white,
+      fontWeight: '500',
+    },
+    sortingOptions: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+    },
+    sortingSection: {
+      marginTop: 8,
+    },
+    subsectionTitle: {
+      color: isDarkMode ? colors.white : colors.black,
+      fontSize: 16,
+      fontWeight: '500',
+      marginBottom: 12,
+    },
+    switchDescription: {
+      color: isDarkMode ? colors.gray300 : colors.gray600,
+      fontSize: 14,
+    },
+    switchInfo: {
+      flex: 1,
+    },
+    switchRow: {
+      alignItems: 'center',
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      paddingVertical: 12,
+    },
+    switchTitle: {
+      color: isDarkMode ? colors.white : colors.black,
+      fontSize: 16,
+      marginBottom: 4,
+    },
+    tab: {
+      alignItems: 'center',
+      flexDirection: 'row',
+      marginRight: 8,
+      paddingHorizontal: 16,
+      paddingVertical: 12,
+    },
+    tabActive: {
+      backgroundColor: colors.primary,
+      borderRadius: 20,
+      marginVertical: 8,
+    },
+    tabContent: {
+      padding: 20,
+    },
+    tabText: {
+      color: isDarkMode ? colors.gray300 : colors.gray600,
+      fontSize: 14,
+      marginLeft: 6,
+    },
+    tabTextActive: {
+      color: colors.white,
+      fontWeight: '500',
+    },
+    tabsContainer: {
+      borderBottomColor: isDarkMode ? colors.gray700 : colors.gray200,
+      borderBottomWidth: 1,
     },
   });
 

@@ -7,10 +7,7 @@ interface SearchBarProps {
   value: string;
   onChangeText: (text: string) => void;
   onSearch: () => void;
-  onShowFilters?: () => void;
   placeholder?: string;
-  filterCount?: number;
-  isDarkMode?: boolean;
   onFilterPress?: (filterType: string) => void;
   activeFilters?: string[];
   onPlaceSelected?: (place: { name: string; latitude: number; longitude: number }) => void;
@@ -23,10 +20,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
   value,
   onChangeText,
   onSearch,
-  onShowFilters,
   placeholder = 'Konum veya İstasyon ara',
-  filterCount = 0,
-  isDarkMode = false,
   onFilterPress,
   activeFilters = [],
   onPlaceSelected,
@@ -85,7 +79,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
             onPress={() => onFilterPress?.(filter.key)}
           >
             <Ionicons 
-              name={filter.icon as any} 
+              name={filter.icon as keyof typeof Ionicons.glyphMap} 
               size={16} 
               color={activeFilters.includes(filter.key) 
                 ? colors.white 
@@ -144,51 +138,22 @@ export const SearchBar: React.FC<SearchBarProps> = ({
 };
 
 const styles = StyleSheet.create({
-  searchSection: {
-    backgroundColor: colors.white,
-    paddingTop: 8,
-    paddingBottom: 8,
-    paddingHorizontal: 20,
-  },
-  searchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  searchInputContainer: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.searchBarBg,
-    borderRadius: 24,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-  },
-  searchIcon: {
-    marginRight: 12,
-  },
-  searchInput: {
-    flex: 1,
-    color: colors.black,
-    fontSize: 16,
-    padding: 0,
-  },
-  filterScrollContainer: {
-    marginBottom: 8,
+  dropdownIcon: {
+    marginLeft: 6,
   },
   filterButtonsContainer: {
     paddingRight: 20,
   },
   filterChip: {
-    flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: colors.filterChipBg,
+    borderColor: colors.gray200,
     borderRadius: 20,
+    borderWidth: 1,
+    flexDirection: 'row',
+    marginRight: 12,
     paddingHorizontal: 12,
     paddingVertical: 8,
-    marginRight: 12,
-    borderWidth: 1,
-    borderColor: colors.gray200,
   },
   filterChipActive: {
     backgroundColor: colors.filterChipActive,
@@ -204,58 +169,87 @@ const styles = StyleSheet.create({
     color: colors.white,
     fontWeight: '600',
   },
-  dropdownIcon: {
-    marginLeft: 6,
+  filterScrollContainer: {
+    marginBottom: 8,
   },
-  suggestionPanel: {
-    backgroundColor: colors.white,
-    borderRadius: 12,
-    marginHorizontal: 0,
-    marginTop: 8,
+  searchContainer: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    marginBottom: 16,
+  },
+  searchIcon: {
+    marginRight: 12,
+  },
+  searchInput: {
+    color: colors.black,
+    flex: 1,
+    fontSize: 16,
+    padding: 0,
+  },
+  searchInputContainer: {
+    alignItems: 'center',
+    backgroundColor: colors.searchBarBg,
+    borderRadius: 24,
+    flex: 1,
+    flexDirection: 'row',
     paddingHorizontal: 16,
     paddingVertical: 12,
-    flexDirection: 'row',
-    alignItems: 'center',
-    shadowColor: colors.black,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-    borderWidth: 1,
-    borderColor: colors.gray200,
   },
-  suggestionContent: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  suggestionText: {
-    flex: 1,
-    marginLeft: 8,
-  },
-  suggestionTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: colors.black,
-  },
-  suggestionSubtitle: {
-    fontSize: 12,
-    color: colors.gray600,
-    marginTop: 2,
+  searchSection: {
+    backgroundColor: colors.white,
+    paddingBottom: 8,
+    paddingHorizontal: 20,
+    paddingTop: 8,
   },
   suggestionButton: {
     backgroundColor: colors.primary,
     borderRadius: 8,
+    marginRight: 8,
     paddingHorizontal: 12,
     paddingVertical: 8,
-    marginRight: 8,
   },
   suggestionButtonText: {
     color: colors.white,
     fontSize: 12,
     fontWeight: '600',
   },
+  suggestionContent: {
+    alignItems: 'center',
+    flex: 1,
+    flexDirection: 'row',
+  },
   suggestionDismiss: {
     padding: 4,
+  },
+  suggestionPanel: {
+    alignItems: 'center',
+    backgroundColor: colors.white,
+    borderColor: colors.gray200,
+    borderRadius: 12,
+    borderWidth: 1,
+    elevation: 3,
+    flexDirection: 'row',
+    marginHorizontal: 0,
+    marginTop: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    shadowColor: colors.black,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+  },
+  suggestionSubtitle: {
+    color: colors.gray600,
+    fontSize: 12,
+    marginTop: 2,
+  },
+  suggestionText: {
+    flex: 1,
+    marginLeft: 8,
+  },
+  suggestionTitle: {
+    color: colors.black,
+    fontSize: 14,
+    fontWeight: '600',
   },
 });

@@ -1,4 +1,4 @@
-import apiClient, { post } from './apiClient';
+import { post } from './apiClient';
 
 export interface PlanRouteRequest {
   start: { latitude: number; longitude: number };

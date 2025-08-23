@@ -72,43 +72,43 @@ export const QuickFilterBar: React.FC<QuickFilterBarProps> = ({
 const getStyles = (isDarkMode: boolean) =>
   StyleSheet.create({
     container: {
-      paddingVertical: 12,
-      borderBottomWidth: 1,
       borderBottomColor: isDarkMode ? colors.gray700 : colors.gray200,
-    },
-    scrollContent: {
-      paddingHorizontal: 16,
-      gap: 8,
+      borderBottomWidth: 1,
+      paddingVertical: 12,
     },
     filterChip: {
-      flexDirection: 'row',
       alignItems: 'center',
+      backgroundColor: isDarkMode ? colors.gray800 : colors.gray100,
+      borderColor: 'transparent',
+      borderRadius: 20,
+      borderWidth: 1,
+      flexDirection: 'row',
+      minHeight: 36,
       paddingHorizontal: 12,
       paddingVertical: 8,
-      borderRadius: 20,
-      backgroundColor: isDarkMode ? colors.gray800 : colors.gray100,
-      borderWidth: 1,
-      borderColor: 'transparent',
-      minHeight: 36,
     },
     filterChipActive: {
       borderColor: colors.white,
+      elevation: 3,
       shadowColor: colors.black,
       shadowOffset: { width: 0, height: 2 },
       shadowOpacity: 0.1,
       shadowRadius: 4,
-      elevation: 3,
     },
     filterIcon: {
       marginRight: 6,
     },
     filterText: {
+      color: isDarkMode ? colors.white : colors.black,
       fontSize: 14,
       fontWeight: '500',
-      color: isDarkMode ? colors.white : colors.black,
     },
     filterTextActive: {
       color: colors.white,
+    },
+    scrollContent: {
+      gap: 8,
+      paddingHorizontal: 16,
     },
   });
 

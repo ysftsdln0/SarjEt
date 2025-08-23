@@ -306,153 +306,189 @@ const StationDetailsCard: React.FC<StationDetailsCardProps> = ({
 };
 
 const styles = StyleSheet.create({
-  container: {
-    backgroundColor: colors.white,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    paddingTop: 20,
-    paddingHorizontal: 20,
-    paddingBottom: 20,
-    minHeight: 300,
-    maxHeight: height * 0.8,
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    zIndex: 1000,
-    shadowColor: colors.black,
-    shadowOffset: { width: 0, height: -4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 10,
-  },
-  dragHandle: {
-    alignItems: 'center',
-    marginBottom: 20,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  dragIndicator: {
-    width: 40,
-    height: 4,
-    backgroundColor: colors.gray300,
-    borderRadius: 2,
-    flex: 1,
-  },
-  quickActions: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-  quickActionButton: {
-    padding: 8,
-    borderRadius: 20,
-    backgroundColor: colors.gray100,
-  },
-  tabsContainer: {
-    flexDirection: 'row',
-    marginBottom: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.gray200,
-  },
-  tab: {
-    flex: 1,
-    paddingVertical: 12,
-    alignItems: 'center',
-    borderBottomWidth: 2,
-    borderBottomColor: 'transparent',
-  },
   activeTab: {
     borderBottomColor: colors.primary,
-  },
-  tabText: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: colors.tabInactive,
   },
   activeTabText: {
     color: colors.tabActive,
     fontWeight: '600',
   },
-  stationDetails: {
+  arrowIcon: {
+    position: 'absolute',
+    right: -2,
+    top: 2,
+  },
+  container: {
+    backgroundColor: colors.white,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    bottom: 0,
+    elevation: 10,
+    left: 0,
+    maxHeight: height * 0.8,
+    minHeight: 300,
+    paddingBottom: 20,
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    position: 'absolute',
+    right: 0,
+    shadowColor: colors.black,
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    zIndex: 1000,
+  },
+  distanceContainer: {
+    alignItems: 'center',
+    flexDirection: 'row',
+  },
+  distanceIcon: {
+    marginRight: 4,
+    position: 'relative',
+  },
+  distanceText: {
+    color: colors.primary,
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  dragHandle: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     marginBottom: 20,
   },
-  stationHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  stationLogo: {
+  dragIndicator: {
+    backgroundColor: colors.gray300,
+    borderRadius: 2,
+    flex: 1,
+    height: 4,
     width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: colors.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 12,
+  },
+  favoriteButton: {
+    padding: 8,
+  },
+  itemLogoText: {
+    color: colors.white,
+    fontSize: 12,
+    fontWeight: 'bold',
   },
   logoText: {
     color: colors.white,
     fontSize: 16,
     fontWeight: 'bold',
   },
-  stationInfo: {
-    flex: 1,
+  quickActionButton: {
+    backgroundColor: colors.gray100,
+    borderRadius: 20,
+    padding: 8,
   },
-  stationName: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: colors.black,
-    marginBottom: 4,
-  },
-  stationAddress: {
-    fontSize: 14,
-    color: colors.gray600,
-    lineHeight: 20,
-  },
-  stationMeta: {
+  quickActions: {
     flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 16,
+    gap: 8,
   },
   ratingContainer: {
-    flexDirection: 'row',
     alignItems: 'center',
+    flexDirection: 'row',
   },
   ratingText: {
-    fontSize: 14,
     color: colors.black,
+    fontSize: 14,
     fontWeight: '600',
     marginRight: 8,
+  },
+  reviewCount: {
+    color: colors.gray600,
+    fontSize: 14,
+  },
+  selectedStationItem: {
+    backgroundColor: colors.primary + '10',
+    borderColor: colors.primary + '30',
+    borderWidth: 1,
   },
   starsContainer: {
     flexDirection: 'row',
     marginRight: 4,
   },
-  reviewCount: {
-    fontSize: 14,
+  stationAddress: {
     color: colors.gray600,
-  },
-  distanceContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  distanceIcon: {
-    position: 'relative',
-    marginRight: 4,
-  },
-  arrowIcon: {
-    position: 'absolute',
-    top: 2,
-    right: -2,
-  },
-  distanceText: {
     fontSize: 14,
-    color: colors.primary,
-    fontWeight: '600',
+    lineHeight: 20,
   },
-  favoriteButton: {
-    padding: 8,
+  stationDetails: {
+    marginBottom: 20,
+  },
+  stationHeader: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    marginBottom: 16,
+  },
+  stationInfo: {
+    flex: 1,
+  },
+  stationItem: {
+    backgroundColor: colors.gray50,
+    borderRadius: 12,
+    marginBottom: 12,
+    padding: 16,
+  },
+  stationItemAddress: {
+    color: colors.gray600,
+    fontSize: 14,
+  },
+  stationItemContent: {
+    alignItems: 'center',
+    flexDirection: 'row',
+  },
+  stationItemDistance: {
+    color: colors.primary,
+    fontSize: 14,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  stationItemFavorite: {
+    padding: 4,
+  },
+  stationItemInfo: {
+    flex: 1,
+  },
+  stationItemLogo: {
+    alignItems: 'center',
+    backgroundColor: colors.primary,
+    borderRadius: 16,
+    height: 32,
+    justifyContent: 'center',
+    marginRight: 12,
+    width: 32,
+  },
+  stationItemMeta: {
+    alignItems: 'flex-end',
+  },
+  stationItemName: {
+    color: colors.black,
+    fontSize: 16,
+    fontWeight: '500',
+    marginBottom: 4,
+  },
+  stationLogo: {
+    alignItems: 'center',
+    backgroundColor: colors.primary,
+    borderRadius: 20,
+    height: 40,
+    justifyContent: 'center',
+    marginRight: 12,
+    width: 40,
+  },
+  stationMeta: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 16,
+  },
+  stationName: {
+    color: colors.black,
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: 4,
   },
   stationsList: {
     flex: 1,
@@ -460,59 +496,23 @@ const styles = StyleSheet.create({
   stationsListContent: {
     paddingBottom: 20,
   },
-  stationItem: {
-    backgroundColor: colors.gray50,
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
-  },
-  selectedStationItem: {
-    backgroundColor: colors.primary + '10',
-    borderWidth: 1,
-    borderColor: colors.primary + '30',
-  },
-  stationItemContent: {
-    flexDirection: 'row',
+  tab: {
     alignItems: 'center',
-  },
-  stationItemLogo: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: colors.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 12,
-  },
-  itemLogoText: {
-    color: colors.white,
-    fontSize: 12,
-    fontWeight: 'bold',
-  },
-  stationItemInfo: {
+    borderBottomColor: 'transparent',
+    borderBottomWidth: 2,
     flex: 1,
+    paddingVertical: 12,
   },
-  stationItemName: {
+  tabText: {
+    color: colors.tabInactive,
     fontSize: 16,
     fontWeight: '500',
-    color: colors.black,
-    marginBottom: 4,
   },
-  stationItemAddress: {
-    fontSize: 14,
-    color: colors.gray600,
-  },
-  stationItemMeta: {
-    alignItems: 'flex-end',
-  },
-  stationItemDistance: {
-    fontSize: 14,
-    color: colors.primary,
-    fontWeight: '600',
-    marginBottom: 4,
-  },
-  stationItemFavorite: {
-    padding: 4,
+  tabsContainer: {
+    borderBottomColor: colors.gray200,
+    borderBottomWidth: 1,
+    flexDirection: 'row',
+    marginBottom: 20,
   },
 });
 

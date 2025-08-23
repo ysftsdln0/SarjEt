@@ -11,11 +11,11 @@ async function resolveBaseUrl(): Promise<string> {
     }
     const stored = await AsyncStorage.getItem(STORAGE_KEY);
     if (stored) return stored;
-  } catch (e) {
+  } catch (_) {
     // no-op
   }
   if (__DEV__) {
-    // eslint-disable-next-line no-console
+     
     console.warn('[apiClient] EXPO_PUBLIC_BACKEND_URL is not set and no stored base URL found. API calls may fail.');
   }
   return '';

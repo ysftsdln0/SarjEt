@@ -253,157 +253,191 @@ const SocialFeatures: React.FC<SocialFeaturesProps> = ({ station, onClose }) => 
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.white,
+  addButton: {
+    padding: 4,
   },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 20,
+  addReviewContainer: {
+    borderBottomColor: colors.gray100,
     borderBottomWidth: 1,
-    borderBottomColor: colors.gray200,
+    padding: 20,
   },
-  title: {
-    fontSize: 18,
-    fontWeight: '600',
+  addReviewTitle: {
     color: colors.black,
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 16,
   },
   closeButton: {
     padding: 4,
   },
-  addButton: {
-    padding: 4,
+  commentInput: {
+    borderColor: colors.gray300,
+    borderRadius: 8,
+    borderWidth: 1,
+    color: colors.black,
+    fontSize: 14,
+    marginBottom: 16,
+    minHeight: 80,
+    padding: 12,
+    textAlignVertical: 'top',
+  },
+  container: {
+    backgroundColor: colors.white,
+    flex: 1,
   },
   content: {
     flex: 1,
   },
-  stationInfo: {
-    padding: 20,
+  header: {
+    alignItems: 'center',
+    borderBottomColor: colors.gray200,
     borderBottomWidth: 1,
-    borderBottomColor: colors.gray100,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    padding: 20,
   },
-  stationName: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: colors.black,
-    marginBottom: 12,
+  helpfulButton: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    padding: 8,
+  },
+  helpfulText: {
+    color: colors.gray600,
+    fontSize: 12,
+    marginLeft: 4,
+  },
+  photoUpload: {
+    alignItems: 'center',
+    borderColor: colors.gray300,
+    borderRadius: 8,
+    borderStyle: 'dashed',
+    borderWidth: 1,
+    flexDirection: 'row',
+    marginBottom: 16,
+    padding: 16,
+  },
+  photoUploadText: {
+    color: colors.gray600,
+    fontSize: 14,
+    marginLeft: 8,
+  },
+  photosContainer: {
+    marginTop: 8,
   },
   ratingContainer: {
-    flexDirection: 'row',
     alignItems: 'center',
+    flexDirection: 'row',
+  },
+  ratingInput: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    marginBottom: 16,
+  },
+  ratingLabel: {
+    color: colors.gray600,
+    fontSize: 14,
+    marginRight: 12,
+  },
+  ratingText: {
+    color: colors.black,
+    fontSize: 18,
+    fontWeight: '600',
+    marginRight: 8,
+  },
+  reviewCard: {
+    backgroundColor: colors.gray50,
+    borderRadius: 12,
+    marginBottom: 16,
+    padding: 16,
+  },
+  reviewComment: {
+    color: colors.black,
+    fontSize: 14,
+    lineHeight: 20,
+    marginBottom: 12,
+  },
+  reviewCount: {
+    color: colors.gray600,
+    fontSize: 14,
+  },
+  reviewDate: {
+    color: colors.gray600,
+    fontSize: 12,
+    marginLeft: 8,
+  },
+  reviewHeader: {
+    alignItems: 'flex-start',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
+  reviewMeta: {
+    alignItems: 'center',
+    flexDirection: 'row',
+  },
+  reviewPhoto: {
+    borderRadius: 8,
+    height: 80,
+    marginRight: 8,
+    width: 80,
+  },
+  reviewsContainer: {
+    padding: 20,
+  },
+  reviewsTitle: {
+    color: colors.black,
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 16,
   },
   starsContainer: {
     flexDirection: 'row',
     marginRight: 8,
   },
-  ratingText: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: colors.black,
-    marginRight: 8,
-  },
-  reviewCount: {
-    fontSize: 14,
-    color: colors.gray600,
-  },
-  addReviewContainer: {
-    padding: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.gray100,
-  },
-  addReviewTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: colors.black,
-    marginBottom: 16,
-  },
-  ratingInput: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  ratingLabel: {
-    fontSize: 14,
-    color: colors.gray600,
-    marginRight: 12,
-  },
   starsInput: {
     flexDirection: 'row',
     gap: 8,
   },
-  commentInput: {
-    borderWidth: 1,
-    borderColor: colors.gray300,
-    borderRadius: 8,
-    padding: 12,
-    fontSize: 14,
+  stationInfo: {
+    borderBottomColor: colors.gray100,
+    borderBottomWidth: 1,
+    padding: 20,
+  },
+  stationName: {
     color: colors.black,
-    marginBottom: 16,
-    minHeight: 80,
-    textAlignVertical: 'top',
-  },
-  photoUpload: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 16,
-    borderWidth: 1,
-    borderColor: colors.gray300,
-    borderRadius: 8,
-    borderStyle: 'dashed',
-    marginBottom: 16,
-  },
-  photoUploadText: {
-    marginLeft: 8,
-    fontSize: 14,
-    color: colors.gray600,
+    fontSize: 20,
+    fontWeight: '600',
+    marginBottom: 12,
   },
   submitButton: {
-    backgroundColor: colors.primary,
-    paddingVertical: 12,
-    borderRadius: 8,
     alignItems: 'center',
+    backgroundColor: colors.primary,
+    borderRadius: 8,
+    paddingVertical: 12,
   },
   submitButtonText: {
     color: colors.white,
     fontSize: 16,
     fontWeight: '600',
   },
-  reviewsContainer: {
-    padding: 20,
-  },
-  reviewsTitle: {
-    fontSize: 16,
-    fontWeight: '600',
+  title: {
     color: colors.black,
-    marginBottom: 16,
-  },
-  reviewCard: {
-    backgroundColor: colors.gray50,
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 16,
-  },
-  reviewHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 12,
-  },
-  userInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
+    fontSize: 18,
+    fontWeight: '600',
   },
   userAvatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: colors.primary,
     alignItems: 'center',
+    backgroundColor: colors.primary,
+    borderRadius: 20,
+    height: 40,
     justifyContent: 'center',
     marginRight: 12,
+    width: 40,
+  },
+  userInfo: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    flex: 1,
   },
   userInitial: {
     color: colors.white,
@@ -411,44 +445,10 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   userName: {
+    color: colors.black,
     fontSize: 14,
     fontWeight: '600',
-    color: colors.black,
     marginBottom: 4,
-  },
-  reviewMeta: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  reviewDate: {
-    fontSize: 12,
-    color: colors.gray600,
-    marginLeft: 8,
-  },
-  helpfulButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 8,
-  },
-  helpfulText: {
-    fontSize: 12,
-    color: colors.gray600,
-    marginLeft: 4,
-  },
-  reviewComment: {
-    fontSize: 14,
-    color: colors.black,
-    lineHeight: 20,
-    marginBottom: 12,
-  },
-  photosContainer: {
-    marginTop: 8,
-  },
-  reviewPhoto: {
-    width: 80,
-    height: 80,
-    borderRadius: 8,
-    marginRight: 8,
   },
 });
 

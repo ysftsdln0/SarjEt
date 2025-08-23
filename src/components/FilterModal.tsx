@@ -394,16 +394,16 @@ const getStyles = (isDarkMode: boolean) => StyleSheet.create({
   section: {
     marginVertical: 20,
   },
+  sectionDescription: {
+    color: isDarkMode ? colors.gray400 : colors.gray600,
+    fontSize: 14,
+    marginBottom: 16,
+  },
   sectionTitle: {
     color: isDarkMode ? colors.darkText : colors.lightText,
     fontSize: 16,
     fontWeight: 'bold',
     marginBottom: 12,
-  },
-  sectionDescription: {
-    color: isDarkMode ? colors.gray400 : colors.gray600,
-    fontSize: 14,
-    marginBottom: 16,
   },
   switchLabel: {
     color: isDarkMode ? colors.darkText : colors.lightText,

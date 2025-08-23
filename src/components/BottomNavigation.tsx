@@ -7,7 +7,6 @@ interface BottomNavigationProps {
   activeTab: string;
   onTabPress: (tab: string) => void;
   onCenterActionPress?: () => void;
-  isDarkMode?: boolean;
 }
 
 type IconName = keyof typeof Ionicons.glyphMap;
@@ -16,13 +15,12 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({
   activeTab,
   onTabPress,
   onCenterActionPress,
-  isDarkMode = false,
 }) => {
   const tabs = [
     { key: 'map', label: 'Harita', icon: 'map-outline' as IconName, activeIcon: 'map' as IconName },
     { key: 'route', label: 'Rota', icon: 'location-outline' as IconName, activeIcon: 'location' as IconName },
     { key: 'center', label: '', icon: 'flash' as IconName, isCenter: true },
-    { key: 'explore', label: 'Keşfet', icon: 'globe-outline' as IconName, activeIcon: 'globe' as IconName },
+    { key: 'campaigns', label: 'Kampanyalar', icon: 'pricetag-outline' as IconName, activeIcon: 'pricetag' as IconName },
     { key: 'profile', label: 'Profil', icon: 'person-outline' as IconName, activeIcon: 'person' as IconName },
   ];
 
@@ -74,43 +72,43 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({
 };
 
 const styles = StyleSheet.create({
+  centerButton: {
+    alignItems: 'center',
+    backgroundColor: colors.primary,
+    borderRadius: 28,
+    elevation: 8,
+    height: 56,
+    justifyContent: 'center',
+    marginTop: -16,
+    shadowColor: colors.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    width: 56, // Üstte çıkıntı yap
+  },
   container: {
-    flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: colors.white,
+    borderTopColor: colors.gray200,
+    borderTopWidth: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingBottom: 28, // Safe area için
     paddingHorizontal: 20,
     paddingVertical: 12,
-    paddingBottom: 28, // Safe area için
-    borderTopWidth: 1,
-    borderTopColor: colors.gray200,
-    alignItems: 'center',
-    justifyContent: 'space-between',
   },
   tabButton: {
     alignItems: 'center',
     flex: 1,
   },
   tabLabel: {
-    fontSize: 12,
     color: colors.gray500,
-    marginTop: 4,
+    fontSize: 12,
     fontWeight: '500',
+    marginTop: 4,
   },
   tabLabelActive: {
     color: colors.primary,
     fontWeight: '600',
-  },
-  centerButton: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: colors.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-    elevation: 8,
-    shadowColor: colors.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    marginTop: -16, // Üstte çıkıntı yap
   },
 }); 

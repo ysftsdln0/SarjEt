@@ -6,7 +6,6 @@ import {
   TouchableOpacity,
   ScrollView,
   TextInput,
-  Image,
   Alert,
   Animated,
   Dimensions,
@@ -16,7 +15,7 @@ import { ChargingStation } from '../types';
 import colors from '../constants/colors';
 import { slideUp, slideDown, fadeIn, fadeOut } from '../utils/animationUtils';
 
-const { width, height } = Dimensions.get('window');
+const { height } = Dimensions.get('window');
 
 export interface Review {
   id: string;
@@ -286,204 +285,204 @@ const StationReviewsModal: React.FC<StationReviewsModalProps> = ({
 };
 
 const styles = StyleSheet.create({
-  container: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: height * 0.6,
-    backgroundColor: colors.white,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    paddingTop: 20,
-    paddingHorizontal: 20,
-    paddingBottom: 20,
-    shadowColor: colors.black,
-    shadowOffset: { width: 0, height: -4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 10,
-    zIndex: 1000,
-  },
-  header: {
-    borderBottomWidth: 1,
-    borderBottomColor: colors.gray200,
-    paddingBottom: 16,
-    marginBottom: 16,
-  },
-  headerContent: {
+  addReviewButton: {
+    alignItems: 'center',
+    backgroundColor: colors.gray50,
+    borderColor: colors.gray200,
+    borderRadius: 8,
+    borderWidth: 1,
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-  },
-  stationInfo: {
-    flex: 1,
-  },
-  stationName: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: colors.black,
-    marginBottom: 4,
-  },
-  stationAddress: {
-    fontSize: 14,
-    color: colors.gray600,
-    lineHeight: 20,
-  },
-  closeButton: {
-    padding: 8,
+    padding: 12,
   },
   addReviewSection: {
     marginBottom: 20,
   },
-  addReviewButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 12,
-    backgroundColor: colors.gray50,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: colors.gray200,
-  },
   addReviewText: {
-    marginLeft: 8,
-    fontSize: 16,
     color: colors.primary,
-    fontWeight: '500',
-  },
-  reviewForm: {
-    marginTop: 16,
-    padding: 16,
-    backgroundColor: colors.gray50,
-    borderRadius: 12,
-  },
-  ratingInput: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  ratingLabel: {
     fontSize: 16,
-    color: colors.black,
-    marginRight: 12,
-  },
-  starsInput: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-  commentInput: {
-    borderWidth: 1,
-    borderColor: colors.gray300,
-    borderRadius: 8,
-    padding: 12,
-    fontSize: 16,
-    color: colors.black,
-    backgroundColor: colors.white,
-    minHeight: 80,
-    textAlignVertical: 'top',
-  },
-  formActions: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    gap: 12,
-    marginTop: 16,
-  },
-  cancelButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 6,
-    borderWidth: 1,
-    borderColor: colors.gray300,
-  },
-  cancelButtonText: {
-    color: colors.gray600,
-    fontSize: 14,
     fontWeight: '500',
-  },
-  submitButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    backgroundColor: colors.primary,
-    borderRadius: 6,
-  },
-  submitButtonText: {
-    color: colors.white,
-    fontSize: 14,
-    fontWeight: '500',
-  },
-  reviewsList: {
-    flex: 1,
-  },
-  reviewItem: {
-    padding: 16,
-    backgroundColor: colors.gray50,
-    borderRadius: 12,
-    marginBottom: 12,
-  },
-  reviewHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 12,
-  },
-  reviewerInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    marginLeft: 8,
   },
   avatar: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: colors.primary,
     alignItems: 'center',
+    backgroundColor: colors.primary,
+    borderRadius: 16,
+    height: 32,
     justifyContent: 'center',
     marginRight: 12,
+    width: 32,
   },
   avatarText: {
     color: colors.white,
     fontSize: 14,
     fontWeight: 'bold',
   },
-  reviewerName: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: colors.black,
-    marginBottom: 2,
+  cancelButton: {
+    borderColor: colors.gray300,
+    borderRadius: 6,
+    borderWidth: 1,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
   },
-  reviewDate: {
+  cancelButtonText: {
+    color: colors.gray600,
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  closeButton: {
+    padding: 8,
+  },
+  commentInput: {
+    backgroundColor: colors.white,
+    borderColor: colors.gray300,
+    borderRadius: 8,
+    borderWidth: 1,
+    color: colors.black,
+    fontSize: 16,
+    minHeight: 80,
+    padding: 12,
+    textAlignVertical: 'top',
+  },
+  container: {
+    backgroundColor: colors.white,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    bottom: 0,
+    elevation: 10,
+    height: height * 0.6,
+    left: 0,
+    paddingBottom: 20,
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    position: 'absolute',
+    right: 0,
+    shadowColor: colors.black,
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    zIndex: 1000,
+  },
+  formActions: {
+    flexDirection: 'row',
+    gap: 12,
+    justifyContent: 'flex-end',
+    marginTop: 16,
+  },
+  header: {
+    borderBottomColor: colors.gray200,
+    borderBottomWidth: 1,
+    marginBottom: 16,
+    paddingBottom: 16,
+  },
+  headerContent: {
+    alignItems: 'flex-start',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  helpfulButton: {
+    alignItems: 'center',
+    backgroundColor: colors.white,
+    borderColor: colors.gray200,
+    borderRadius: 16,
+    borderWidth: 1,
+    flexDirection: 'row',
+    padding: 8,
+  },
+  helpfulText: {
+    color: colors.gray600,
     fontSize: 12,
-    color: colors.gray500,
+    marginLeft: 4,
   },
   ratingContainer: {
     alignItems: 'flex-end',
   },
-  starsContainer: {
+  ratingInput: {
+    alignItems: 'center',
     flexDirection: 'row',
-    gap: 2,
+    marginBottom: 16,
   },
-  reviewComment: {
-    fontSize: 14,
+  ratingLabel: {
     color: colors.black,
-    lineHeight: 20,
-    marginBottom: 12,
+    fontSize: 16,
+    marginRight: 12,
   },
   reviewActions: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
   },
-  helpfulButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 8,
-    borderRadius: 16,
-    backgroundColor: colors.white,
-    borderWidth: 1,
-    borderColor: colors.gray200,
+  reviewComment: {
+    color: colors.black,
+    fontSize: 14,
+    lineHeight: 20,
+    marginBottom: 12,
   },
-  helpfulText: {
-    marginLeft: 4,
+  reviewDate: {
+    color: colors.gray500,
     fontSize: 12,
+  },
+  reviewForm: {
+    backgroundColor: colors.gray50,
+    borderRadius: 12,
+    marginTop: 16,
+    padding: 16,
+  },
+  reviewHeader: {
+    alignItems: 'flex-start',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
+  reviewItem: {
+    backgroundColor: colors.gray50,
+    borderRadius: 12,
+    marginBottom: 12,
+    padding: 16,
+  },
+  reviewerInfo: {
+    alignItems: 'center',
+    flexDirection: 'row',
+  },
+  reviewerName: {
+    color: colors.black,
+    fontSize: 14,
+    fontWeight: '600',
+    marginBottom: 2,
+  },
+  reviewsList: {
+    flex: 1,
+  },
+  starsContainer: {
+    flexDirection: 'row',
+    gap: 2,
+  },
+  starsInput: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  stationAddress: {
     color: colors.gray600,
+    fontSize: 14,
+    lineHeight: 20,
+  },
+  stationInfo: {
+    flex: 1,
+  },
+  stationName: {
+    color: colors.black,
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  submitButton: {
+    backgroundColor: colors.primary,
+    borderRadius: 6,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+  },
+  submitButtonText: {
+    color: colors.white,
+    fontSize: 14,
+    fontWeight: '500',
   },
 });
 

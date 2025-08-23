@@ -7,14 +7,14 @@ const BACKEND_BASE_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
 if (!BACKEND_BASE_URL) {
   // Geliştirme sırasında uyarı ver; prod'da hataya düşürmek tercih edilebilir
   if (__DEV__) {
-    // eslint-disable-next-line no-console
+     
     console.warn('[ChargingStationService] EXPO_PUBLIC_BACKEND_URL tanımlı değil. Lütfen .env dosyanıza ekleyin.');
   }
 }
 const BACKEND_URL = `${BACKEND_BASE_URL}/api/stations`;
 
 if (__DEV__) {
-  // eslint-disable-next-line no-console
+   
   console.log('[ChargingStationService] Backend configuration:', {
     baseUrl: BACKEND_BASE_URL,
     fullUrl: BACKEND_URL,
@@ -82,7 +82,7 @@ export class ChargingStationService {
     
     if (!isConnected || !BACKEND_BASE_URL) {
       if (__DEV__) {
-        // eslint-disable-next-line no-console
+         
         console.warn('İnternet bağlantısı yok veya BACKEND URL tanımlı değil, demo veriler kullanılıyor');
       }
       return this.getMockStations(latitude, longitude, actualRadius, actualLimit);
@@ -91,7 +91,7 @@ export class ChargingStationService {
     try {
       // Detay log seviyesini azalt
       if (__DEV__ && process.env.NODE_ENV !== 'production') {
-        // eslint-disable-next-line no-console
+         
         console.debug('Backend API çağrısı:', {
           url: `${BACKEND_URL}/nearby`,
           params: { latitude, longitude, radius: actualRadius, limit: actualLimit }
@@ -110,7 +110,7 @@ export class ChargingStationService {
       }
     } catch (error: any) {
       if (__DEV__) {
-        // eslint-disable-next-line no-console
+         
         console.error('Backend bağlantı hatası, demo veriler kullanılıyor:', {
           error: error.message,
           status: error.response?.status,
@@ -130,7 +130,7 @@ export class ChargingStationService {
     
     if (!isConnected || !BACKEND_BASE_URL) {
       if (__DEV__) {
-        // eslint-disable-next-line no-console
+         
         console.warn('İnternet bağlantısı yok veya BACKEND URL tanımlı değil, demo veriler kullanılıyor');
       }
       return mockChargingStations; // Tüm mock istasyonları döndür
@@ -143,7 +143,7 @@ export class ChargingStationService {
       const maxRadius = 450;
       
       if (__DEV__) {
-        // eslint-disable-next-line no-console
+         
         console.log('getAllStationsInTurkey çağrılıyor:', {
           requestedLimit: maxResults,
           actualLimit: actualLimit,
@@ -155,7 +155,7 @@ export class ChargingStationService {
       return await this.getNearbyStations(39.9334, 32.8597, maxRadius, actualLimit);
     } catch (error) {
       if (__DEV__) {
-        // eslint-disable-next-line no-console
+         
         console.error('Tüm istasyonlar alınamadı, demo veriler kullanılıyor:', error);
       }
       return mockChargingStations; // Tüm mock istasyonları döndür
@@ -214,7 +214,7 @@ export class ChargingStationService {
     
     if (!isConnected || !BACKEND_BASE_URL) {
       if (__DEV__) {
-        // eslint-disable-next-line no-console
+         
         console.warn('İnternet bağlantısı yok veya BACKEND URL tanımlı değil, demo veriler kullanılıyor');
       }
       return this.getMockStationsByCity(city, limit);
@@ -233,7 +233,7 @@ export class ChargingStationService {
       }
     } catch (error) {
       if (__DEV__) {
-        // eslint-disable-next-line no-console
+         
         console.error('Backend bağlantı hatası, demo veriler kullanılıyor:', error);
       }
       this.isOffline = true;
@@ -272,7 +272,7 @@ export class ChargingStationService {
       return response.data;
     } catch (error) {
       if (__DEV__) {
-        // eslint-disable-next-line no-console
+         
         console.error('Cache status alınamadı:', error);
       }
       return null;
@@ -288,7 +288,7 @@ export class ChargingStationService {
       return response.data;
     } catch (error) {
       if (__DEV__) {
-        // eslint-disable-next-line no-console
+         
         console.error('Cache refresh hatası:', error);
       }
       return null;
@@ -302,7 +302,7 @@ export class ChargingStationService {
     latitude: number,
     longitude: number,
     radiusKM: number,
-    maxResults: number
+    _maxResults: number
   ): ChargingStation[] {
     // Mesafe hesapla ve filtrele
     const stationsWithDistance = mockChargingStations.map((station: any) => {
@@ -332,7 +332,7 @@ export class ChargingStationService {
   /**
    * Mock verilerden şehre göre istasyonları getirir
    */
-  private getMockStationsByCity(city: string, limit: number = 1000): ChargingStation[] {
+  private getMockStationsByCity(city: string, _limit: number = 1000): ChargingStation[] {
     return mockChargingStations
       .map(s => ({ ...s, StatusType: mapStatusType(s.StatusTypeID) || s.StatusType }))
       .filter((station: any) => 

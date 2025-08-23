@@ -1,4 +1,4 @@
-import { withAuth, get, getBaseUrl } from './apiClient';
+import { withAuth, getBaseUrl } from './apiClient';
 
 export interface UserVehicleVariant {
   id: string;

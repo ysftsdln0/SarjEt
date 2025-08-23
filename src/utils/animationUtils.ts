@@ -25,7 +25,7 @@ export const fadeOut = (value: Animated.Value, duration: number = 300) => {
 };
 
 // Slide animations with spring-like feel
-export const slideUp = (value: Animated.Value, duration: number = 500) => {
+export const slideUp = (value: Animated.Value) => {
   return Animated.spring(value, {
     toValue: 0,
     useNativeDriver: true,
@@ -36,7 +36,7 @@ export const slideUp = (value: Animated.Value, duration: number = 500) => {
   });
 };
 
-export const slideDown = (value: Animated.Value, duration: number = 500) => {
+export const slideDown = (value: Animated.Value) => {
   return Animated.spring(value, {
     toValue: 1,
     useNativeDriver: true,

@@ -8,12 +8,9 @@ import {
   Image,
   TextInput,
   Alert,
-  Dimensions
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../constants/colors';
-
-const { width, height } = Dimensions.get('window');
 
 interface VehicleBrand {
   id: string;
@@ -68,7 +65,6 @@ const VehicleSelection: React.FC<VehicleSelectionProps> = ({
   const [selectedBrand, setSelectedBrand] = useState<VehicleBrand | null>(null);
   const [selectedModel, setSelectedModel] = useState<VehicleModel | null>(null);
   const [selectedVariant, setSelectedVariant] = useState<VehicleVariant | null>(null);
-  const [selectedYear, setSelectedYear] = useState<number>(2024);
   
   // Kullanıcı özelleştirmeleri
   const [nickname, setNickname] = useState('');
@@ -477,252 +473,252 @@ const VehicleSelection: React.FC<VehicleSelectionProps> = ({
 };
 
 const styles = StyleSheet.create({
-  container: {
+  batteryBar: {
+    backgroundColor: colors.gray200,
+    borderRadius: 4,
     flex: 1,
-    backgroundColor: colors.white,
+    height: 8,
+    overflow: 'hidden',
   },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  batteryButton: {
     alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingTop: 20,
-    paddingBottom: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.gray200,
+    backgroundColor: colors.gray100,
+    borderRadius: 20,
+    height: 40,
+    justifyContent: 'center',
+    width: 40,
   },
-  title: {
-    fontSize: 24,
-    fontWeight: '700',
+  batteryFill: {
+    backgroundColor: colors.primary,
+    borderRadius: 4,
+    height: '100%',
+  },
+  batterySlider: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 12,
+  },
+  brandCard: {
+    alignItems: 'center',
+    backgroundColor: colors.gray50,
+    borderColor: colors.transparent,
+    borderRadius: 16,
+    borderWidth: 2,
+    height: 140,
+    justifyContent: 'center',
+    marginRight: 16,
+    padding: 16,
+    width: 120,
+  },
+  brandCountry: {
+    color: colors.gray600,
+    fontSize: 12,
+    textAlign: 'center',
+  },
+  brandLogo: {
+    height: 40,
+    marginBottom: 12,
+    width: 60,
+  },
+  brandName: {
     color: colors.gray900,
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 4,
+    textAlign: 'center',
   },
   closeButton: {
     padding: 8,
   },
-  content: {
-    flex: 1,
-    paddingHorizontal: 20,
-  },
-  section: {
-    marginVertical: 20,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: colors.gray900,
-    marginBottom: 16,
-  },
-  brandCard: {
-    width: 120,
-    height: 140,
-    backgroundColor: colors.gray50,
-    borderRadius: 16,
-    padding: 16,
-    marginRight: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 2,
-    borderColor: 'transparent',
-  },
-  selectedCard: {
-    borderColor: colors.primary,
-    backgroundColor: colors.primary + '10',
-  },
-  brandLogo: {
-    width: 60,
-    height: 40,
-    marginBottom: 12,
-  },
-  brandName: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: colors.gray900,
-    textAlign: 'center',
-    marginBottom: 4,
-  },
-  brandCountry: {
-    fontSize: 12,
-    color: colors.gray600,
-    textAlign: 'center',
-  },
-  modelCard: {
-    width: 140,
-    height: 120,
-    backgroundColor: colors.gray50,
-    borderRadius: 16,
-    padding: 16,
-    marginRight: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 2,
-    borderColor: 'transparent',
-  },
-  modelName: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: colors.gray900,
-    textAlign: 'center',
-    marginBottom: 8,
-  },
-  modelCategory: {
-    fontSize: 14,
-    color: colors.primary,
-    fontWeight: '600',
-    marginBottom: 4,
-  },
-  modelBodyType: {
-    fontSize: 12,
-    color: colors.gray600,
-    marginBottom: 4,
-  },
-  modelYear: {
-    fontSize: 12,
-    color: colors.gray500,
-  },
-  variantCard: {
-    width: 160,
-    height: 140,
-    backgroundColor: colors.gray50,
-    borderRadius: 16,
-    padding: 16,
-    marginRight: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 2,
-    borderColor: 'transparent',
-  },
-  variantName: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: colors.gray900,
-    textAlign: 'center',
-    marginBottom: 8,
-  },
-  variantYear: {
-    fontSize: 14,
-    color: colors.primary,
-    fontWeight: '600',
-    marginBottom: 8,
-  },
-  variantSpecs: {
-    fontSize: 12,
-    color: colors.gray700,
-    textAlign: 'center',
-    marginBottom: 4,
-  },
-  variantPower: {
-    fontSize: 14,
-    color: colors.gray800,
-    fontWeight: '600',
-    marginBottom: 4,
-  },
-  variantPrice: {
-    fontSize: 12,
-    color: colors.success,
-    fontWeight: '600',
-  },
-  inputGroup: {
-    marginBottom: 20,
-  },
-  inputLabel: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: colors.gray800,
-    marginBottom: 8,
-  },
-  textInput: {
-    borderWidth: 1,
-    borderColor: colors.gray300,
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    fontSize: 16,
-    backgroundColor: colors.white,
-  },
-  batterySlider: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  batteryButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: colors.gray100,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  batteryBar: {
-    flex: 1,
-    height: 8,
-    backgroundColor: colors.gray200,
-    borderRadius: 4,
-    overflow: 'hidden',
-  },
-  batteryFill: {
-    height: '100%',
-    backgroundColor: colors.primary,
-    borderRadius: 4,
-  },
-  summaryCard: {
-    backgroundColor: colors.gray50,
-    borderRadius: 20,
-    padding: 20,
-    marginVertical: 20,
-    borderWidth: 1,
-    borderColor: colors.gray200,
-  },
-  summaryTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: colors.gray900,
-    marginBottom: 16,
-    textAlign: 'center',
-  },
-  summaryContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  summaryLogo: {
-    width: 60,
-    height: 40,
-    marginRight: 16,
-  },
-  summaryDetails: {
-    flex: 1,
-  },
-  summaryBrand: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: colors.gray900,
-    marginBottom: 4,
-  },
-  summaryModel: {
-    fontSize: 14,
-    color: colors.primary,
-    fontWeight: '600',
-    marginBottom: 4,
-  },
-  summaryVariant: {
-    fontSize: 14,
-    color: colors.gray700,
-    marginBottom: 4,
-  },
-  summarySpecs: {
-    fontSize: 12,
-    color: colors.gray600,
-  },
   confirmButton: {
+    alignItems: 'center',
     backgroundColor: colors.primary,
     borderRadius: 16,
     paddingVertical: 16,
-    alignItems: 'center',
   },
   confirmButtonText: {
     color: colors.white,
     fontSize: 16,
     fontWeight: '600',
+  },
+  container: {
+    backgroundColor: colors.white,
+    flex: 1,
+  },
+  content: {
+    flex: 1,
+    paddingHorizontal: 20,
+  },
+  header: {
+    alignItems: 'center',
+    borderBottomColor: colors.gray200,
+    borderBottomWidth: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingBottom: 16,
+    paddingHorizontal: 20,
+    paddingTop: 20,
+  },
+  inputGroup: {
+    marginBottom: 20,
+  },
+  inputLabel: {
+    color: colors.gray800,
+    fontSize: 14,
+    fontWeight: '600',
+    marginBottom: 8,
+  },
+  modelBodyType: {
+    color: colors.gray600,
+    fontSize: 12,
+    marginBottom: 4,
+  },
+  modelCard: {
+    alignItems: 'center',
+    backgroundColor: colors.gray50,
+    borderColor: colors.transparent,
+    borderRadius: 16,
+    borderWidth: 2,
+    height: 120,
+    justifyContent: 'center',
+    marginRight: 16,
+    padding: 16,
+    width: 140,
+  },
+  modelCategory: {
+    color: colors.primary,
+    fontSize: 14,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  modelName: {
+    color: colors.gray900,
+    fontSize: 18,
+    fontWeight: '700',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  modelYear: {
+    color: colors.gray500,
+    fontSize: 12,
+  },
+  section: {
+    marginVertical: 20,
+  },
+  sectionTitle: {
+    color: colors.gray900,
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: 16,
+  },
+  selectedCard: {
+    backgroundColor: colors.primary + '10',
+    borderColor: colors.primary,
+  },
+  summaryBrand: {
+    color: colors.gray900,
+    fontSize: 16,
+    fontWeight: '700',
+    marginBottom: 4,
+  },
+  summaryCard: {
+    backgroundColor: colors.gray50,
+    borderColor: colors.gray200,
+    borderRadius: 20,
+    borderWidth: 1,
+    marginVertical: 20,
+    padding: 20,
+  },
+  summaryContent: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    marginBottom: 20,
+  },
+  summaryDetails: {
+    flex: 1,
+  },
+  summaryLogo: {
+    height: 40,
+    marginRight: 16,
+    width: 60,
+  },
+  summaryModel: {
+    color: colors.primary,
+    fontSize: 14,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  summarySpecs: {
+    color: colors.gray600,
+    fontSize: 12,
+  },
+  summaryTitle: {
+    color: colors.gray900,
+    fontSize: 18,
+    fontWeight: '700',
+    marginBottom: 16,
+    textAlign: 'center',
+  },
+  summaryVariant: {
+    color: colors.gray700,
+    fontSize: 14,
+    marginBottom: 4,
+  },
+  textInput: {
+    backgroundColor: colors.white,
+    borderColor: colors.gray300,
+    borderRadius: 12,
+    borderWidth: 1,
+    fontSize: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
+  title: {
+    color: colors.gray900,
+    fontSize: 24,
+    fontWeight: '700',
+  },
+  variantCard: {
+    alignItems: 'center',
+    backgroundColor: colors.gray50,
+    borderColor: colors.transparent,
+    borderRadius: 16,
+    borderWidth: 2,
+    height: 140,
+    justifyContent: 'center',
+    marginRight: 16,
+    padding: 16,
+    width: 160,
+  },
+  variantName: {
+    color: colors.gray900,
+    fontSize: 16,
+    fontWeight: '700',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  variantPower: {
+    color: colors.gray800,
+    fontSize: 14,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  variantPrice: {
+    color: colors.success,
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  variantSpecs: {
+    color: colors.gray700,
+    fontSize: 12,
+    marginBottom: 4,
+    textAlign: 'center',
+  },
+  variantYear: {
+    color: colors.primary,
+    fontSize: 14,
+    fontWeight: '600',
+    marginBottom: 8,
   },
 });
 

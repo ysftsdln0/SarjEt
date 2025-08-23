@@ -1,11 +1,10 @@
-import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   View,
   StyleSheet,
   SafeAreaView,
   StatusBar,
   TouchableOpacity,
-  Alert,
   Text,
   Dimensions,
   Animated,
@@ -13,7 +12,6 @@ import {
 import colors from '../constants/colors';
 import { Ionicons } from '@expo/vector-icons';
 import { ChargingStation, UserLocation, FilterOptions, Region } from '../types';
-import { Header } from '../components/Header';
 import { SearchBar } from '../components/SearchBar';
 import LoadingScreen from '../components/LoadingScreen';
 import { ProfileModal } from '../components/ProfileModal';
@@ -31,38 +29,30 @@ import { searchPlaces } from '../services/geocodingService';
 import { LocationService } from '../services/locationService';
 import { FilterService } from '../services/filterService';
 import EnhancedFilterService from '../services/enhancedFilterService';
-import NotificationService from '../services/NotificationService';
 import AnalyticsService from '../services/AnalyticsService';
 import MapboxClusteredMapView from '../components/MapboxClusteredMapView';
 import { BottomNavigation } from '../components/BottomNavigation';
 import { useTheme } from '../contexts/ThemeContext';
 import { Linking } from 'react-native';
 import { 
-  fadeIn, 
-  fadeOut, 
-  slideUp, 
-  slideDown, 
   bounce, 
-  markerPopup 
 } from '../utils/animationUtils';
 
-const { width, height } = Dimensions.get('window');
+const { height } = Dimensions.get('window');
 
 const SarjetMainScreen: React.FC<{
   authToken: string | null;
-  user: any;
+  user: { name?: string; email?: string } | null;
   onLogout: () => void;
 }> = ({ authToken, user, onLogout }) => {
   const { isDarkMode, colors: themeColors } = useTheme();
   
   const [stations, setStations] = useState<ChargingStation[]>([]);
   const [allStations, setAllStations] = useState<ChargingStation[]>([]);
-  const [loading, setLoading] = useState(true);
   const [userLocation, setUserLocation] = useState<UserLocation | null>(null);
   const [initialRegion, setInitialRegion] = useState<Region | null>(null);
 
   const [searchQuery, setSearchQuery] = useState('');
-  const [refreshing, setRefreshing] = useState(false);
   
   // Modal visibility states
   const [profileVisible, setProfileVisible] = useState(false);
@@ -121,7 +111,6 @@ const SarjetMainScreen: React.FC<{
 
   // Animations
   const fadeAnim = useRef(new Animated.Value(1)).current;
-  const slideAnim = useRef(new Animated.Value(0)).current;
 
   // Analytics
   const sessionId = useRef(Date.now().toString()).current;
@@ -129,7 +118,6 @@ const SarjetMainScreen: React.FC<{
 
   // Fetch user location and set the initial map region
   const initializeLocation = useCallback(async () => {
-    setLoading(true);
     try {
       if (__DEV__) {
         console.log('[SarjetMainScreen] Getting user location...');
@@ -164,7 +152,7 @@ const SarjetMainScreen: React.FC<{
       setUserLocation(defaultLocation);
       setInitialRegion(defaultRegion);
     } finally {
-      setLoading(false);
+      // Loading completed
     }
   }, []);
 
@@ -197,9 +185,7 @@ const SarjetMainScreen: React.FC<{
 
   // Refresh data
   const handleRefresh = useCallback(async () => {
-    setRefreshing(true);
     await loadStations();
-    setRefreshing(false);
   }, [loadStations]);
 
   // Apply filters
@@ -273,8 +259,8 @@ const SarjetMainScreen: React.FC<{
       case 'route':
         setRoutePlanningVisible(true);
         break;
-      case 'explore':
-        setAdvancedFilterVisible(true);
+      case 'campaigns':
+        showToast('Kampanyalar çok yakında!', 'info');
         break;
       case 'profile':
         setProfileVisible(true);
@@ -598,7 +584,7 @@ const SarjetMainScreen: React.FC<{
                 } else {
                   showToast('Harita uygulaması açılamadı', 'error');
                 }
-              } catch (e) {
+              } catch {
                 showToast('Haritaya yönlendirme başarısız', 'error');
               }
             }}
@@ -617,7 +603,6 @@ const SarjetMainScreen: React.FC<{
         activeTab="map"
         onTabPress={handleTabPress}
         onCenterActionPress={handleCenterActionPress}
-        isDarkMode={isDarkMode}
       />
       
       {/* Modals */}
@@ -688,101 +673,101 @@ const SarjetMainScreen: React.FC<{
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.white,
-  },
-  mapContainer: {
-    flex: 1,
-    position: 'relative',
-  },
-  mapActionButtons: {
-    position: 'absolute',
-    right: 20,
-    top: '50%',
-    transform: [{ translateY: -100 }],
-    gap: 12,
-  },
   actionButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: colors.white,
     alignItems: 'center',
+    backgroundColor: colors.white,
+    borderRadius: 22,
+    elevation: 3,
+    height: 44,
     justifyContent: 'center',
     shadowColor: colors.black,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
-    elevation: 3,
-  },
-  startJourneyBar: {
-    position: 'absolute',
-    left: 12,
-    right: 12,
-    bottom: 20,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: colors.black,
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-  },
-  startJourneyButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    backgroundColor: colors.primary,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 8,
-  },
-  startJourneyText: {
-    color: colors.white,
-    fontWeight: '700',
+    width: 44,
   },
   clearRouteButton: {
     backgroundColor: colors.gray600,
-    padding: 8,
     borderRadius: 8,
+    padding: 8,
   },
-  enhancedFilterContainer: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.gray200,
+  container: {
+    backgroundColor: colors.white,
+    flex: 1,
   },
   enhancedFilterButton: {
-    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
     backgroundColor: colors.gray50,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    borderColor: colors.primary,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: colors.primary,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
+  enhancedFilterContainer: {
+    borderBottomColor: colors.gray200,
+    borderBottomWidth: 1,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
   },
   enhancedFilterText: {
+    color: colors.primary,
     fontSize: 16,
     fontWeight: '500',
-    color: colors.primary,
     marginLeft: 8,
   },
   filterBadge: {
+    alignItems: 'center',
     backgroundColor: colors.primary,
     borderRadius: 10,
-    minWidth: 20,
     height: 20,
-    alignItems: 'center',
     justifyContent: 'center',
     marginLeft: 8,
+    minWidth: 20,
   },
   filterBadgeText: {
     color: colors.white,
     fontSize: 12,
     fontWeight: '600',
+  },
+  mapActionButtons: {
+    gap: 12,
+    position: 'absolute',
+    right: 20,
+    top: '50%',
+    transform: [{ translateY: -100 }],
+  },
+  mapContainer: {
+    flex: 1,
+    position: 'relative',
+  },
+  startJourneyBar: {
+    alignItems: 'center',
+    backgroundColor: colors.black,
+    borderRadius: 12,
+    bottom: 20,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    left: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    position: 'absolute',
+    right: 12,
+  },
+  startJourneyButton: {
+    alignItems: 'center',
+    backgroundColor: colors.primary,
+    borderRadius: 8,
+    flexDirection: 'row',
+    gap: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  startJourneyText: {
+    color: colors.white,
+    fontWeight: '700',
   },
 });
 

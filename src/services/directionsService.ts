@@ -1,5 +1,3 @@
-import MapboxGL from '@rnmapbox/maps';
-
 export interface DirectionsResponse {
   routes: Array<{
     geometry: {

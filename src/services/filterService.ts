@@ -6,7 +6,7 @@ export class FilterService {
    */
   static applyFilters(stations: ChargingStation[], filters: FilterOptions): ChargingStation[] {
     if (__DEV__) {
-      // eslint-disable-next-line no-console
+       
       console.log('🔧 FilterService.applyFilters çağrıldı:', {
         stationCount: stations.length,
         filters: filters
@@ -68,7 +68,7 @@ export class FilterService {
     });
 
     if (__DEV__) {
-      // eslint-disable-next-line no-console
+       
       console.log('✅ FilterService sonuç:', {
         originalCount: stations.length,
         filteredCount: filteredStations.length,
@@ -99,7 +99,7 @@ export class FilterService {
     
     // İlk birkaç istasyon için debug log
     if (__DEV__ && Math.random() < 0.01) { // %1 şans ile log
-      // eslint-disable-next-line no-console
+       
       console.log('⚡ Güç filtresi:', {
         stationName: station.AddressInfo?.Title,
         stationPower: stationPower,
@@ -166,7 +166,7 @@ export class FilterService {
     
     // İlk birkaç istasyon için debug log
     if (__DEV__ && Math.random() < 0.005) { // %0.5 şans ile log
-      // eslint-disable-next-line no-console
+       
       console.log('🔋 İstasyon güç hesaplama:', {
         stationName: station.AddressInfo?.Title,
         connections: station.Connections?.map(c => ({ type: c.ConnectionType?.Title, power: c.PowerKW })),
