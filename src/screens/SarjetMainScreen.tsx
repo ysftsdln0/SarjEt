@@ -104,6 +104,7 @@ const SarjetMainScreen: React.FC<{
   const [mapHeight, setMapHeight] = useState(height);
   const [mapCenter, setMapCenter] = useState<{ latitude: number; longitude: number } | null>(null);
   const [presetDestination, setPresetDestination] = useState<{ name: string; latitude: number; longitude: number } | null>(null);
+  const [selectedDestination, setSelectedDestination] = useState<{ name: string; latitude: number; longitude: number } | null>(null);
   const [plannedRoute, setPlannedRoute] = useState<{ 
     points: Array<{ latitude: number; longitude: number; type?: string; title?: string }>;
     routeCoordinates?: [number, number][];
@@ -205,27 +206,39 @@ const SarjetMainScreen: React.FC<{
     showToast('Gelişmiş filtreler uygulandı', 'success');
   }, []);
 
+  // Handle search input change
+  const handleSearchInputChange = useCallback((text: string) => {
+    setSearchQuery(text);
+    if (!text.trim()) {
+      setPresetDestination(null); // Clear suggestion when search is cleared
+      setStations(allStations); // Show all stations when search is cleared
+    } else {
+      // Only do real-time filtering for stations, not geocoding
+      const filtered = allStations.filter(station =>
+        station.AddressInfo?.Title?.toLowerCase().includes(text.toLowerCase()) ||
+        station.AddressInfo?.AddressLine1?.toLowerCase().includes(text.toLowerCase())
+      );
+      setStations(filtered);
+    }
+  }, [allStations]);
+
   // Handle search
   const handleSearch = useCallback(async (query: string) => {
-    setSearchQuery(query);
     if (!query.trim()) {
       setStations(allStations);
+      setPresetDestination(null);
       return;
     }
-    // Önce istasyon adı/adresinde ara
-    const filtered = allStations.filter(station =>
-      station.AddressInfo?.Title?.toLowerCase().includes(query.toLowerCase()) ||
-      station.AddressInfo?.AddressLine1?.toLowerCase().includes(query.toLowerCase())
-    );
-    setStations(filtered);
+    
     // Şehir/ilçe için geocoding yap ve üstte bir hedef seçimi öner
     try {
       const results = await searchPlaces(query, 'tr', 1);
       if (results[0]) {
+        // Haritayı o konuma odakla
         setMapCenter({ latitude: results[0].latitude, longitude: results[0].longitude });
         // Kullanıcıya hedef olarak seçme butonu için preset sakla
         setPresetDestination({ name: results[0].displayName, latitude: results[0].latitude, longitude: results[0].longitude });
-        showToast('Konuma odaklanmak için hedef seçimi menüsünü kullanın', 'info');
+        showToast('Hedef olarak belirlemek için "Hedef Seç" butonuna dokunun', 'info');
       }
     } catch {}
     AnalyticsService.trackUserBehavior(userId, sessionId, 'search_performed', { query });
@@ -258,6 +271,9 @@ const SarjetMainScreen: React.FC<{
     switch (tab) {
       case 'route':
         setRoutePlanningVisible(true);
+        if (selectedDestination) {
+          showToast('Hedefi seçili rota planlama açılıyor', 'info');
+        }
         break;
       case 'campaigns':
         showToast('Kampanyalar çok yakında!', 'info');
@@ -320,6 +336,7 @@ const SarjetMainScreen: React.FC<{
     console.log('Route data points count:', routeData.points?.length);
     console.log('Route coordinates count:', routeData.routeCoordinates?.length);
     setPlannedRoute(routeData);
+    setSelectedDestination(null); // Clear selected destination after route is created
     console.log('=== END ROUTE DEBUG ===');
     
     AnalyticsService.trackUserBehavior(userId, sessionId, 'route_created', { route });
@@ -328,6 +345,19 @@ const SarjetMainScreen: React.FC<{
   // Show toast
   const showToast = useCallback((message: string, type: ToastType) => {
     setToast({ visible: true, message, type });
+  }, []);
+
+  // Handle suggestion select for destination
+  const handleSuggestionSelect = useCallback((suggestion: { name: string; latitude: number; longitude: number }) => {
+    setMapCenter({ latitude: suggestion.latitude, longitude: suggestion.longitude });
+    setSelectedDestination(suggestion); // Store selected destination for route planning
+    showToast(`${suggestion.name} hedef olarak belirlendi`, 'success');
+    setPresetDestination(null); // Clear the suggestion after selection
+  }, []);
+
+  // Handle suggestion dismiss
+  const handleSuggestionDismiss = useCallback(() => {
+    setPresetDestination(null);
   }, []);
 
   // Handle quick filter toggle with enhanced filters
@@ -436,81 +466,18 @@ const SarjetMainScreen: React.FC<{
       />
       
       {/* Search Bar */}
-      <SearchBar
+            <SearchBar
         value={searchQuery}
-        onChangeText={setSearchQuery}
+        onChangeText={handleSearchInputChange}
         onSearch={() => handleSearch(searchQuery)}
-        onShowFilters={() => setFilterVisible(true)}
-        isDarkMode={isDarkMode}
-        activeFilters={activeQuickFilters}
-        onFilterPress={handleQuickFilterPress}
+        activeFilters={[]}
+        onFilterPress={(filter) => {}}
         searchSuggestion={presetDestination}
-        onSuggestionSelect={() => setRoutePlanningVisible(true)}
-        onSuggestionDismiss={() => setPresetDestination(null)}
+        onSuggestionSelect={handleSuggestionSelect}
+        onSuggestionDismiss={handleSuggestionDismiss}
       />
 
-      {/* Quick Filters */}
-      <QuickFilterBar
-        filters={[
-          { 
-            id: 'available', 
-            title: 'Müsait', 
-            icon: 'checkmark-circle', 
-            color: colors.success,
-            active: activeQuickFilters.includes('available')
-          },
-          { 
-            id: 'fast', 
-            title: 'Hızlı', 
-            icon: 'flash', 
-            color: colors.warning,
-            active: activeQuickFilters.includes('fast')
-          },
-          { 
-            id: 'free', 
-            title: 'Ücretsiz', 
-            icon: 'gift', 
-            color: colors.accent1,
-            active: activeQuickFilters.includes('free')
-          },
-          { 
-            id: 'nearby', 
-            title: 'Yakın', 
-            icon: 'location', 
-            color: colors.primary,
-            active: activeQuickFilters.includes('nearby')
-          },
-          { 
-            id: 'favorite', 
-            title: 'Favoriler', 
-            icon: 'heart', 
-            color: colors.accent2,
-            active: activeQuickFilters.includes('favorite')
-          },
-        ]}
-        onFilterToggle={handleQuickFilterToggle}
-        isDarkMode={isDarkMode}
-      />
-
-      {/* Enhanced Filter Button */}
-      <View style={styles.enhancedFilterContainer}>
-        <TouchableOpacity
-          style={styles.enhancedFilterButton}
-          onPress={() => setEnhancedFilterVisible(true)}
-        >
-          <Ionicons name="options-outline" size={20} color={colors.primary} />
-          <Text style={styles.enhancedFilterText}>
-            Gelişmiş Filtreler
-          </Text>
-          {EnhancedFilterService.getActiveFilterCount(enhancedFilters) > 0 && (
-            <View style={styles.filterBadge}>
-              <Text style={styles.filterBadgeText}>
-                {EnhancedFilterService.getActiveFilterCount(enhancedFilters)}
-              </Text>
-            </View>
-          )}
-        </TouchableOpacity>
-      </View>
+      {/* Enhanced Filter Button - Moved to right side action buttons */}
       
       {/* Map Container */}
       <Animated.View 
@@ -543,21 +510,15 @@ const SarjetMainScreen: React.FC<{
           </TouchableOpacity>
           <TouchableOpacity 
             style={styles.actionButton} 
-            onPress={() => setThemeSettingsVisible(true)}
+            onPress={() => setEnhancedFilterVisible(true)}
           >
-            <Ionicons name="layers-outline" size={24} color={themeColors.textSecondary} />
+            <Ionicons name="options-outline" size={24} color={themeColors.textSecondary} />
           </TouchableOpacity>
           <TouchableOpacity 
             style={styles.actionButton} 
             onPress={handleRefresh}
           >
             <Ionicons name="locate" size={24} color={themeColors.textSecondary} />
-          </TouchableOpacity>
-          <TouchableOpacity 
-            style={styles.actionButton} 
-            onPress={() => setRoutePlanningVisible(true)}
-          >
-            <Ionicons name="swap-horizontal" size={24} color={themeColors.textSecondary} />
           </TouchableOpacity>
 
         </View>
@@ -599,11 +560,13 @@ const SarjetMainScreen: React.FC<{
       )}
       
       {/* Bottom Navigation */}
-      <BottomNavigation
-        activeTab="map"
-        onTabPress={handleTabPress}
-        onCenterActionPress={handleCenterActionPress}
-      />
+      <View style={styles.bottomNavigationContainer}>
+        <BottomNavigation
+          activeTab="map"
+          onTabPress={handleTabPress}
+          onCenterActionPress={handleCenterActionPress}
+        />
+      </View>
       
       {/* Modals */}
       <FilterModal
@@ -640,7 +603,7 @@ const SarjetMainScreen: React.FC<{
         onRouteCreated={handleRouteCreated}
         userLocation={userLocation}
         stations={stations}
-        presetDestination={presetDestination}
+        presetDestination={selectedDestination}
         authToken={authToken || undefined}
       />
       
@@ -768,6 +731,9 @@ const styles = StyleSheet.create({
   startJourneyText: {
     color: colors.white,
     fontWeight: '700',
+  },
+  bottomNavigationContainer: {
+    paddingBottom: 0, // Alt menüyü daha aşağı it
   },
 });
 

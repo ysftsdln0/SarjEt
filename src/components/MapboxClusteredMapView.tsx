@@ -108,84 +108,11 @@ const MapboxClusteredMapView: React.FC<Props> = ({
       }
     }
     
-    // Test için Manuel waypoint istasyonları ekle (Harita dışında)
-    const testWaypoints: ChargingStation[] = [
-      {
-        ID: 900001,
-        UUID: 'test_waypoint_1',
-        DataProviderID: 999,
-        OperatorID: 999,
-        AddressInfo: {
-          ID: 900001,
-          Title: 'TEST Waypoint İstasyon - Ankara',
-          AddressLine1: 'Test Adresi',
-          Town: 'Ankara',
-          StateOrProvince: 'Ankara',
-          Postcode: '06000',
-          CountryID: 229,
-          Latitude: 39.9208,
-          Longitude: 32.8541,
-          Distance: 0
-        },
-        Connections: [{
-          ID: 900001,
-          ConnectionTypeID: 25,
-          PowerKW: 50,
-          LevelID: 3,
-          CurrentTypeID: 30,
-          Quantity: 2
-        }],
-        NumberOfPoints: 1,
-        StatusTypeID: 50,
-        GeneralComments: 'Test waypoint istasyonu - Ankara',
-        UserComments: [],
-        MediaItems: [],
-        IsRecentlyVerified: true
-      },
-      {
-        ID: 900002,
-        UUID: 'test_waypoint_2',
-        DataProviderID: 999,
-        OperatorID: 999,
-        AddressInfo: {
-          ID: 900002,
-          Title: 'TEST Waypoint İstasyon - İzmir',
-          AddressLine1: 'Test Adresi',
-          Town: 'İzmir',
-          StateOrProvince: 'İzmir',
-          Postcode: '35000',
-          CountryID: 229,
-          Latitude: 38.4192,
-          Longitude: 27.1287,
-          Distance: 0
-        },
-        Connections: [{
-          ID: 900002,
-          ConnectionTypeID: 33,
-          PowerKW: 75,
-          LevelID: 3,
-          CurrentTypeID: 30,
-          Quantity: 1
-        }],
-        NumberOfPoints: 1,
-        StatusTypeID: 50,
-        GeneralComments: 'Test waypoint istasyonu - İzmir',
-        UserComments: [],
-        MediaItems: [],
-        IsRecentlyVerified: true
-      }
-    ];
-    
     console.log('Created', waypointStations.length, 'waypoint stations from route');
-    console.log('Adding', testWaypoints.length, 'test waypoint stations');
     console.log('=== END WAYPOINT DEBUG ===');
     
-    console.log('Created', waypointStations.length, 'waypoint stations from route');
-    console.log('Adding', testWaypoints.length, 'test waypoint stations');
-    console.log('=== END WAYPOINT DEBUG ===');
-    
-    // Orijinal stations ile waypoint stations'ları ve test stations'ları birleştir
-    return [...stations, ...waypointStations, ...testWaypoints];
+    // Orijinal stations ile waypoint stations'ları birleştir
+    return [...stations, ...waypointStations];
   }, [stations, plannedRoute?.points]);
 
   const stationFeatures = useMemo(() => {
@@ -273,6 +200,7 @@ const MapboxClusteredMapView: React.FC<Props> = ({
         style={StyleSheet.absoluteFill}
         styleURL={isDarkMode ? MapboxGL.StyleURL.Dark : MapboxGL.StyleURL.Street}
         logoEnabled={false}
+        attributionEnabled={false}
         compassEnabled
       >
         <MapboxGL.Camera ref={cameraRef} centerCoordinate={center} zoomLevel={zoomLevel} />
@@ -449,8 +377,8 @@ const MapboxClusteredMapView: React.FC<Props> = ({
           <MapboxGL.PointAnnotation
             id="route-start"
             coordinate={[
-              plannedRoute.points.find(p => p.type === 'start')!.longitude,
-              plannedRoute.points.find(p => p.type === 'start')!.latitude
+              plannedRoute?.points?.find(p => p.type === 'start')?.longitude || 0,
+              plannedRoute?.points?.find(p => p.type === 'start')?.latitude || 0
             ]}
           >
             <View style={styles.startMarker}>
@@ -464,8 +392,8 @@ const MapboxClusteredMapView: React.FC<Props> = ({
           <MapboxGL.PointAnnotation
             id="route-end"
             coordinate={[
-              plannedRoute.points.find(p => p.type === 'destination')!.longitude,
-              plannedRoute.points.find(p => p.type === 'destination')!.latitude
+              plannedRoute?.points?.find(p => p.type === 'destination')?.longitude || 0,
+              plannedRoute?.points?.find(p => p.type === 'destination')?.latitude || 0
             ]}
           >
             <View style={styles.endMarker}>
@@ -474,8 +402,8 @@ const MapboxClusteredMapView: React.FC<Props> = ({
           </MapboxGL.PointAnnotation>
         )}
 
-        {/* User location custom marker - Geçici olarak kapalı */}
-        {false && userLocation && (
+        {/* User location custom marker */}
+        {userLocation && (
           <MapboxGL.PointAnnotation
             id="user"
             coordinate={[userLocation.longitude, userLocation.latitude]}
@@ -569,16 +497,20 @@ const styles = StyleSheet.create({
   userLocationDot: {
     backgroundColor: colors.primary,
     borderColor: colors.white,
-    borderRadius: 10,
-    borderWidth: 3,
-    height: 20,
-    width: 20,
+    borderRadius: 12,
+    borderWidth: 4,
+    height: 24,
+    width: 24,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
   },
   userLocationMarker: {
     alignItems: 'center',
-    height: 20,
+    height: 24,
     justifyContent: 'center',
-    width: 20,
+    width: 24,
   },
 });
 

@@ -93,7 +93,7 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingBottom: 28, // Safe area için
+    paddingBottom: 0, // Safe area için - artırıldı
     paddingHorizontal: 20,
     paddingVertical: 12,
   },

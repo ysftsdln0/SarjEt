@@ -105,10 +105,9 @@ router.get('/test', (req, res) => {
 
 // Kullanıcının varsayılan/ana aracını getir (rota planlama için) - ÖNCE GELMELİ
 // Geçici olarak auth middleware'i kaldırıldı - test için
-router.get('/user-vehicle/primary', async (req, res) => {
+router.get('/user-vehicle/primary', auth, async (req, res) => {
   try {
-    // Test için sabit bir kullanıcı ID'si kullan
-    const userId = req.user?.id || 'test-user-id';
+    const userId = req.user.id;
     
     console.log('Primary vehicle endpoint called for user:', userId);
     
@@ -130,33 +129,11 @@ router.get('/user-vehicle/primary', async (req, res) => {
     });
 
     if (!primaryVehicle) {
-      // Test verisi döndür - gerçek veritabanında araç yoksa
-      console.log('No vehicle found, returning test data');
-      const testVehicleData = {
-        id: 'test-vehicle-id',
-        nickname: 'Test Aracım',
-        licensePlate: '34 TEST 01',
-        color: 'Beyaz',
-        currentBatteryLevel: 80,
-        brand: 'Tesla',
-        model: 'Model 3',
-        variant: 'Long Range',
-        year: 2023,
-        batteryCapacity: 75,
-        range: 500,
-        cityRange: 600,
-        highwayRange: 400,
-        efficiency: 15,
-        cityEfficiency: 13,
-        highwayEfficiency: 18,
-        chargingSpeed: {
-          ac: 11,
-          dc: 250
-        },
-        connectorTypes: ['Type 2', 'CCS']
-      };
-      
-      return res.json(testVehicleData);
+      console.log('No primary vehicle found for user:', userId);
+      return res.status(404).json({ 
+        message: 'Henüz bir araç eklememişsiniz. Lütfen profil ayarlarından bir araç ekleyin.',
+        code: 'NO_VEHICLE_FOUND'
+      });
     }
 
     // Rota planlama için gerekli teknik özellikleri dahil et

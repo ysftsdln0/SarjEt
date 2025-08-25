@@ -104,7 +104,19 @@ const RoutePlanning: React.FC<RoutePlanningProps> = ({
     
     setVehicleLoading(true);
     try {
+      console.log('=== LOADING USER VEHICLE ===');
+      console.log('Auth token exists:', !!authToken);
+      
       const vehicle = await getPrimaryVehicle(authToken);
+      
+      console.log('User vehicle loaded:', vehicle);
+      console.log('Vehicle brand:', vehicle.brand);
+      console.log('Vehicle model:', vehicle.model);
+      console.log('Vehicle range:', vehicle.range);
+      console.log('Vehicle battery capacity:', vehicle.batteryCapacity);
+      console.log('Current battery level:', vehicle.currentBatteryLevel);
+      console.log('=== END USER VEHICLE DEBUG ===');
+      
       setUserVehicle(vehicle);
       // Mevcut batarya seviyesini araçtan al
       if (vehicle.currentBatteryLevel) {
@@ -112,9 +124,15 @@ const RoutePlanning: React.FC<RoutePlanningProps> = ({
       }
     } catch (error) {
       console.error('Araç bilgileri yüklenirken hata:', error);
+      
+      // Eğer araç bulunamadı hatası ise daha açıklayıcı mesaj göster
+      const errorMessage = (error as any)?.message?.includes('araç') 
+        ? (error as any).message 
+        : 'Araç bilgileriniz yüklenemedi. Lütfen profil ayarlarınızdan bir araç ekleyin.';
+        
       Alert.alert(
         'Araç Bilgileri',
-        'Araç bilgileriniz yüklenemedi. Lütfen profil ayarlarınızdan bir araç ekleyin.',
+        errorMessage,
         [{ text: 'Tamam' }]
       );
     } finally {
@@ -196,6 +214,11 @@ const RoutePlanning: React.FC<RoutePlanningProps> = ({
 
     setIsLoading(true);
     try {
+      console.log('=== CREATING ROUTE ===');
+      console.log('User vehicle for route planning:', userVehicle);
+      console.log('Vehicle range being used:', userVehicle.range);
+      console.log('Current SoC being used:', currentSoC);
+      
       // Flowchart'a göre backend route planner'ı çağır - araç bilgilerini otomatik al
       const request: PlanRouteRequest = {
         start: {
@@ -215,6 +238,9 @@ const RoutePlanning: React.FC<RoutePlanningProps> = ({
         corridorKm: 30, // Sabit değer
         maxStops: 8 // Sabit değer
       };
+
+      console.log('Route planning request:', request);
+      console.log('=== END ROUTE PLANNING DEBUG ===');
 
       const response = await planRoute(request);
       
@@ -263,7 +289,7 @@ const RoutePlanning: React.FC<RoutePlanningProps> = ({
           chargingStops
         );
 
-        const mockRoute: RouteInfo = {
+        const routeInfo: RouteInfo = {
           distance: directionsResult?.distance ? directionsResult.distance / 1000 : response.data.summary.distanceKm, // m'den km'ye çevir
           duration: directionsResult?.duration ? directionsResult.duration / 60 : response.data.summary.durationMin, // s'den dk'ya çevir
           transportMode,
@@ -276,10 +302,10 @@ const RoutePlanning: React.FC<RoutePlanningProps> = ({
         // Backend'den gelen waypoint'leri local state'e de ekle (Google Maps için)
         setWaypoints(routeWaypoints);
 
-        console.log('Route created with real coordinates:', mockRoute.routeCoordinates?.length, 'points');
+        console.log('Route created with real coordinates:', routeInfo.routeCoordinates?.length, 'points');
         console.log('Updated waypoints state for Google Maps:', routeWaypoints);
 
-        onRouteCreated(mockRoute);
+        onRouteCreated(routeInfo);
         onClose();
       } else {
         Alert.alert('Hata', response.error || 'Rota hesaplanırken bir hata oluştu.');
