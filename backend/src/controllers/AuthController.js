@@ -13,7 +13,7 @@ class AuthController {
         email: Joi.string().email().required(),
         password: Joi.string().min(6).max(100).required(),
         name: Joi.string().min(2).max(100).optional(),
-        phone: Joi.string().min(5).max(30).optional(),
+        phone: Joi.string().min(5).max(30).allow('', null).optional(),
         vehicle: Joi.object({
           variantId: Joi.string().optional(),
           nickname: Joi.string().allow('', null).optional(),
@@ -65,7 +65,7 @@ class AuthController {
           email: email.toLowerCase(),
           password: hashedPassword,
           name,
-          phone,
+          phone: phone && phone.trim() !== '' ? phone : null, // Boş string'i null'a çevir
           isActive: true,
           preferences: {
             create: {
@@ -93,20 +93,22 @@ class AuthController {
       if (vehicle && vehicle.variantId) {
         if (process.env.NODE_ENV !== 'production') {
           console.log('🚗 Adding vehicle information');
+          console.log('Vehicle data:', vehicle);
         }
         try {
-          await prisma.userVehicle.create({
+          const createdVehicle = await prisma.userVehicle.create({
             data: {
               userId: user.id,
               variantId: vehicle.variantId,
               nickname: vehicle.nickname,
               licensePlate: vehicle.licensePlate,
               color: vehicle.color,
-              currentBatteryLevel: vehicle.currentBatteryLevel || 100
+              currentBatteryLevel: vehicle.currentBatteryLevel || 100,
+              isActive: true // Önemli: araç aktif olarak işaretlenmeli
             }
           });
           if (process.env.NODE_ENV !== 'production') {
-            console.log('✅ Vehicle added successfully');
+            console.log('✅ Vehicle added successfully:', createdVehicle.id);
           }
         } catch (vehicleError) {
           console.error('❌ Vehicle creation failed:', vehicleError);

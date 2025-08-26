@@ -79,10 +79,9 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({
     console.log('🚗 Selected vehicle:', selectedVehicle);
 
     try {
-      const requestBody = {
+      const requestBody: any = {
         name,
         email: email.toLowerCase(),
-        phone,
         password,
         vehicle: {
           variantId: selectedVehicle.variant.id,
@@ -92,6 +91,11 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({
           currentBatteryLevel: selectedVehicle.userCustomizations.currentBatteryLevel
         }
       };
+
+      // Telefon numarası varsa ekle
+      if (phone && phone.trim() !== '') {
+        requestBody.phone = phone;
+      }
 
       console.log('📤 Sending request to backend:', requestBody);
       const response = await post('/api/auth/register', requestBody);

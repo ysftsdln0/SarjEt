@@ -111,8 +111,15 @@ router.get('/user-vehicle/primary', auth, async (req, res) => {
     
     console.log('Primary vehicle endpoint called for user:', userId);
     
+    // Önce kullanıcının tüm araçlarını kontrol et
+    const allUserVehicles = await prisma.userVehicle.findMany({
+      where: { userId }
+    });
+    console.log('All user vehicles:', allUserVehicles.length, 'found');
+    console.log('Vehicle details:', allUserVehicles.map(v => ({ id: v.id, isActive: v.isActive, variantId: v.variantId })));
+    
     // İlk araç varsayılan araç olarak kabul edilir
-    const primaryVehicle = await prisma.userVehicle.findFirst({
+    let primaryVehicle = await prisma.userVehicle.findFirst({
       where: { userId, isActive: true },
       include: {
         variant: {
@@ -127,6 +134,28 @@ router.get('/user-vehicle/primary', auth, async (req, res) => {
       },
       orderBy: { createdAt: 'asc' }
     });
+
+    // Eğer aktif araç bulunamadıysa, herhangi bir aracı al
+    if (!primaryVehicle) {
+      console.log('No active vehicle found, trying any vehicle...');
+      primaryVehicle = await prisma.userVehicle.findFirst({
+        where: { userId },
+        include: {
+          variant: {
+            include: {
+              model: {
+                include: {
+                  brand: true
+                }
+              }
+            }
+          }
+        },
+        orderBy: { createdAt: 'asc' }
+      });
+    }
+
+    console.log('Primary vehicle found:', !!primaryVehicle);
 
     if (!primaryVehicle) {
       console.log('No primary vehicle found for user:', userId);

@@ -132,8 +132,11 @@ const RoutePlanning: React.FC<RoutePlanningProps> = ({
         
       Alert.alert(
         'Araç Bilgileri',
-        errorMessage,
-        [{ text: 'Tamam' }]
+        `${errorMessage}\n\nNot: Eğer yeni kayıt olduysanız, birkaç saniye bekleyip tekrar deneyin.`,
+        [
+          { text: 'Tamam' },
+          { text: 'Tekrar Dene', onPress: () => loadUserVehicle() }
+        ]
       );
     } finally {
       setVehicleLoading(false);
