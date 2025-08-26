@@ -4,74 +4,53 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  Modal,
   SafeAreaView,
   ScrollView,
-  TextInput,
-  ActivityIndicator,
   Alert,
+  ActivityIndicator,
+  TextInput,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import colors from '../constants/colors';
+import { colors } from '../constants/colors';
 import userVehicleService, { 
   VehicleBrand, 
   VehicleModel, 
-  VehicleVariant, 
-  CreateVehicleData
+  VehicleVariant 
 } from '../services/userVehicleService';
-import { getBaseUrl } from '../services/apiClient';
 
-// EV data service interface for frontend
-interface EVVehicle {
-  id: string;
-  brand: string;
-  model: string;
-  variant: string;
-  release_year: number;
-  usable_battery_size: number;
-  range?: number;
-  energy_consumption?: {
-    average_consumption: number;
-  };
-  ac_charger?: {
-    max_power: number;
-    ports: string[];
-  };
-  dc_charger?: {
-    max_power: number;
-    ports: string[];
-  };
+interface RegisterVehicleSelectionProps {
+  onVehicleSelected: (vehicle: {
+    brand: VehicleBrand;
+    model: VehicleModel;
+    variant: VehicleVariant;
+    userCustomizations: {
+      nickname?: string;
+      licensePlate?: string;
+      color?: string;
+      currentBatteryLevel?: number;
+    };
+  }) => void;
+  onBack: () => void;
+  isDarkMode?: boolean;
 }
 
-interface AddVehicleModalProps {
-  visible: boolean;
-  onClose: () => void;
-  onVehicleAdded: () => void;
-  isDarkMode: boolean;
-  authToken: string;
-}
-
-export const AddVehicleModal: React.FC<AddVehicleModalProps> = ({
-  visible,
-  onClose,
-  onVehicleAdded,
-  isDarkMode,
-  authToken,
+export const RegisterVehicleSelection: React.FC<RegisterVehicleSelectionProps> = ({
+  onVehicleSelected,
+  onBack,
+  isDarkMode = false,
 }) => {
   const [step, setStep] = useState(1); // 1: Brand, 2: Model, 3: Variant, 4: Details
   const [loading, setLoading] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
 
   // Data states
-  const [evVehicles, setEvVehicles] = useState<EVVehicle[]>([]);
-  const [brands, setBrands] = useState<string[]>([]);
-  const [models, setModels] = useState<string[]>([]);
-  const [variants, setVariants] = useState<EVVehicle[]>([]);
+  const [brands, setBrands] = useState<VehicleBrand[]>([]);
+  const [models, setModels] = useState<VehicleModel[]>([]);
+  const [variants, setVariants] = useState<VehicleVariant[]>([]);
 
   // Selected values
-  const [selectedBrand, setSelectedBrand] = useState<string>('');
-  const [selectedModel, setSelectedModel] = useState<string>('');
-  const [selectedVariant, setSelectedVariant] = useState<EVVehicle | null>(null);
+  const [selectedBrand, setSelectedBrand] = useState<VehicleBrand | null>(null);
+  const [selectedModel, setSelectedModel] = useState<VehicleModel | null>(null);
+  const [selectedVariant, setSelectedVariant] = useState<VehicleVariant | null>(null);
   
   // Vehicle details
   const [nickname, setNickname] = useState('');
@@ -80,53 +59,27 @@ export const AddVehicleModal: React.FC<AddVehicleModalProps> = ({
   const [batteryLevel, setBatteryLevel] = useState('80');
 
   useEffect(() => {
-    if (visible) {
-      loadEVData();
-      resetForm();
-    }
-  }, [visible]);
+    loadBrands();
+  }, []);
 
-  const resetForm = () => {
-    setStep(1);
-    setSelectedBrand('');
-    setSelectedModel('');
-    setSelectedVariant(null);
-    setNickname('');
-    setLicensePlate('');
-    setColor('');
-    setBatteryLevel('80');
-  };
-
-  const loadEVData = async () => {
+  const loadBrands = async () => {
     try {
       setLoading(true);
-      // Backend EV data service'den tüm araçları çek
-      const baseUrl = await getBaseUrl();
-      const response = await fetch(`${baseUrl}/api/vehicles/ev-data`);
-      const vehicles: EVVehicle[] = await response.json();
-      
-      setEvVehicles(vehicles);
-      
-      // Unique brand listesi çıkar
-      const uniqueBrands = Array.from(new Set(vehicles.map(v => v.brand))).sort();
-      setBrands(uniqueBrands);
+      const brandsData = await userVehicleService.getVehicleBrands();
+      setBrands(brandsData);
     } catch (error) {
-      Alert.alert('Hata', 'Araç verileri yüklenemedi');
-      console.error('Load EV data error:', error);
+      Alert.alert('Hata', 'Araç markaları yüklenemedi');
+      console.error('Load brands error:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  const loadModels = (brandName: string) => {
+  const loadModels = async (brandId: string) => {
     try {
       setLoading(true);
-      // Seçilen marka için modelleri filtrele
-      const brandVehicles = evVehicles.filter(v => v.brand === brandName);
-      const uniqueModels = Array.from(new Set(brandVehicles.map(v => v.model))).sort();
-      
-      setModels(uniqueModels);
-      setSelectedBrand(brandName);
+      const modelsData = await userVehicleService.getVehicleModels(brandId);
+      setModels(modelsData);
       setStep(2);
     } catch (error) {
       Alert.alert('Hata', 'Araç modelleri yüklenemedi');
@@ -136,16 +89,11 @@ export const AddVehicleModal: React.FC<AddVehicleModalProps> = ({
     }
   };
 
-  const loadVariants = (modelName: string) => {
+  const loadVariants = async (modelId: string) => {
     try {
       setLoading(true);
-      // Seçilen marka ve model için varyantları filtrele
-      const modelVehicles = evVehicles.filter(
-        v => v.brand === selectedBrand && v.model === modelName
-      );
-      
-      setVariants(modelVehicles);
-      setSelectedModel(modelName);
+      const variantsData = await userVehicleService.getVehicleVariants(modelId);
+      setVariants(variantsData);
       setStep(3);
     } catch (error) {
       Alert.alert('Hata', 'Araç varyantları yüklenemedi');
@@ -155,46 +103,42 @@ export const AddVehicleModal: React.FC<AddVehicleModalProps> = ({
     }
   };
 
-  const handleBrandSelect = (brandName: string) => {
-    loadModels(brandName);
+  const handleBrandSelect = (brand: VehicleBrand) => {
+    setSelectedBrand(brand);
+    loadModels(brand.id);
   };
 
-  const handleModelSelect = (modelName: string) => {
-    loadVariants(modelName);
+  const handleModelSelect = (model: VehicleModel) => {
+    setSelectedModel(model);
+    loadVariants(model.id);
   };
 
-  const handleVariantSelect = (variant: EVVehicle) => {
+  const handleVariantSelect = (variant: VehicleVariant) => {
     setSelectedVariant(variant);
     setStep(4);
   };
 
-  const handleSubmit = async () => {
-    if (!selectedVariant) return;
+  const handleSubmit = () => {
+    if (!selectedBrand || !selectedModel || !selectedVariant) return;
 
-    try {
-      setSubmitting(true);
-      
-      const vehicleData: CreateVehicleData = {
-        variantId: selectedVariant.id,
+    onVehicleSelected({
+      brand: selectedBrand,
+      model: selectedModel,
+      variant: selectedVariant,
+      userCustomizations: {
         nickname: nickname || undefined,
         licensePlate: licensePlate || undefined,
         color: color || undefined,
         currentBatteryLevel: batteryLevel ? parseInt(batteryLevel) : undefined,
-      };
+      },
+    });
+  };
 
-      await userVehicleService.createUserVehicle(authToken, vehicleData);
-      
-      Alert.alert('Başarılı', 'Araç başarıyla eklendi', [
-        { text: 'Tamam', onPress: () => {
-          onVehicleAdded();
-          onClose();
-        }}
-      ]);
-    } catch (error: any) {
-      Alert.alert('Hata', error.message || 'Araç eklenirken bir hata oluştu');
-      console.error('Create vehicle error:', error);
-    } finally {
-      setSubmitting(false);
+  const handleBack = () => {
+    if (step > 1) {
+      setStep(step - 1);
+    } else {
+      onBack();
     }
   };
 
@@ -217,15 +161,18 @@ export const AddVehicleModal: React.FC<AddVehicleModalProps> = ({
             <Text style={[styles.stepTitle, !isDarkMode && styles.lightText]}>
               Araç Markasını Seçin
             </Text>
-            <ScrollView style={styles.optionsContainer}>
+            <Text style={[styles.stepSubtitle, !isDarkMode && styles.lightSubtitle]}>
+              Hangi markanın elektrikli aracını kullanıyorsunuz?
+            </Text>
+            <ScrollView style={styles.optionsContainer} showsVerticalScrollIndicator={false}>
               {brands.map((brand) => (
                 <TouchableOpacity
-                  key={brand}
+                  key={brand.id}
                   style={[styles.optionButton, !isDarkMode && styles.lightOptionButton]}
                   onPress={() => handleBrandSelect(brand)}
                 >
                   <Text style={[styles.optionText, !isDarkMode && styles.lightText]}>
-                    {brand}
+                    {brand.name}
                   </Text>
                   <Ionicons name="chevron-forward" size={20} color={colors.gray500} />
                 </TouchableOpacity>
@@ -238,17 +185,20 @@ export const AddVehicleModal: React.FC<AddVehicleModalProps> = ({
         return (
           <View style={styles.stepContainer}>
             <Text style={[styles.stepTitle, !isDarkMode && styles.lightText]}>
-              {selectedBrand} Modelini Seçin
+              {selectedBrand?.name} Modelini Seçin
             </Text>
-            <ScrollView style={styles.optionsContainer}>
+            <Text style={[styles.stepSubtitle, !isDarkMode && styles.lightSubtitle]}>
+              Hangi modeli kullanıyorsunuz?
+            </Text>
+            <ScrollView style={styles.optionsContainer} showsVerticalScrollIndicator={false}>
               {models.map((model) => (
                 <TouchableOpacity
-                  key={model}
+                  key={model.id}
                   style={[styles.optionButton, !isDarkMode && styles.lightOptionButton]}
                   onPress={() => handleModelSelect(model)}
                 >
                   <Text style={[styles.optionText, !isDarkMode && styles.lightText]}>
-                    {model}
+                    {model.name}
                   </Text>
                   <Ionicons name="chevron-forward" size={20} color={colors.gray500} />
                 </TouchableOpacity>
@@ -261,34 +211,48 @@ export const AddVehicleModal: React.FC<AddVehicleModalProps> = ({
         return (
           <View style={styles.stepContainer}>
             <Text style={[styles.stepTitle, !isDarkMode && styles.lightText]}>
-              {selectedModel} Varyantını Seçin
+              {selectedModel?.name} Varyantını Seçin
             </Text>
-            <ScrollView style={styles.optionsContainer}>
+            <Text style={[styles.stepSubtitle, !isDarkMode && styles.lightSubtitle]}>
+              Hangi yıl ve konfigürasyonu kullanıyorsunuz?
+            </Text>
+            <ScrollView style={styles.optionsContainer} showsVerticalScrollIndicator={false}>
               {variants.map((variant) => (
                 <TouchableOpacity
                   key={variant.id}
-                  style={[styles.optionButton, !isDarkMode && styles.lightOptionButton]}
+                  style={[styles.variantButton, !isDarkMode && styles.lightVariantButton]}
                   onPress={() => handleVariantSelect(variant)}
                 >
                   <View style={styles.variantInfo}>
-                    <Text style={[styles.optionText, !isDarkMode && styles.lightText]}>
-                      {variant.variant} ({variant.release_year})
+                    <Text style={[styles.variantName, !isDarkMode && styles.lightText]}>
+                      {variant.name} ({variant.year})
                     </Text>
-                    {variant.range && (
-                      <Text style={[styles.variantDetail, !isDarkMode && styles.lightDetailText]}>
-                        Menzil: {variant.range} km
-                      </Text>
-                    )}
-                    {variant.usable_battery_size && (
-                      <Text style={[styles.variantDetail, !isDarkMode && styles.lightDetailText]}>
-                        Batarya: {variant.usable_battery_size} kWh
-                      </Text>
-                    )}
-                    {variant.energy_consumption && (
-                      <Text style={[styles.variantDetail, !isDarkMode && styles.lightDetailText]}>
-                        Tüketim: {variant.energy_consumption.average_consumption} kWh/100km
-                      </Text>
-                    )}
+                    <View style={styles.variantSpecs}>
+                      {variant.batteryCapacity && (
+                        <View style={styles.specItem}>
+                          <Ionicons name="battery-charging" size={14} color={colors.success} />
+                          <Text style={[styles.specText, !isDarkMode && styles.lightSpecText]}>
+                            {variant.batteryCapacity} kWh
+                          </Text>
+                        </View>
+                      )}
+                      {variant.maxRange && (
+                        <View style={styles.specItem}>
+                          <Ionicons name="speedometer" size={14} color={colors.primary} />
+                          <Text style={[styles.specText, !isDarkMode && styles.lightSpecText]}>
+                            {variant.maxRange} km
+                          </Text>
+                        </View>
+                      )}
+                      {variant.chargingSpeedDC && (
+                        <View style={styles.specItem}>
+                          <Ionicons name="flash" size={14} color={colors.warning} />
+                          <Text style={[styles.specText, !isDarkMode && styles.lightSpecText]}>
+                            {variant.chargingSpeedDC} kW
+                          </Text>
+                        </View>
+                      )}
+                    </View>
                   </View>
                   <Ionicons name="chevron-forward" size={20} color={colors.gray500} />
                 </TouchableOpacity>
@@ -299,48 +263,34 @@ export const AddVehicleModal: React.FC<AddVehicleModalProps> = ({
 
       case 4:
         return (
-          <ScrollView style={styles.stepContainer}>
+          <ScrollView style={styles.stepContainer} showsVerticalScrollIndicator={false}>
             <Text style={[styles.stepTitle, !isDarkMode && styles.lightText]}>
               Araç Detayları
+            </Text>
+            <Text style={[styles.stepSubtitle, !isDarkMode && styles.lightSubtitle]}>
+              Son olarak aracınızla ilgili detayları giriniz
             </Text>
             
             {/* Selected vehicle summary */}
             <View style={[styles.summaryCard, !isDarkMode && styles.lightSummaryCard]}>
-              <Text style={[styles.summaryTitle, !isDarkMode && styles.lightText]}>
-                Seçilen Araç
+              <View style={styles.summaryHeader}>
+                <Ionicons name="checkmark-circle" size={24} color={colors.success} />
+                <Text style={[styles.summaryTitle, !isDarkMode && styles.lightText]}>
+                  Seçilen Araç
+                </Text>
+              </View>
+              <Text style={[styles.summaryText, !isDarkMode && styles.lightDetailText]}>
+                {selectedBrand?.name} {selectedModel?.name}
               </Text>
               <Text style={[styles.summaryText, !isDarkMode && styles.lightDetailText]}>
-                {selectedBrand} {selectedModel}
+                {selectedVariant?.name} ({selectedVariant?.year})
               </Text>
-              <Text style={[styles.summaryText, !isDarkMode && styles.lightDetailText]}>
-                {selectedVariant?.variant} ({selectedVariant?.release_year})
-              </Text>
-              {selectedVariant?.usable_battery_size && (
-                <Text style={[styles.summaryText, !isDarkMode && styles.lightDetailText]}>
-                  Batarya: {selectedVariant.usable_battery_size} kWh
-                </Text>
-              )}
-              {selectedVariant?.range && (
-                <Text style={[styles.summaryText, !isDarkMode && styles.lightDetailText]}>
-                  Menzil: {selectedVariant.range} km
-                </Text>
-              )}
-              {selectedVariant?.ac_charger && (
-                <Text style={[styles.summaryText, !isDarkMode && styles.lightDetailText]}>
-                  AC Şarj: {selectedVariant.ac_charger.max_power} kW
-                </Text>
-              )}
-              {selectedVariant?.dc_charger && (
-                <Text style={[styles.summaryText, !isDarkMode && styles.lightDetailText]}>
-                  DC Şarj: {selectedVariant.dc_charger.max_power} kW
-                </Text>
-              )}
             </View>
 
             <View style={styles.formContainer}>
               <View style={styles.inputGroup}>
                 <Text style={[styles.inputLabel, !isDarkMode && styles.lightText]}>
-                  Araç Takma Adı (İsteğe Bağlı)
+                  🚗 Araç Takma Adı (İsteğe Bağlı)
                 </Text>
                 <TextInput
                   style={[styles.textInput, !isDarkMode && styles.lightTextInput]}
@@ -353,7 +303,7 @@ export const AddVehicleModal: React.FC<AddVehicleModalProps> = ({
 
               <View style={styles.inputGroup}>
                 <Text style={[styles.inputLabel, !isDarkMode && styles.lightText]}>
-                  Plaka (İsteğe Bağlı)
+                  📋 Plaka (İsteğe Bağlı)
                 </Text>
                 <TextInput
                   style={[styles.textInput, !isDarkMode && styles.lightTextInput]}
@@ -367,7 +317,7 @@ export const AddVehicleModal: React.FC<AddVehicleModalProps> = ({
 
               <View style={styles.inputGroup}>
                 <Text style={[styles.inputLabel, !isDarkMode && styles.lightText]}>
-                  Renk (İsteğe Bağlı)
+                  🎨 Renk (İsteğe Bağlı)
                 </Text>
                 <TextInput
                   style={[styles.textInput, !isDarkMode && styles.lightTextInput]}
@@ -380,7 +330,7 @@ export const AddVehicleModal: React.FC<AddVehicleModalProps> = ({
 
               <View style={styles.inputGroup}>
                 <Text style={[styles.inputLabel, !isDarkMode && styles.lightText]}>
-                  Mevcut Batarya Seviyesi (%)
+                  🔋 Mevcut Batarya Seviyesi (%)
                 </Text>
                 <TextInput
                   style={[styles.textInput, !isDarkMode && styles.lightTextInput]}
@@ -401,73 +351,50 @@ export const AddVehicleModal: React.FC<AddVehicleModalProps> = ({
   };
 
   return (
-    <Modal
-      visible={visible}
-      animationType="slide"
-      presentationStyle="pageSheet"
-      onRequestClose={onClose}
-    >
-      <SafeAreaView style={[styles.container, !isDarkMode && styles.lightContainer]}>
-        {/* Header */}
-        <View style={[styles.header, !isDarkMode && styles.lightHeader]}>
-          <View style={styles.headerLeft}>
-            {step > 1 && (
-              <TouchableOpacity 
-                style={styles.backButton}
-                onPress={() => setStep(step - 1)}
-              >
-                <Ionicons name="chevron-back" size={24} color={colors.primary} />
-              </TouchableOpacity>
-            )}
-            <Text style={[styles.headerTitle, !isDarkMode && styles.lightHeaderTitle]}>
-              Araç Ekle
-            </Text>
-          </View>
-          <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-            <Ionicons name="close" size={24} color={colors.gray600} />
+    <SafeAreaView style={[styles.container, !isDarkMode && styles.lightContainer]}>
+      {/* Header */}
+      <View style={[styles.header, !isDarkMode && styles.lightHeader]}>
+        <TouchableOpacity style={styles.backButton} onPress={handleBack}>
+          <Ionicons name="chevron-back" size={24} color={colors.primary} />
+        </TouchableOpacity>
+        <Text style={[styles.headerTitle, !isDarkMode && styles.lightHeaderTitle]}>
+          Araç Bilgileri
+        </Text>
+        <View style={styles.placeholder} />
+      </View>
+
+      {/* Progress indicator */}
+      <View style={styles.progressContainer}>
+        {[1, 2, 3, 4].map((stepNum) => (
+          <View
+            key={stepNum}
+            style={[
+              styles.progressStep,
+              stepNum <= step && styles.progressStepActive,
+              !isDarkMode && stepNum <= step && styles.lightProgressStepActive,
+            ]}
+          />
+        ))}
+      </View>
+
+      {/* Content */}
+      <View style={styles.content}>
+        {renderStepContent()}
+      </View>
+
+      {/* Footer */}
+      {step === 4 && (
+        <View style={[styles.footer, !isDarkMode && styles.lightFooter]}>
+          <TouchableOpacity
+            style={styles.completeButton}
+            onPress={handleSubmit}
+          >
+            <Text style={styles.completeButtonText}>Kaydı Tamamla</Text>
+            <Ionicons name="checkmark-circle" size={20} color={colors.white} style={{ marginLeft: 8 }} />
           </TouchableOpacity>
         </View>
-
-        {/* Progress indicator */}
-        <View style={styles.progressContainer}>
-          {[1, 2, 3, 4].map((stepNum) => (
-            <View
-              key={stepNum}
-              style={[
-                styles.progressStep,
-                stepNum <= step && styles.progressStepActive,
-                !isDarkMode && stepNum <= step && styles.lightProgressStepActive,
-              ]}
-            />
-          ))}
-        </View>
-
-        {/* Content */}
-        <View style={styles.content}>
-          {renderStepContent()}
-        </View>
-
-        {/* Footer */}
-        {step === 4 && (
-          <View style={[styles.footer, !isDarkMode && styles.lightFooter]}>
-            <TouchableOpacity
-              style={[
-                styles.submitButton,
-                submitting && styles.submitButtonDisabled,
-              ]}
-              onPress={handleSubmit}
-              disabled={submitting}
-            >
-              {submitting ? (
-                <ActivityIndicator color={colors.white} />
-              ) : (
-                <Text style={styles.submitButtonText}>Araç Ekle</Text>
-              )}
-            </TouchableOpacity>
-          </View>
-        )}
-      </SafeAreaView>
-    </Modal>
+      )}
+    </SafeAreaView>
   );
 };
 
@@ -491,24 +418,21 @@ const styles = StyleSheet.create({
   lightHeader: {
     borderBottomColor: colors.gray200,
   },
-  headerLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-  },
   backButton: {
-    marginRight: 12,
+    padding: 4,
   },
   headerTitle: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: '600',
     color: colors.white,
+    flex: 1,
+    textAlign: 'center',
   },
   lightHeaderTitle: {
     color: colors.gray900,
   },
-  closeButton: {
-    padding: 4,
+  placeholder: {
+    width: 32,
   },
   progressContainer: {
     flexDirection: 'row',
@@ -552,7 +476,16 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: '700',
     color: colors.white,
+    marginBottom: 8,
+  },
+  stepSubtitle: {
+    fontSize: 16,
+    color: colors.gray400,
     marginBottom: 24,
+    lineHeight: 22,
+  },
+  lightSubtitle: {
+    color: colors.gray600,
   },
   optionsContainer: {
     flex: 1,
@@ -574,16 +507,43 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     color: colors.white,
   },
+  variantButton: {
+    backgroundColor: colors.gray800,
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  lightVariantButton: {
+    backgroundColor: colors.gray50,
+  },
   variantInfo: {
     flex: 1,
   },
-  variantDetail: {
-    fontSize: 14,
-    color: colors.gray400,
-    marginTop: 4,
+  variantName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: colors.white,
+    marginBottom: 8,
   },
-  lightDetailText: {
-    color: colors.gray600,
+  variantSpecs: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+  },
+  specItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  specText: {
+    fontSize: 12,
+    color: colors.gray300,
+  },
+  lightSpecText: {
+    color: colors.gray700,
   },
   summaryCard: {
     backgroundColor: colors.gray800,
@@ -594,16 +554,24 @@ const styles = StyleSheet.create({
   lightSummaryCard: {
     backgroundColor: colors.gray50,
   },
+  summaryHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+    gap: 8,
+  },
   summaryTitle: {
     fontSize: 16,
     fontWeight: '600',
     color: colors.white,
-    marginBottom: 8,
   },
   summaryText: {
     fontSize: 14,
     color: colors.gray400,
     marginBottom: 4,
+  },
+  lightDetailText: {
+    color: colors.gray600,
   },
   formContainer: {
     gap: 20,
@@ -638,16 +606,15 @@ const styles = StyleSheet.create({
   lightFooter: {
     borderTopColor: colors.gray200,
   },
-  submitButton: {
+  completeButton: {
     backgroundColor: colors.primary,
     borderRadius: 12,
     padding: 16,
     alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
   },
-  submitButtonDisabled: {
-    opacity: 0.6,
-  },
-  submitButtonText: {
+  completeButtonText: {
     color: colors.white,
     fontSize: 16,
     fontWeight: '600',

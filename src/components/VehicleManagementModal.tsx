@@ -19,6 +19,7 @@ import userVehicleService, {
   VehicleModel, 
   VehicleVariant 
 } from '../services/userVehicleService';
+import { AddVehicleModal } from './AddVehicleModal';
 
 interface VehicleManagementModalProps {
   visible: boolean;
@@ -35,22 +36,11 @@ export const VehicleManagementModal: React.FC<VehicleManagementModalProps> = ({
 }) => {
   const [vehicles, setVehicles] = useState<UserVehicle[]>([]);
   const [loading, setLoading] = useState(false);
-  const [showAddForm, setShowAddForm] = useState(false);
-  
-  // Add vehicle form states
-  const [brands, setBrands] = useState<VehicleBrand[]>([]);
-  const [models, setModels] = useState<VehicleModel[]>([]);
-  const [variants, setVariants] = useState<VehicleVariant[]>([]);
-  const [selectedBrandId, setSelectedBrandId] = useState<string | null>(null);
-  const [selectedModelId, setSelectedModelId] = useState<string | null>(null);
-  const [selectedVariantId, setSelectedVariantId] = useState<string | null>(null);
-  const [nickname, setNickname] = useState('');
-  const [addingVehicle, setAddingVehicle] = useState(false);
+  const [showAddVehicleModal, setShowAddVehicleModal] = useState(false);
 
   useEffect(() => {
     if (visible && authToken) {
       loadVehicles();
-      loadBrands();
     }
   }, [visible, authToken]);
 
@@ -61,92 +51,11 @@ export const VehicleManagementModal: React.FC<VehicleManagementModalProps> = ({
       setLoading(true);
       const userVehicles = await userVehicleService.getUserVehicles(authToken);
       setVehicles(userVehicles);
-      
-      // If no vehicles, show add form immediately
-      if (userVehicles.length === 0) {
-        setShowAddForm(true);
-      }
     } catch (error) {
       console.error('Error loading vehicles:', error);
       Alert.alert('Hata', 'Araçlar yüklenirken bir hata oluştu.');
     } finally {
       setLoading(false);
-    }
-  };
-
-  const loadBrands = async () => {
-    try {
-      const brandsData = await userVehicleService.getVehicleBrands();
-      setBrands(brandsData);
-    } catch (error) {
-      console.error('Error loading brands:', error);
-    }
-  };
-
-  const loadModels = async (brandId: string) => {
-    try {
-      const modelsData = await userVehicleService.getVehicleModels(brandId);
-      setModels(modelsData);
-      setVariants([]);
-      setSelectedModelId(null);
-      setSelectedVariantId(null);
-    } catch (error) {
-      console.error('Error loading models:', error);
-    }
-  };
-
-  const loadVariants = async (modelId: string) => {
-    try {
-      const variantsData = await userVehicleService.getVehicleVariants(modelId);
-      setVariants(variantsData);
-      setSelectedVariantId(null);
-    } catch (error) {
-      console.error('Error loading variants:', error);
-    }
-  };
-
-  const handleBrandSelect = (brandId: string) => {
-    setSelectedBrandId(brandId);
-    loadModels(brandId);
-  };
-
-  const handleModelSelect = (modelId: string) => {
-    setSelectedModelId(modelId);
-    loadVariants(modelId);
-  };
-
-  const handleAddVehicle = async () => {
-    if (!selectedVariantId || !authToken) {
-      Alert.alert('Hata', 'Lütfen bir araç seçin.');
-      return;
-    }
-
-    try {
-      setAddingVehicle(true);
-      
-      await userVehicleService.createUserVehicle(authToken, {
-        variantId: selectedVariantId,
-        nickname: nickname.trim() || undefined,
-      });
-
-      Alert.alert('Başarılı', 'Araç başarıyla eklendi.');
-      
-      // Reset form
-      setSelectedBrandId(null);
-      setSelectedModelId(null);
-      setSelectedVariantId(null);
-      setNickname('');
-      setModels([]);
-      setVariants([]);
-      setShowAddForm(false);
-      
-      // Reload vehicles
-      await loadVehicles();
-    } catch (error) {
-      console.error('Error adding vehicle:', error);
-      Alert.alert('Hata', 'Araç eklenirken bir hata oluştu.');
-    } finally {
-      setAddingVehicle(false);
     }
   };
 
@@ -231,139 +140,6 @@ export const VehicleManagementModal: React.FC<VehicleManagementModalProps> = ({
     </View>
   );
 
-  const renderAddVehicleForm = () => (
-    <View style={styles.addFormContainer}>
-      <Text style={[styles.addFormTitle, !isDarkMode && styles.lightAddFormTitle]}>
-        {vehicles.length === 0 ? 'İlk Aracınızı Ekleyin' : 'Yeni Araç Ekle'}
-      </Text>
-      
-      <Text style={[styles.stepTitle, !isDarkMode && styles.lightStepTitle]}>1. Marka Seçin</Text>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.horizontalScroll}>
-        {brands.map((brand) => (
-          <TouchableOpacity
-            key={brand.id}
-            style={[
-              styles.brandCard,
-              selectedBrandId === brand.id && styles.selectedBrandCard,
-              !isDarkMode && styles.lightBrandCard,
-            ]}
-            onPress={() => handleBrandSelect(brand.id)}
-          >
-            <Text style={[
-              styles.brandText,
-              selectedBrandId === brand.id && styles.selectedBrandText,
-              !isDarkMode && styles.lightBrandText,
-            ]}>
-              {brand.name}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
-
-      {models.length > 0 && (
-        <>
-          <Text style={[styles.stepTitle, !isDarkMode && styles.lightStepTitle]}>2. Model Seçin</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.horizontalScroll}>
-            {models.map((model) => (
-              <TouchableOpacity
-                key={model.id}
-                style={[
-                  styles.modelCard,
-                  selectedModelId === model.id && styles.selectedModelCard,
-                  !isDarkMode && styles.lightModelCard,
-                ]}
-                onPress={() => handleModelSelect(model.id)}
-              >
-                <Text style={[
-                  styles.modelText,
-                  selectedModelId === model.id && styles.selectedModelText,
-                  !isDarkMode && styles.lightModelText,
-                ]}>
-                  {model.name}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-        </>
-      )}
-
-      {variants.length > 0 && (
-        <>
-          <Text style={[styles.stepTitle, !isDarkMode && styles.lightStepTitle]}>3. Varyant Seçin</Text>
-          {variants.map((variant) => (
-            <TouchableOpacity
-              key={variant.id}
-              style={[
-                styles.variantCard,
-                selectedVariantId === variant.id && styles.selectedVariantCard,
-                !isDarkMode && styles.lightVariantCard,
-              ]}
-              onPress={() => setSelectedVariantId(variant.id)}
-            >
-              <Text style={[
-                styles.variantName,
-                selectedVariantId === variant.id && styles.selectedVariantName,
-                !isDarkMode && styles.lightVariantName,
-              ]}>
-                {variant.name} ({variant.year})
-              </Text>
-              <View style={styles.variantSpecs}>
-                <Text style={[styles.variantSpecText, !isDarkMode && styles.lightVariantSpecText]}>
-                  {variant.batteryCapacity ? `${variant.batteryCapacity} kWh` : ''} 
-                  {variant.maxRange ? ` • ${variant.maxRange} km` : ''}
-                  {variant.chargingSpeedDC ? ` • ${variant.chargingSpeedDC} kW DC` : ''}
-                </Text>
-              </View>
-            </TouchableOpacity>
-          ))}
-        </>
-      )}
-
-      {selectedVariantId && (
-        <>
-          <Text style={[styles.stepTitle, !isDarkMode && styles.lightStepTitle]}>
-            4. Takma Ad (Opsiyonel)
-          </Text>
-          <TextInput
-            style={[styles.nicknameInput, !isDarkMode && styles.lightNicknameInput]}
-            placeholder="Örn: Benim Tesla'ım"
-            placeholderTextColor={colors.gray400}
-            value={nickname}
-            onChangeText={setNickname}
-            maxLength={50}
-          />
-        </>
-      )}
-
-      <View style={styles.formActions}>
-        {vehicles.length > 0 && (
-          <TouchableOpacity
-            style={[styles.formButton, styles.cancelButton]}
-            onPress={() => setShowAddForm(false)}
-          >
-            <Text style={styles.cancelButtonText}>İptal</Text>
-          </TouchableOpacity>
-        )}
-        
-        <TouchableOpacity
-          style={[
-            styles.formButton,
-            styles.addButton,
-            !selectedVariantId && styles.disabledButton,
-          ]}
-          onPress={handleAddVehicle}
-          disabled={!selectedVariantId || addingVehicle}
-        >
-          {addingVehicle ? (
-            <ActivityIndicator size="small" color={colors.white} />
-          ) : (
-            <Text style={styles.addButtonText}>Aracı Ekle</Text>
-          )}
-        </TouchableOpacity>
-      </View>
-    </View>
-  );
-
   return (
     <Modal
       visible={visible}
@@ -379,12 +155,12 @@ export const VehicleManagementModal: React.FC<VehicleManagementModalProps> = ({
           <Text style={[styles.headerTitle, !isDarkMode && styles.lightHeaderTitle]}>
             Araç Yönetimi
           </Text>
-          {!showAddForm && vehicles.length > 0 && (
-            <TouchableOpacity onPress={() => setShowAddForm(true)}>
+          {vehicles.length > 0 && (
+            <TouchableOpacity onPress={() => setShowAddVehicleModal(true)}>
               <Ionicons name="add" size={24} color={colors.primary} />
             </TouchableOpacity>
           )}
-          {showAddForm && <View style={styles.placeholder} />}
+          <View style={styles.placeholder} />
         </View>
 
         <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
@@ -397,37 +173,42 @@ export const VehicleManagementModal: React.FC<VehicleManagementModalProps> = ({
             </View>
           ) : (
             <>
-              {showAddForm ? (
-                renderAddVehicleForm()
+              {vehicles.length === 0 ? (
+                <View style={styles.emptyContainer}>
+                  <Ionicons name="car" size={80} color={colors.gray400} />
+                  <Text style={[styles.emptyTitle, !isDarkMode && styles.lightEmptyTitle]}>
+                    Henüz araç eklenmemiş
+                  </Text>
+                  <Text style={[styles.emptyText, !isDarkMode && styles.lightEmptyText]}>
+                    İlk aracınızı eklemek için butona tıklayın
+                  </Text>
+                  <TouchableOpacity
+                    style={styles.addFirstButton}
+                    onPress={() => setShowAddVehicleModal(true)}
+                  >
+                    <Text style={styles.addFirstButtonText}>İlk Aracımı Ekle</Text>
+                  </TouchableOpacity>
+                </View>
               ) : (
-                <>
-                  {vehicles.length === 0 ? (
-                    <View style={styles.emptyContainer}>
-                      <Ionicons name="car" size={80} color={colors.gray400} />
-                      <Text style={[styles.emptyTitle, !isDarkMode && styles.lightEmptyTitle]}>
-                        Henüz araç eklenmemiş
-                      </Text>
-                      <Text style={[styles.emptyText, !isDarkMode && styles.lightEmptyText]}>
-                        İlk aracınızı eklemek için butona tıklayın
-                      </Text>
-                      <TouchableOpacity
-                        style={styles.addFirstButton}
-                        onPress={() => setShowAddForm(true)}
-                      >
-                        <Text style={styles.addFirstButtonText}>İlk Aracımı Ekle</Text>
-                      </TouchableOpacity>
-                    </View>
-                  ) : (
-                    <View style={styles.vehiclesList}>
-                      {vehicles.map(renderVehicleCard)}
-                    </View>
-                  )}
-                </>
+                <View style={styles.vehiclesList}>
+                  {vehicles.map(renderVehicleCard)}
+                </View>
               )}
             </>
           )}
         </ScrollView>
       </SafeAreaView>
+
+      <AddVehicleModal
+        visible={showAddVehicleModal}
+        onClose={() => setShowAddVehicleModal(false)}
+        onVehicleAdded={() => {
+          setShowAddVehicleModal(false);
+          loadVehicles();
+        }}
+        isDarkMode={isDarkMode}
+        authToken={authToken || ''}
+      />
     </Modal>
   );
 };

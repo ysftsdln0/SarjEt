@@ -3,18 +3,20 @@ import {
   View,
   Text,
   StyleSheet,
-  TextInput,
   TouchableOpacity,
+  SafeAreaView,
+  TextInput,
   Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  Dimensions
+  Dimensions,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../constants/colors';
+import { RegisterVehicleSelection } from '../components/RegisterVehicleSelection';
+import { VehicleBrand, VehicleModel, VehicleVariant } from '../services/userVehicleService';
 import { post } from '../services/apiClient';
-import VehicleSelection from '../components/VehicleSelection';
 
 const { width, height } = Dimensions.get('window');
 
@@ -40,7 +42,17 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({
   const [loading, setLoading] = useState(false);
   
   // Vehicle state
-  const [selectedVehicle, setSelectedVehicle] = useState<any>(null);
+  const [selectedVehicle, setSelectedVehicle] = useState<{
+    brand: VehicleBrand;
+    model: VehicleModel;
+    variant: VehicleVariant;
+    userCustomizations: {
+      nickname?: string;
+      licensePlate?: string;
+      color?: string;
+      currentBatteryLevel?: number;
+    };
+  } | null>(null);
 
   const handleNextStep = () => {
     if (!name || !email || !password || !confirmPassword) {
@@ -246,53 +258,85 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({
     </View>
   );
 
-  const renderVehicleStep = () => (
-    <View style={styles.vehicleContainer}>
-      <View style={styles.vehicleHeader}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => setStep('form')}
-        >
-          <Ionicons name="arrow-back" size={24} color={colors.gray600} />
-        </TouchableOpacity>
-        <Text style={styles.vehicleTitle}>Araç Seçimi</Text>
-        <View style={{ width: 24 }} />
-      </View>
-      
-      <Text style={styles.vehicleSubtitle}>
-        Rota planlama için araç bilgilerinizi seçin
-      </Text>
-
-      <VehicleSelection
-        onVehicleSelected={handleVehicleSelected}
-        onClose={() => setStep('form')}
-      />
-
-      {selectedVehicle && (
-        <View style={styles.selectedVehicleCard}>
-          <Text style={styles.selectedVehicleTitle}>Seçilen Araç:</Text>
-          <Text style={styles.selectedVehicleInfo}>
-            {selectedVehicle.brand.name} {selectedVehicle.model.name} {selectedVehicle.variant.name}
-          </Text>
-          <Text style={styles.selectedVehicleSpecs}>
-            {selectedVehicle.variant.batteryCapacity} kWh • {selectedVehicle.variant.maxRange} km
-          </Text>
+  const renderVehicleStep = () => {
+    if (selectedVehicle) {
+      // Vehicle selected - show summary and complete registration
+      return (
+        <View style={styles.vehicleContainer}>
+          <View style={styles.vehicleHeader}>
+            <TouchableOpacity
+              style={styles.backButton}
+              onPress={() => setSelectedVehicle(null)}
+            >
+              <Ionicons name="arrow-back" size={24} color={colors.gray600} />
+            </TouchableOpacity>
+            <Text style={styles.vehicleTitle}>Kayıt Tamamla</Text>
+            <View style={{ width: 24 }} />
+          </View>
           
-          <TouchableOpacity
-            style={[styles.registerButton, loading && styles.registerButtonDisabled]}
-            onPress={handleRegister}
-            disabled={loading}
-          >
-            {loading ? (
-              <Text style={styles.registerButtonText}>Kayıt Yapılıyor...</Text>
-            ) : (
-              <Text style={styles.registerButtonText}>Hesabı Oluştur</Text>
+          <View style={styles.selectedVehicleCard}>
+            <View style={styles.selectedVehicleHeader}>
+              <Ionicons name="checkmark-circle" size={24} color={colors.success} />
+              <Text style={styles.selectedVehicleTitle}>Seçilen Araç</Text>
+            </View>
+            <Text style={styles.selectedVehicleInfo}>
+              {selectedVehicle.brand.name} {selectedVehicle.model.name}
+            </Text>
+            <Text style={styles.selectedVehicleSpecs}>
+              {selectedVehicle.variant.name} ({selectedVehicle.variant.year})
+            </Text>
+            <Text style={styles.selectedVehicleTech}>
+              {selectedVehicle.variant.batteryCapacity} kWh • {selectedVehicle.variant.maxRange} km
+            </Text>
+            
+            {(selectedVehicle.userCustomizations.nickname || 
+              selectedVehicle.userCustomizations.licensePlate || 
+              selectedVehicle.userCustomizations.color) && (
+              <View style={styles.customizationsSection}>
+                <Text style={styles.customizationsTitle}>Kişiselleştirmeler</Text>
+                {selectedVehicle.userCustomizations.nickname && (
+                  <Text style={styles.customizationItem}>
+                    🚗 {selectedVehicle.userCustomizations.nickname}
+                  </Text>
+                )}
+                {selectedVehicle.userCustomizations.licensePlate && (
+                  <Text style={styles.customizationItem}>
+                    📋 {selectedVehicle.userCustomizations.licensePlate}
+                  </Text>
+                )}
+                {selectedVehicle.userCustomizations.color && (
+                  <Text style={styles.customizationItem}>
+                    🎨 {selectedVehicle.userCustomizations.color}
+                  </Text>
+                )}
+              </View>
             )}
-          </TouchableOpacity>
+            
+            <TouchableOpacity
+              style={[styles.registerButton, loading && styles.registerButtonDisabled]}
+              onPress={handleRegister}
+              disabled={loading}
+            >
+              {loading ? (
+                <Text style={styles.registerButtonText}>Kayıt Yapılıyor...</Text>
+              ) : (
+                <Text style={styles.registerButtonText}>Hesabı Oluştur</Text>
+              )}
+            </TouchableOpacity>
+          </View>
         </View>
-      )}
-    </View>
-  );
+      );
+    }
+
+    // Show vehicle selection
+    return (
+      <RegisterVehicleSelection
+        onVehicleSelected={handleVehicleSelected}
+        onBack={() => setStep('form')}
+        isDarkMode={false}
+      />
+    );
+  };
 
   return (
     <KeyboardAvoidingView
@@ -424,6 +468,12 @@ const styles = StyleSheet.create({
     marginTop: 20,
     padding: 20,
   },
+  selectedVehicleHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+    gap: 8,
+  },
   selectedVehicleInfo: {
     color: colors.primary,
     fontSize: 18,
@@ -433,13 +483,31 @@ const styles = StyleSheet.create({
   selectedVehicleSpecs: {
     color: colors.gray600,
     fontSize: 14,
+    marginBottom: 4,
+  },
+  selectedVehicleTech: {
+    color: colors.gray600,
+    fontSize: 14,
     marginBottom: 20,
   },
   selectedVehicleTitle: {
     color: colors.gray800,
     fontSize: 16,
     fontWeight: '600',
+  },
+  customizationsSection: {
+    marginBottom: 24,
+  },
+  customizationsTitle: {
+    color: colors.gray800,
+    fontSize: 16,
+    fontWeight: '600',
     marginBottom: 8,
+  },
+  customizationItem: {
+    color: colors.gray600,
+    fontSize: 14,
+    marginBottom: 4,
   },
   subtitle: {
     color: colors.gray600,

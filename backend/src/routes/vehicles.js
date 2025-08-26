@@ -1,9 +1,43 @@
 const express = require('express');
 const { PrismaClient } = require('@prisma/client');
 const { auth } = require('../middleware/auth');
+const EVDataService = require('../services/EVDataService');
 
 const router = express.Router();
 const prisma = new PrismaClient();
+
+// EVDataService singleton instance
+let evDataServiceInstance;
+const getEVDataService = () => {
+  if (!evDataServiceInstance) {
+    evDataServiceInstance = new EVDataService();
+  }
+  return evDataServiceInstance;
+};
+
+// EV data'dan tüm araçları getir (cache'den)
+router.get('/ev-data', async (req, res) => {
+  try {
+    const evDataService = getEVDataService();
+    const vehicles = evDataService.getAllVehicles();
+    res.json(vehicles);
+  } catch (error) {
+    console.error('Get EV data error:', error);
+    res.status(500).json({ error: 'EV verileri alınamadı' });
+  }
+});
+
+// EV data'dan markaları getir
+router.get('/ev-brands', async (req, res) => {
+  try {
+    const evDataService = getEVDataService();
+    const makes = evDataService.getMakes();
+    res.json(makes);
+  } catch (error) {
+    console.error('Get EV brands error:', error);
+    res.status(500).json({ error: 'EV markaları alınamadı' });
+  }
+});
 
 // Tüm markaları getir
 router.get('/brands', async (req, res) => {
