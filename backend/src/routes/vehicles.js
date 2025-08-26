@@ -305,8 +305,46 @@ router.put('/user-vehicles/:vehicleId', auth, async (req, res) => {
   }
 });
 
+// Birincil aracı ayarla (authentication gerekir)
+router.put('/user-vehicle/primary', auth, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { vehicleId } = req.body;
+    
+    if (!vehicleId) {
+      return res.status(400).json({ error: 'vehicleId gerekli' });
+    }
+    
+    // Aracın kullanıcıya ait olduğunu kontrol et
+    const existingVehicle = await prisma.userVehicle.findFirst({
+      where: { id: vehicleId, userId, isActive: true }
+    });
+    
+    if (!existingVehicle) {
+      return res.status(404).json({ error: 'Araç bulunamadı' });
+    }
+    
+    // Önce tüm araçları non-primary yap
+    await prisma.userVehicle.updateMany({
+      where: { userId },
+      data: { isPrimary: false }
+    });
+    
+    // Seçilen aracı primary yap
+    const updatedVehicle = await prisma.userVehicle.update({
+      where: { id: vehicleId },
+      data: { isPrimary: true }
+    });
+    
+    res.json(updatedVehicle);
+  } catch (error) {
+    console.error('Set primary vehicle error:', error);
+    res.status(500).json({ error: 'Birincil araç ayarlanamadı' });
+  }
+});
+
 // Kullanıcı aracını sil (authentication gerekir)
-router.delete('/user-vehicles/:vehicleId', auth, async (req, res) => {
+router.delete('/user-vehicle/:vehicleId', auth, async (req, res) => {
   try {
     const userId = req.user.id;
     const { vehicleId } = req.params;

@@ -15,11 +15,16 @@ import colors from '../constants/colors';
 interface ProfileModalProps {
   visible: boolean;
   onClose: () => void;
-  userLocation: { latitude: number; longitude: number } | null;
+  onToggleDarkMode: () => void;
   isDarkMode: boolean;
-  onToggleDarkMode: (isDark: boolean) => void;
   onLogout: () => void;
+  userLocation?: any;
   user?: any;
+  onEditProfile?: () => void;
+  onEditVehicles?: () => void;
+  onEditFavorites?: () => void;
+  onEditPrivacy?: () => void;
+  onEditPrivacySettings?: () => void;
 }
 
 export const ProfileModal: React.FC<ProfileModalProps> = ({
@@ -30,6 +35,11 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
   onToggleDarkMode,
   onLogout,
   user,
+  onEditProfile,
+  onEditVehicles,
+  onEditFavorites,
+  onEditPrivacy,
+  onEditPrivacySettings,
 }) => {
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [fastChargingOnly, setFastChargingOnly] = useState(false);
@@ -137,6 +147,85 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
             </View>
           )}
 
+          {/* Kişisel Bilgiler - Düzenleme */}
+          <View style={styles.section}>
+            <Text style={[styles.sectionTitle, !isDarkMode && styles.lightSectionTitle]}>Kişisel Bilgiler</Text>
+            
+            <View style={[styles.modernCard, !isDarkMode && styles.lightModernCard]}>
+              <TouchableOpacity 
+                style={[styles.modernSettingItem, !isDarkMode && styles.lightModernSettingItem]}
+                onPress={() => onEditProfile?.()}
+              >
+                <View style={styles.settingIconWrapper}>
+                  <View style={[styles.settingIcon, { backgroundColor: colors.primary + '15' }]}>
+                    <Ionicons name="person" size={18} color={colors.primary} />
+                  </View>
+                </View>
+                <View style={styles.settingContent}>
+                  <Text style={[styles.settingTitle, !isDarkMode && styles.lightSettingTitle]}>İsim ve Soyisim</Text>
+                  <Text style={[styles.settingDescription, !isDarkMode && styles.lightSettingDescription]}>
+                    {user?.name || 'Belirtilmemiş'}
+                  </Text>
+                </View>
+                <Ionicons name="chevron-forward" size={18} color={colors.gray500} />
+              </TouchableOpacity>
+
+              <TouchableOpacity 
+                style={[styles.modernSettingItem, !isDarkMode && styles.lightModernSettingItem]}
+                onPress={() => onEditProfile?.()}
+              >
+                <View style={styles.settingIconWrapper}>
+                  <View style={[styles.settingIcon, { backgroundColor: colors.secondary + '15' }]}>
+                    <Ionicons name="mail" size={18} color={colors.secondary} />
+                  </View>
+                </View>
+                <View style={styles.settingContent}>
+                  <Text style={[styles.settingTitle, !isDarkMode && styles.lightSettingTitle]}>E-posta</Text>
+                  <Text style={[styles.settingDescription, !isDarkMode && styles.lightSettingDescription]}>
+                    {user?.email || 'Belirtilmemiş'}
+                  </Text>
+                </View>
+                <Ionicons name="chevron-forward" size={18} color={colors.gray500} />
+              </TouchableOpacity>
+
+              <TouchableOpacity 
+                style={[styles.modernSettingItem, !isDarkMode && styles.lightModernSettingItem]}
+                onPress={() => onEditProfile?.()}
+              >
+                <View style={styles.settingIconWrapper}>
+                  <View style={[styles.settingIcon, { backgroundColor: colors.success + '15' }]}>
+                    <Ionicons name="call" size={18} color={colors.success} />
+                  </View>
+                </View>
+                <View style={styles.settingContent}>
+                  <Text style={[styles.settingTitle, !isDarkMode && styles.lightSettingTitle]}>Telefon</Text>
+                  <Text style={[styles.settingDescription, !isDarkMode && styles.lightSettingDescription]}>
+                    {user?.phone || 'Belirtilmemiş'}
+                  </Text>
+                </View>
+                <Ionicons name="chevron-forward" size={18} color={colors.gray500} />
+              </TouchableOpacity>
+
+              <TouchableOpacity 
+                style={[styles.modernSettingItem, { borderBottomWidth: 0 }, !isDarkMode && styles.lightModernSettingItem]}
+                onPress={() => onEditProfile?.()}
+              >
+                <View style={styles.settingIconWrapper}>
+                  <View style={[styles.settingIcon, { backgroundColor: colors.warning + '15' }]}>
+                    <Ionicons name="key" size={18} color={colors.warning} />
+                  </View>
+                </View>
+                <View style={styles.settingContent}>
+                  <Text style={[styles.settingTitle, !isDarkMode && styles.lightSettingTitle]}>Şifre Değiştir</Text>
+                  <Text style={[styles.settingDescription, !isDarkMode && styles.lightSettingDescription]}>
+                    Güvenliğiniz için şifrenizi güncelleyin
+                  </Text>
+                </View>
+                <Ionicons name="chevron-forward" size={18} color={colors.gray500} />
+              </TouchableOpacity>
+            </View>
+          </View>
+
           {/* Ayarlar - Modern tasarım */}
           <View style={styles.section}>
             <Text style={[styles.sectionTitle, !isDarkMode && styles.lightSectionTitle]}>Ayarlar</Text>
@@ -204,6 +293,67 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                   style={styles.switchStyle}
                 />
               </View>
+            </View>
+          </View>
+
+          {/* Hesap Yönetimi */}
+          <View style={styles.section}>
+            <Text style={[styles.sectionTitle, !isDarkMode && styles.lightSectionTitle]}>Hesap Yönetimi</Text>
+            
+            <View style={[styles.modernCard, !isDarkMode && styles.lightModernCard]}>
+              <TouchableOpacity 
+                style={[styles.modernSettingItem, !isDarkMode && styles.lightModernSettingItem]}
+                onPress={() => onEditVehicles?.()}
+              >
+                <View style={styles.settingIconWrapper}>
+                  <View style={[styles.settingIcon, { backgroundColor: colors.primary + '15' }]}>
+                    <Ionicons name="car-sport" size={18} color={colors.primary} />
+                  </View>
+                </View>
+                <View style={styles.settingContent}>
+                  <Text style={[styles.settingTitle, !isDarkMode && styles.lightSettingTitle]}>Araçlarımı Yönet</Text>
+                  <Text style={[styles.settingDescription, !isDarkMode && styles.lightSettingDescription]}>
+                    Araç ekle, düzenle veya kaldır
+                  </Text>
+                </View>
+                <Ionicons name="chevron-forward" size={18} color={colors.gray500} />
+              </TouchableOpacity>
+
+              <TouchableOpacity 
+                style={[styles.modernSettingItem, !isDarkMode && styles.lightModernSettingItem]}
+                onPress={() => onEditFavorites?.()}
+              >
+                <View style={styles.settingIconWrapper}>
+                  <View style={[styles.settingIcon, { backgroundColor: colors.accent1 + '15' }]}>
+                    <Ionicons name="heart" size={18} color={colors.accent1} />
+                  </View>
+                </View>
+                <View style={styles.settingContent}>
+                  <Text style={[styles.settingTitle, !isDarkMode && styles.lightSettingTitle]}>Favori İstasyonlar</Text>
+                  <Text style={[styles.settingDescription, !isDarkMode && styles.lightSettingDescription]}>
+                    Kaydettiğiniz şarj istasyonları
+                  </Text>
+                </View>
+                <Ionicons name="chevron-forward" size={18} color={colors.gray500} />
+              </TouchableOpacity>
+
+              <TouchableOpacity 
+                style={[styles.modernSettingItem, { borderBottomWidth: 0 }, !isDarkMode && styles.lightModernSettingItem]}
+                onPress={() => onEditPrivacy?.()}
+              >
+                <View style={styles.settingIconWrapper}>
+                  <View style={[styles.settingIcon, { backgroundColor: colors.secondary + '15' }]}>
+                    <Ionicons name="shield-checkmark" size={18} color={colors.secondary} />
+                  </View>
+                </View>
+                <View style={styles.settingContent}>
+                  <Text style={[styles.settingTitle, !isDarkMode && styles.lightSettingTitle]}>Gizlilik Ayarları</Text>
+                  <Text style={[styles.settingDescription, !isDarkMode && styles.lightSettingDescription]}>
+                    Veri kullanımı ve gizlilik tercihleri
+                  </Text>
+                </View>
+                <Ionicons name="chevron-forward" size={18} color={colors.gray500} />
+              </TouchableOpacity>
             </View>
           </View>
 

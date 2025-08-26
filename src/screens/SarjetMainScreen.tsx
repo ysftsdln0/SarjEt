@@ -15,6 +15,10 @@ import { ChargingStation, UserLocation, FilterOptions, Region } from '../types';
 import { SearchBar } from '../components/SearchBar';
 import LoadingScreen from '../components/LoadingScreen';
 import { ProfileModal } from '../components/ProfileModal';
+import { EditProfileModal } from '../components/EditProfileModal';
+import { VehicleManagementModal } from '../components/VehicleManagementModal';
+import { FavoritesModal } from '../components/FavoritesModal';
+import { PrivacySettingsModal } from '../components/PrivacySettingsModal';
 import { FilterModal } from '../components/FilterModal';
 import AdvancedFilterModal, { AdvancedFilterOptions } from '../components/AdvancedFilterModal';
 import EnhancedFilterSystem, { EnhancedFilterOptions } from '../components/EnhancedFilterSystem';
@@ -56,6 +60,10 @@ const SarjetMainScreen: React.FC<{
   
   // Modal visibility states
   const [profileVisible, setProfileVisible] = useState(false);
+  const [editProfileVisible, setEditProfileVisible] = useState(false);
+  const [vehicleManagementVisible, setVehicleManagementVisible] = useState(false);
+  const [favoritesVisible, setFavoritesVisible] = useState(false);
+  const [privacySettingsVisible, setPrivacySettingsVisible] = useState(false);
   const [filterVisible, setFilterVisible] = useState(false);
   const [advancedFilterVisible, setAdvancedFilterVisible] = useState(false);
   const [enhancedFilterVisible, setEnhancedFilterVisible] = useState(false);
@@ -622,6 +630,56 @@ const SarjetMainScreen: React.FC<{
         onToggleDarkMode={() => {}}
         onLogout={onLogout}
         user={user}
+        onEditProfile={() => {
+          setProfileVisible(false);
+          setEditProfileVisible(true);
+        }}
+        onEditVehicles={() => {
+          setProfileVisible(false);
+          setVehicleManagementVisible(true);
+        }}
+        onEditFavorites={() => {
+          setProfileVisible(false);
+          setFavoritesVisible(true);
+        }}
+        onEditPrivacy={() => {
+          setProfileVisible(false);
+          setPrivacySettingsVisible(true);
+        }}
+      />
+
+      <EditProfileModal
+        visible={editProfileVisible}
+        onClose={() => setEditProfileVisible(false)}
+        isDarkMode={isDarkMode}
+        user={user || undefined}
+        onSave={async (userData) => {
+          // TODO: API çağrısı yapılacak
+          console.log('Saving user data:', userData);
+        }}
+      />
+
+      <VehicleManagementModal
+        visible={vehicleManagementVisible}
+        onClose={() => setVehicleManagementVisible(false)}
+        isDarkMode={isDarkMode}
+        authToken={authToken || ''}
+      />
+
+      <FavoritesModal
+        visible={favoritesVisible}
+        onClose={() => setFavoritesVisible(false)}
+        isDarkMode={isDarkMode}
+        onNavigateToStation={(stationId) => {
+          // TODO: Navigate to station on map
+          console.log('Navigate to station:', stationId);
+        }}
+      />
+
+      <PrivacySettingsModal
+        visible={privacySettingsVisible}
+        onClose={() => setPrivacySettingsVisible(false)}
+        isDarkMode={isDarkMode}
       />
       
       {/* Station Reviews Modal */}
