@@ -97,7 +97,8 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({
         requestBody.phone = phone;
       }
 
-      console.log('📤 Sending request to backend:', requestBody);
+      console.log('📤 Sending request to backend:', JSON.stringify(requestBody, null, 2));
+      console.log('📤 Vehicle data being sent:', requestBody.vehicle);
       const response = await post('/api/auth/register', requestBody);
 
       console.log('📥 Response received:', {

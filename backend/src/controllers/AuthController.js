@@ -32,6 +32,13 @@ class AuthController {
       
       const { email, password, name, phone, vehicle } = req.body;
 
+      console.log('=== REGISTRATION DEBUG ===');
+      console.log('Request body:', JSON.stringify(req.body, null, 2));
+      console.log('Vehicle data received:', vehicle);
+      console.log('Has vehicle:', !!vehicle);
+      console.log('Has variantId:', !!vehicle?.variantId);
+      console.log('=== END DEBUG ===');
+
       // Email kontrolü
       if (process.env.NODE_ENV !== 'production') {
         console.log('📧 Checking if email exists');
@@ -96,22 +103,46 @@ class AuthController {
           console.log('Vehicle data:', vehicle);
         }
         try {
-          const createdVehicle = await prisma.userVehicle.create({
-            data: {
-              userId: user.id,
-              variantId: vehicle.variantId,
-              nickname: vehicle.nickname,
-              licensePlate: vehicle.licensePlate,
-              color: vehicle.color,
-              currentBatteryLevel: vehicle.currentBatteryLevel || 100,
-              isActive: true // Önemli: araç aktif olarak işaretlenmeli
-            }
+          // Önce variant'ın var olduğunu kontrol et
+          const variantExists = await prisma.vehicleVariant.findUnique({
+            where: { id: vehicle.variantId }
           });
-          if (process.env.NODE_ENV !== 'production') {
+          
+          if (!variantExists) {
+            console.error('❌ Vehicle variant not found:', vehicle.variantId);
+            console.log('ℹ️ Creating vehicle without variant reference');
+            
+            // Variant bulunamadı ama araç kaydını yine de yapalım
+            const createdVehicle = await prisma.userVehicle.create({
+              data: {
+                userId: user.id,
+                variantId: null, // Variant bulunamazsa null yapıyoruz
+                nickname: vehicle.nickname || 'Aracım',
+                licensePlate: vehicle.licensePlate,
+                color: vehicle.color,
+                currentBatteryLevel: vehicle.currentBatteryLevel || 100,
+                isActive: true
+              }
+            });
+            console.log('✅ Vehicle created without variant:', createdVehicle.id);
+          } else {
+            const createdVehicle = await prisma.userVehicle.create({
+              data: {
+                userId: user.id,
+                variantId: vehicle.variantId,
+                nickname: vehicle.nickname,
+                licensePlate: vehicle.licensePlate,
+                color: vehicle.color,
+                currentBatteryLevel: vehicle.currentBatteryLevel || 100,
+                isActive: true
+              }
+            });
             console.log('✅ Vehicle added successfully:', createdVehicle.id);
           }
         } catch (vehicleError) {
           console.error('❌ Vehicle creation failed:', vehicleError);
+          console.error('❌ Vehicle error details:', vehicleError.message);
+          console.error('❌ Vehicle data that failed:', vehicle);
           // Araç eklenemese bile kullanıcı kaydı başarılı olsun
         }
       } else {
