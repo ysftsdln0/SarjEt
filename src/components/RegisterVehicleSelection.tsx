@@ -1,21 +1,21 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
+  ActivityIndicator,
+  Alert,
   SafeAreaView,
   ScrollView,
-  Alert,
-  ActivityIndicator,
+  StyleSheet,
+  Text,
   TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../constants/colors';
-import userVehicleService, { 
-  VehicleBrand, 
-  VehicleModel, 
-  VehicleVariant 
+import userVehicleService, {
+  VehicleBrand,
+  VehicleModel,
+  VehicleVariant,
 } from '../services/userVehicleService';
 import { getBaseUrl } from '../services/apiClient';
 
@@ -35,49 +35,54 @@ interface RegisterVehicleSelectionProps {
   isDarkMode?: boolean;
 }
 
+type EVCharger = { max_power?: number; ports?: string[] };
+interface EVNormalized {
+  id: string | number;
+  brand: string;
+  model: string;
+  variant?: string;
+  year?: number;
+  batteryCapacity?: number;
+  usable_battery_size?: number;
+  range?: number;
+  consumption?: number;
+  acCharger?: EVCharger;
+  dcCharger?: EVCharger;
+  ac_charger?: EVCharger;
+  dc_charger?: EVCharger;
+  connectorTypes?: string[];
+}
+
 export const RegisterVehicleSelection: React.FC<RegisterVehicleSelectionProps> = ({
   onVehicleSelected,
   onBack,
   isDarkMode = false,
 }) => {
-  // Local types for EV data fallback
-  type EVCharger = { max_power?: number; ports?: string[] };
-  interface EVNormalized {
-    id: string | number;
-    brand: string;
-    model: string;
-    variant?: string;
-    year?: number;
-    batteryCapacity?: number;
-    usable_battery_size?: number;
-    range?: number;
-    consumption?: number;
-    acCharger?: EVCharger;
-    dcCharger?: EVCharger;
-    ac_charger?: EVCharger;
-    dc_charger?: EVCharger;
-    connectorTypes?: string[];
-  }
-
-  // Helpers to support multiple field names without using any
+  // helpers
+  const slugify = (s: string) => s.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-');
   const getACkW = (v: VehicleVariant & { maxACCharging?: number; chargingSpeedAC?: number }): number | undefined =>
     v.maxACCharging ?? v.chargingSpeedAC;
   const getDCkW = (v: VehicleVariant & { maxDCCharging?: number; chargingSpeedDC?: number }): number | undefined =>
     v.maxDCCharging ?? v.chargingSpeedDC;
-  const [step, setStep] = useState(1); // 1: Brand, 2: Model, 3: Variant, 4: Details
+
+  // step + loading
+  const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
 
-  // Data states
+  // data states
   const [brands, setBrands] = useState<VehicleBrand[]>([]);
   const [models, setModels] = useState<VehicleModel[]>([]);
   const [variants, setVariants] = useState<VehicleVariant[]>([]);
+  const [evVehicles, setEvVehicles] = useState<EVNormalized[] | null>(null);
+  const [brandSource, setBrandSource] = useState<'db' | 'ev'>('db');
+  const [modelSource, setModelSource] = useState<'db' | 'ev'>('db');
 
-  // Selected values
+  // selections
   const [selectedBrand, setSelectedBrand] = useState<VehicleBrand | null>(null);
   const [selectedModel, setSelectedModel] = useState<VehicleModel | null>(null);
   const [selectedVariant, setSelectedVariant] = useState<VehicleVariant | null>(null);
-  
-  // Vehicle details
+
+  // details
   const [nickname, setNickname] = useState('');
   const [licensePlate, setLicensePlate] = useState('');
   const [color, setColor] = useState('');
@@ -87,28 +92,94 @@ export const RegisterVehicleSelection: React.FC<RegisterVehicleSelectionProps> =
     loadBrands();
   }, []);
 
+  const fetchEVVehiclesOnce = async (): Promise<EVNormalized[]> => {
+    if (evVehicles && Array.isArray(evVehicles) && evVehicles.length > 0) return evVehicles;
+    try {
+      const base = await getBaseUrl();
+      const res = await fetch(`${base}/api/vehicles/ev-data`);
+      if (!res.ok) return [];
+      const data: unknown = await res.json();
+      const arr: EVNormalized[] = Array.isArray(data) ? (data as EVNormalized[]) : [];
+      setEvVehicles(arr);
+      return arr;
+    } catch {
+      return [];
+    }
+  };
+
   const loadBrands = async () => {
     try {
       setLoading(true);
-      const brandsData = await userVehicleService.getVehicleBrands();
-      setBrands(brandsData);
-    } catch (error) {
+      // DB first
+      try {
+        const dbBrands = await userVehicleService.getVehicleBrands();
+        if (dbBrands.length > 0) {
+          setBrands(dbBrands);
+          setBrandSource('db');
+          return;
+        }
+      } catch {
+        // continue to EV fallback
+      }
+
+      // EV brands endpoint
+      try {
+        const base = await getBaseUrl();
+        const res = await fetch(`${base}/api/vehicles/ev-brands`);
+        if (res.ok) {
+          const list: unknown = await res.json();
+          const names: string[] = Array.isArray(list) ? (list as string[]) : [];
+          if (names.length > 0) {
+            const evBrands: VehicleBrand[] = names.map((name) => ({ id: `ev:${slugify(name)}`, name }));
+            setBrands(evBrands);
+            setBrandSource('ev');
+            return;
+          }
+        }
+      } catch {
+        // continue to compute from ev-data
+      }
+
+      // Compute from ev-data
+      const evs = await fetchEVVehiclesOnce();
+      const brandNames = [...new Set(evs.map((v) => v.brand))].filter(Boolean) as string[];
+      if (brandNames.length > 0) {
+        const evBrands: VehicleBrand[] = brandNames.map((name) => ({ id: `ev:${slugify(name)}`, name }));
+        setBrands(evBrands);
+        setBrandSource('ev');
+        return;
+      }
+
       Alert.alert('Hata', 'Araç markaları yüklenemedi');
-      console.error('Load brands error:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  const loadModels = async (brandId: string) => {
+  const loadModelsForBrand = async (brand: VehicleBrand) => {
     try {
       setLoading(true);
-      const modelsData = await userVehicleService.getVehicleModels(brandId);
-      setModels(modelsData);
+      if (brandSource === 'db' && !brand.id.startsWith('ev:')) {
+        const modelsData = await userVehicleService.getVehicleModels(brand.id);
+        setModels(modelsData);
+        setModelSource('db');
+        setStep(2);
+        return;
+      }
+
+      const evs = await fetchEVVehiclesOnce();
+      const modelNames = [...new Set(
+        evs.filter((v) => v.brand === brand.name).map((v) => v.model)
+      )].filter(Boolean) as string[];
+      const evModels: VehicleModel[] = modelNames.map((name) => ({
+        id: `ev:${slugify(brand.name)}:${slugify(name)}`,
+        name,
+        brandId: brand.id,
+        brand,
+      }));
+      setModels(evModels);
+      setModelSource('ev');
       setStep(2);
-    } catch (error) {
-      Alert.alert('Hata', 'Araç modelleri yüklenemedi');
-      console.error('Load models error:', error);
     } finally {
       setLoading(false);
     }
@@ -117,49 +188,58 @@ export const RegisterVehicleSelection: React.FC<RegisterVehicleSelectionProps> =
   const loadVariants = async (modelId: string) => {
     try {
       setLoading(true);
-      console.log('🔄 Loading variants for model:', modelId);
-      let variantsData = await userVehicleService.getVehicleVariants(modelId);
-      console.log('📊 Variants loaded:', variantsData);
-      console.log('📊 Variants count:', variantsData.length);
-
-      // Fallback: Eğer DB'den varyant gelmezse EV data cache'inden üret
-      if ((!variantsData || variantsData.length === 0) && selectedBrand && selectedModel) {
-        try {
-          const base = await getBaseUrl();
-          const res = await fetch(`${base}/api/vehicles/ev-data`);
-          if (res.ok) {
-            const evVehicles: unknown = await res.json();
-            const arr: EVNormalized[] = Array.isArray(evVehicles) ? (evVehicles as EVNormalized[]) : [];
-            const filtered = arr.filter(
-              (v) => v.brand === selectedBrand.name && v.model === selectedModel.name
-            );
-            // EVDataService.normalizeVehicle çıkışı -> VehicleVariant tipine map et
-            const mapped: VehicleVariant[] = filtered.map((v) => ({
-              id: String(v.id),
-              name: v.variant || `${selectedModel.name}`,
-              year: Number(v.year || new Date().getFullYear()),
-              modelId: modelId,
-              batteryCapacity: v.batteryCapacity ?? v.usable_battery_size ?? undefined,
-              maxRange: v.range ?? undefined,
-              efficiency: v.consumption ?? undefined,
-              chargingSpeedAC: v.acCharger?.max_power ?? v.ac_charger?.max_power ?? undefined,
-              chargingSpeedDC: v.dcCharger?.max_power ?? v.dc_charger?.max_power ?? undefined,
-              connectorTypes: v.connectorTypes || v.acCharger?.ports || v.dcCharger?.ports || undefined,
-            }));
-            if (mapped.length > 0) {
-              console.log('🧰 Using EV-data fallback variants:', mapped.length);
-              variantsData = mapped;
-            }
-          }
-        } catch (fallbackErr) {
-          console.warn('EV-data fallback failed:', fallbackErr);
-        }
+      if (modelSource === 'ev' && selectedBrand && selectedModel) {
+        const evs = await fetchEVVehiclesOnce();
+        const filtered = evs.filter(
+          (v) => v.brand === selectedBrand.name && v.model === selectedModel.name
+        );
+        const mapped: VehicleVariant[] = filtered.map((v) => ({
+          id: String(v.id),
+          name: v.variant || selectedModel.name,
+          year: Number(v.year || new Date().getFullYear()),
+          modelId,
+          batteryCapacity: v.batteryCapacity ?? v.usable_battery_size ?? undefined,
+          maxRange: v.range ?? undefined,
+          efficiency: v.consumption ?? undefined,
+          chargingSpeedAC: v.acCharger?.max_power ?? v.ac_charger?.max_power ?? undefined,
+          chargingSpeedDC: v.dcCharger?.max_power ?? v.dc_charger?.max_power ?? undefined,
+          connectorTypes: v.connectorTypes || v.acCharger?.ports || v.dcCharger?.ports || undefined,
+        }));
+        setVariants(mapped);
+        setStep(3);
+        return;
       }
 
+      // DB first
+      let variantsData: VehicleVariant[] = [];
+      try {
+        variantsData = await userVehicleService.getVehicleVariants(modelId);
+      } catch {
+        // continue to fallback
+      }
+      if (!variantsData || variantsData.length === 0) {
+        if (selectedBrand && selectedModel) {
+          const evs = await fetchEVVehiclesOnce();
+          const filtered = evs.filter(
+            (v) => v.brand === selectedBrand.name && v.model === selectedModel.name
+          );
+          variantsData = filtered.map((v) => ({
+            id: String(v.id),
+            name: v.variant || selectedModel.name,
+            year: Number(v.year || new Date().getFullYear()),
+            modelId,
+            batteryCapacity: v.batteryCapacity ?? v.usable_battery_size ?? undefined,
+            maxRange: v.range ?? undefined,
+            efficiency: v.consumption ?? undefined,
+            chargingSpeedAC: v.acCharger?.max_power ?? v.ac_charger?.max_power ?? undefined,
+            chargingSpeedDC: v.dcCharger?.max_power ?? v.dc_charger?.max_power ?? undefined,
+            connectorTypes: v.connectorTypes || v.acCharger?.ports || v.dcCharger?.ports || undefined,
+          }));
+        }
+      }
       setVariants(variantsData);
       setStep(3);
     } catch (error: unknown) {
-      console.error('❌ Load variants error:', error);
       const message = error instanceof Error ? error.message : String(error);
       Alert.alert('Hata', 'Araç varyantları yüklenemedi: ' + message);
     } finally {
@@ -169,11 +249,14 @@ export const RegisterVehicleSelection: React.FC<RegisterVehicleSelectionProps> =
 
   const handleBrandSelect = (brand: VehicleBrand) => {
     setSelectedBrand(brand);
-    loadModels(brand.id);
+    setSelectedModel(null);
+    setSelectedVariant(null);
+    loadModelsForBrand(brand);
   };
 
   const handleModelSelect = (model: VehicleModel) => {
     setSelectedModel(model);
+    setSelectedVariant(null);
     loadVariants(model.id);
   };
 
@@ -184,7 +267,6 @@ export const RegisterVehicleSelection: React.FC<RegisterVehicleSelectionProps> =
 
   const handleSubmit = () => {
     if (!selectedBrand || !selectedModel || !selectedVariant) return;
-
     onVehicleSelected({
       brand: selectedBrand,
       model: selectedModel,
@@ -193,7 +275,7 @@ export const RegisterVehicleSelection: React.FC<RegisterVehicleSelectionProps> =
         nickname: nickname || undefined,
         licensePlate: licensePlate || undefined,
         color: color || undefined,
-        currentBatteryLevel: batteryLevel ? parseInt(batteryLevel) : undefined,
+        currentBatteryLevel: batteryLevel ? parseInt(batteryLevel, 10) : undefined,
       },
     });
   };
@@ -211,9 +293,7 @@ export const RegisterVehicleSelection: React.FC<RegisterVehicleSelectionProps> =
       return (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={colors.primary} />
-          <Text style={[styles.loadingText, !isDarkMode && styles.lightText]}>
-            Yükleniyor...
-          </Text>
+          <Text style={[styles.loadingText, !isDarkMode && styles.lightText]}>Yükleniyor...</Text>
         </View>
       );
     }
@@ -222,9 +302,7 @@ export const RegisterVehicleSelection: React.FC<RegisterVehicleSelectionProps> =
       case 1:
         return (
           <View style={styles.stepContainer}>
-            <Text style={[styles.stepTitle, !isDarkMode && styles.lightText]}>
-              Araç Markasını Seçin
-            </Text>
+            <Text style={[styles.stepTitle, !isDarkMode && styles.lightText]}>Araç Markasını Seçin</Text>
             <Text style={[styles.stepSubtitle, !isDarkMode && styles.lightSubtitle]}>
               Hangi markanın elektrikli aracını kullanıyorsunuz?
             </Text>
@@ -235,25 +313,18 @@ export const RegisterVehicleSelection: React.FC<RegisterVehicleSelectionProps> =
                   style={[styles.optionButton, !isDarkMode && styles.lightOptionButton]}
                   onPress={() => handleBrandSelect(brand)}
                 >
-                  <Text style={[styles.optionText, !isDarkMode && styles.lightText]}>
-                    {brand.name}
-                  </Text>
+                  <Text style={[styles.optionText, !isDarkMode && styles.lightText]}>{brand.name}</Text>
                   <Ionicons name="chevron-forward" size={20} color={colors.gray500} />
                 </TouchableOpacity>
               ))}
             </ScrollView>
           </View>
         );
-
       case 2:
         return (
           <View style={styles.stepContainer}>
-            <Text style={[styles.stepTitle, !isDarkMode && styles.lightText]}>
-              {selectedBrand?.name} Modelini Seçin
-            </Text>
-            <Text style={[styles.stepSubtitle, !isDarkMode && styles.lightSubtitle]}>
-              Hangi modeli kullanıyorsunuz?
-            </Text>
+            <Text style={[styles.stepTitle, !isDarkMode && styles.lightText]}>{selectedBrand?.name} Modelini Seçin</Text>
+            <Text style={[styles.stepSubtitle, !isDarkMode && styles.lightSubtitle]}>Hangi modeli kullanıyorsunuz?</Text>
             <ScrollView style={styles.optionsContainer} showsVerticalScrollIndicator={false}>
               {models.map((model) => (
                 <TouchableOpacity
@@ -261,25 +332,18 @@ export const RegisterVehicleSelection: React.FC<RegisterVehicleSelectionProps> =
                   style={[styles.optionButton, !isDarkMode && styles.lightOptionButton]}
                   onPress={() => handleModelSelect(model)}
                 >
-                  <Text style={[styles.optionText, !isDarkMode && styles.lightText]}>
-                    {model.name}
-                  </Text>
+                  <Text style={[styles.optionText, !isDarkMode && styles.lightText]}>{model.name}</Text>
                   <Ionicons name="chevron-forward" size={20} color={colors.gray500} />
                 </TouchableOpacity>
               ))}
             </ScrollView>
           </View>
         );
-
       case 3:
         return (
           <View style={styles.stepContainer}>
-            <Text style={[styles.stepTitle, !isDarkMode && styles.lightText]}>
-              {selectedModel?.name} Varyantını Seçin
-            </Text>
-            <Text style={[styles.stepSubtitle, !isDarkMode && styles.lightSubtitle]}>
-              Hangi yıl ve konfigürasyonu kullanıyorsunuz?
-            </Text>
+            <Text style={[styles.stepTitle, !isDarkMode && styles.lightText]}>{selectedModel?.name} Varyantını Seçin</Text>
+            <Text style={[styles.stepSubtitle, !isDarkMode && styles.lightSubtitle]}>Hangi yıl ve konfigürasyonu kullanıyorsunuz?</Text>
             <ScrollView style={styles.optionsContainer} showsVerticalScrollIndicator={false}>
               {variants.length === 0 ? (
                 <Text style={[styles.loadingText, !isDarkMode && styles.lightText]}>Bu model için varyant bulunamadı.</Text>
@@ -298,32 +362,28 @@ export const RegisterVehicleSelection: React.FC<RegisterVehicleSelectionProps> =
                         {variant.batteryCapacity && (
                           <View style={styles.specItem}>
                             <Ionicons name="battery-charging" size={14} color={colors.success} />
-                            <Text style={[styles.specText, !isDarkMode && styles.lightSpecText]}>
-                              {variant.batteryCapacity} kWh
-                            </Text>
+                            <Text style={[styles.specText, !isDarkMode && styles.lightSpecText]}>{variant.batteryCapacity} kWh</Text>
                           </View>
                         )}
                         {variant.maxRange && (
                           <View style={styles.specItem}>
                             <Ionicons name="speedometer" size={14} color={colors.primary} />
-                            <Text style={[styles.specText, !isDarkMode && styles.lightSpecText]}>
-                              {variant.maxRange} km
-                            </Text>
+                            <Text style={[styles.specText, !isDarkMode && styles.lightSpecText]}>{variant.maxRange} km</Text>
                           </View>
                         )}
-        {getDCkW(variant as VehicleVariant & { maxDCCharging?: number; chargingSpeedDC?: number }) ? (
+                        {getDCkW(variant as VehicleVariant & { maxDCCharging?: number; chargingSpeedDC?: number }) ? (
                           <View style={styles.specItem}>
                             <Ionicons name="flash" size={14} color={colors.warning} />
                             <Text style={[styles.specText, !isDarkMode && styles.lightSpecText]}>
-          {getDCkW(variant as VehicleVariant & { maxDCCharging?: number; chargingSpeedDC?: number })} kW DC
+                              {getDCkW(variant as VehicleVariant & { maxDCCharging?: number; chargingSpeedDC?: number })} kW DC
                             </Text>
                           </View>
                         ) : null}
-        {getACkW(variant as VehicleVariant & { maxACCharging?: number; chargingSpeedAC?: number }) ? (
+                        {getACkW(variant as VehicleVariant & { maxACCharging?: number; chargingSpeedAC?: number }) ? (
                           <View style={styles.specItem}>
                             <Ionicons name="battery-charging" size={14} color={colors.success} />
                             <Text style={[styles.specText, !isDarkMode && styles.lightSpecText]}>
-          {getACkW(variant as VehicleVariant & { maxACCharging?: number; chargingSpeedAC?: number })} kW AC
+                              {getACkW(variant as VehicleVariant & { maxACCharging?: number; chargingSpeedAC?: number })} kW AC
                             </Text>
                           </View>
                         ) : null}
@@ -336,24 +396,15 @@ export const RegisterVehicleSelection: React.FC<RegisterVehicleSelectionProps> =
             </ScrollView>
           </View>
         );
-
       case 4:
         return (
           <ScrollView style={styles.stepContainer} showsVerticalScrollIndicator={false}>
-            <Text style={[styles.stepTitle, !isDarkMode && styles.lightText]}>
-              Araç Detayları
-            </Text>
-            <Text style={[styles.stepSubtitle, !isDarkMode && styles.lightSubtitle]}>
-              Son olarak aracınızla ilgili detayları giriniz
-            </Text>
-            
-            {/* Selected vehicle summary */}
+            <Text style={[styles.stepTitle, !isDarkMode && styles.lightText]}>Araç Detayları</Text>
+            <Text style={[styles.stepSubtitle, !isDarkMode && styles.lightSubtitle]}>Son olarak aracınızla ilgili detayları giriniz</Text>
             <View style={[styles.summaryCard, !isDarkMode && styles.lightSummaryCard]}>
               <View style={styles.summaryHeader}>
                 <Ionicons name="checkmark-circle" size={24} color={colors.success} />
-                <Text style={[styles.summaryTitle, !isDarkMode && styles.lightText]}>
-                  Seçilen Araç
-                </Text>
+                <Text style={[styles.summaryTitle, !isDarkMode && styles.lightText]}>Seçilen Araç</Text>
               </View>
               <Text style={[styles.summaryText, !isDarkMode && styles.lightDetailText]}>
                 {selectedBrand?.name} {selectedModel?.name}
@@ -362,12 +413,9 @@ export const RegisterVehicleSelection: React.FC<RegisterVehicleSelectionProps> =
                 {selectedVariant?.name} ({selectedVariant?.year})
               </Text>
             </View>
-
             <View style={styles.formContainer}>
               <View style={styles.inputGroup}>
-                <Text style={[styles.inputLabel, !isDarkMode && styles.lightText]}>
-                  🚗 Araç Takma Adı (İsteğe Bağlı)
-                </Text>
+                <Text style={[styles.inputLabel, !isDarkMode && styles.lightText]}>🚗 Araç Takma Adı (İsteğe Bağlı)</Text>
                 <TextInput
                   style={[styles.textInput, !isDarkMode && styles.lightTextInput]}
                   value={nickname}
@@ -376,11 +424,8 @@ export const RegisterVehicleSelection: React.FC<RegisterVehicleSelectionProps> =
                   placeholderTextColor={colors.gray500}
                 />
               </View>
-
               <View style={styles.inputGroup}>
-                <Text style={[styles.inputLabel, !isDarkMode && styles.lightText]}>
-                  📋 Plaka (İsteğe Bağlı)
-                </Text>
+                <Text style={[styles.inputLabel, !isDarkMode && styles.lightText]}>📋 Plaka (İsteğe Bağlı)</Text>
                 <TextInput
                   style={[styles.textInput, !isDarkMode && styles.lightTextInput]}
                   value={licensePlate}
@@ -390,11 +435,8 @@ export const RegisterVehicleSelection: React.FC<RegisterVehicleSelectionProps> =
                   autoCapitalize="characters"
                 />
               </View>
-
               <View style={styles.inputGroup}>
-                <Text style={[styles.inputLabel, !isDarkMode && styles.lightText]}>
-                  🎨 Renk (İsteğe Bağlı)
-                </Text>
+                <Text style={[styles.inputLabel, !isDarkMode && styles.lightText]}>🎨 Renk (İsteğe Bağlı)</Text>
                 <TextInput
                   style={[styles.textInput, !isDarkMode && styles.lightTextInput]}
                   value={color}
@@ -403,11 +445,8 @@ export const RegisterVehicleSelection: React.FC<RegisterVehicleSelectionProps> =
                   placeholderTextColor={colors.gray500}
                 />
               </View>
-
               <View style={styles.inputGroup}>
-                <Text style={[styles.inputLabel, !isDarkMode && styles.lightText]}>
-                  🔋 Mevcut Batarya Seviyesi (%)
-                </Text>
+                <Text style={[styles.inputLabel, !isDarkMode && styles.lightText]}>🔋 Mevcut Batarya Seviyesi (%)</Text>
                 <TextInput
                   style={[styles.textInput, !isDarkMode && styles.lightTextInput]}
                   value={batteryLevel}
@@ -420,7 +459,6 @@ export const RegisterVehicleSelection: React.FC<RegisterVehicleSelectionProps> =
             </View>
           </ScrollView>
         );
-
       default:
         return null;
     }
@@ -428,18 +466,13 @@ export const RegisterVehicleSelection: React.FC<RegisterVehicleSelectionProps> =
 
   return (
     <SafeAreaView style={[styles.container, !isDarkMode && styles.lightContainer]}>
-      {/* Header */}
       <View style={[styles.header, !isDarkMode && styles.lightHeader]}>
         <TouchableOpacity style={styles.backButton} onPress={handleBack}>
           <Ionicons name="chevron-back" size={24} color={colors.primary} />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, !isDarkMode && styles.lightHeaderTitle]}>
-          Araç Bilgileri
-        </Text>
+        <Text style={[styles.headerTitle, !isDarkMode && styles.lightHeaderTitle]}>Araç Bilgileri</Text>
         <View style={styles.placeholder} />
       </View>
-
-      {/* Progress indicator */}
       <View style={styles.progressContainer}>
         {[1, 2, 3, 4].map((stepNum) => (
           <View
@@ -452,19 +485,10 @@ export const RegisterVehicleSelection: React.FC<RegisterVehicleSelectionProps> =
           />
         ))}
       </View>
-
-      {/* Content */}
-      <View style={styles.content}>
-        {renderStepContent()}
-      </View>
-
-      {/* Footer */}
+      <View style={styles.content}>{renderStepContent()}</View>
       {step === 4 && (
         <View style={[styles.footer, !isDarkMode && styles.lightFooter]}>
-          <TouchableOpacity
-            style={styles.completeButton}
-            onPress={handleSubmit}
-          >
+          <TouchableOpacity style={styles.completeButton} onPress={handleSubmit}>
             <Text style={styles.completeButtonText}>Kaydı Tamamla</Text>
             <Ionicons name="checkmark-circle" size={20} color={colors.white} style={{ marginLeft: 8 }} />
           </TouchableOpacity>
