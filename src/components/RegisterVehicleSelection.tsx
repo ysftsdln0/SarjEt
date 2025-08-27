@@ -159,47 +159,67 @@ export const RegisterVehicleSelection: React.FC<RegisterVehicleSelectionProps> =
   const loadBrands = async () => {
     try {
       setLoading(true);
-      // DB first
+      
+      // Her zaman hem DB hem EV data'yı al ve birleştir
+      let allBrands: VehicleBrand[] = [];
+      
+      // DB brands
       try {
         const dbBrands = await userVehicleService.getVehicleBrands();
-        if (dbBrands.length > 0) {
-          setBrands(dbBrands);
-          setBrandSource('db');
-          return;
-        }
-      } catch {
-        // continue to EV fallback
+        console.log('🗄️ DB brands loaded:', dbBrands.length);
+        allBrands.push(...dbBrands);
+      } catch (error) {
+        console.error('❌ DB brands error:', error);
       }
 
-      // EV brands endpoint
+      // EV brands - always try to get these too
       try {
         const base = await getBaseUrl();
         const res = await fetch(`${base}/api/vehicles/ev-brands`);
         if (res.ok) {
           const list: unknown = await res.json();
           const names: string[] = Array.isArray(list) ? (list as string[]) : [];
-          if (names.length > 0) {
-            const evBrands: VehicleBrand[] = names.map((name) => ({ id: `ev:${slugify(name)}`, name }));
-            setBrands(evBrands);
-            setBrandSource('ev');
-            return;
-          }
+          console.log('⚡ EV brands loaded:', names.length);
+          
+          // EV brandlerini ekle, ancak aynı isimde DB brand varsa ekleme
+          const existingBrandNames = new Set(allBrands.map(b => b.name.toLowerCase()));
+          const evBrands: VehicleBrand[] = names
+            .filter(name => !existingBrandNames.has(name.toLowerCase()))
+            .map((name) => ({ id: `ev:${slugify(name)}`, name }));
+          
+          allBrands.push(...evBrands);
+          console.log('🔗 Combined brands total:', allBrands.length);
         }
-      } catch {
-        // continue to compute from ev-data
+      } catch (error) {
+        console.error('❌ EV brands endpoint error:', error);
+        
+        // EV brands endpoint başarısız olursa ev-data'dan compute et
+        try {
+          const evs = await fetchEVVehiclesOnce();
+          const brandNames = [...new Set(evs.map((v) => v.brand))].filter(Boolean) as string[];
+          console.log('📊 EV data computed brands:', brandNames.length);
+          
+          const existingBrandNames = new Set(allBrands.map(b => b.name.toLowerCase()));
+          const evBrands: VehicleBrand[] = brandNames
+            .filter(name => !existingBrandNames.has(name.toLowerCase()))
+            .map((name) => ({ id: `ev:${slugify(name)}`, name }));
+          
+          allBrands.push(...evBrands);
+          console.log('🔗 Final combined brands total:', allBrands.length);
+        } catch (evError) {
+          console.error('❌ EV data compute error:', evError);
+        }
       }
 
-      // Compute from ev-data
-      const evs = await fetchEVVehiclesOnce();
-      const brandNames = [...new Set(evs.map((v) => v.brand))].filter(Boolean) as string[];
-      if (brandNames.length > 0) {
-        const evBrands: VehicleBrand[] = brandNames.map((name) => ({ id: `ev:${slugify(name)}`, name }));
-        setBrands(evBrands);
-        setBrandSource('ev');
-        return;
+      if (allBrands.length > 0) {
+        // Markaları alfabetik olarak sırala
+        const sortedBrands = allBrands.sort((a, b) => a.name.localeCompare(b.name));
+        setBrands(sortedBrands);
+        setBrandSource(allBrands.some(b => !b.id.startsWith('ev:')) ? 'db' : 'ev');
+        console.log('✅ Total brands set:', sortedBrands.length);
+      } else {
+        Alert.alert('Hata', 'Araç markaları yüklenemedi');
       }
-
-      Alert.alert('Hata', 'Araç markaları yüklenemedi');
     } finally {
       setLoading(false);
     }
