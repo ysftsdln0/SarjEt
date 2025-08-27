@@ -17,21 +17,39 @@ class EVDataService {
     try {
       const dataPath = path.join(__dirname, '../data/ev-data.json');
       
+      console.log('🔍 EVDataService loadData() called');
+      console.log('📂 Data path:', dataPath);
+      console.log('📂 __dirname:', __dirname);
+      console.log('📁 Directory exists:', fs.existsSync(path.dirname(dataPath)));
+      console.log('📄 File exists:', fs.existsSync(dataPath));
+      
       if (fs.existsSync(dataPath)) {
+        console.log('📖 Reading file...');
         const rawData = fs.readFileSync(dataPath, 'utf8');
+        console.log('📊 Raw data length:', rawData.length);
+        
+        console.log('🔄 Parsing JSON...');
         this.rawData = JSON.parse(rawData);
+        console.log('✅ JSON parsed successfully');
         
         // Extract vehicles and brands from the complex structure
         this.brands = this.rawData.brands || [];
         this.vehicles = this.extractVehicles();
         
+        console.log('🎯 Final results:', {
+          vehicles: this.vehicles.length,
+          brands: this.brands.length
+        });
+        
         logger.info(`EV Data loaded: ${this.vehicles.length} vehicles, ${this.brands.length} brands`);
       } else {
+        console.log('❌ EV data file not found at:', dataPath);
         logger.warn('EV data file not found, using fallback data');
         this.vehicles = this.getFallbackData();
         this.brands = this.extractBrandsFromVehicles();
       }
     } catch (error) {
+      console.error('💥 Error loading EV data:', error);
       logger.error('Error loading EV data:', error);
       this.vehicles = this.getFallbackData();
       this.brands = this.extractBrandsFromVehicles();

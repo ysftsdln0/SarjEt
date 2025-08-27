@@ -1,38 +1,36 @@
 const express = require('express');
 const { PrismaClient } = require('@prisma/client');
 const { auth } = require('../middleware/auth');
-const EVDataService = require('../services/EVDataService');
+const evDataService = require('../services/EVDataService');
 
 const router = express.Router();
 const prisma = new PrismaClient();
 
-// EVDataService singleton instance
-let evDataServiceInstance;
-const getEVDataService = () => {
-  if (!evDataServiceInstance) {
-    evDataServiceInstance = new EVDataService();
-  }
-  return evDataServiceInstance;
-};
-
 // EV data'dan tüm araçları getir (cache'den)
 router.get('/ev-data', async (req, res) => {
   try {
-    const evDataService = getEVDataService();
+    console.log('🚀 /api/vehicles/ev-data endpoint called');
+    console.log('🔧 evDataService type:', typeof evDataService);
+    console.log('🔧 evDataService methods:', Object.getOwnPropertyNames(Object.getPrototypeOf(evDataService)));
+    
     const vehicles = evDataService.getAllVehicles();
     
-    console.log('EV Data Service vehicles count:', vehicles ? vehicles.length : 'undefined');
-    console.log('First vehicle sample:', vehicles && vehicles.length > 0 ? vehicles[0] : 'none');
+    console.log('🚗 EV Data Service vehicles count:', vehicles ? vehicles.length : 'undefined');
+    console.log('🚗 Vehicles type:', typeof vehicles);
+    console.log('🚗 Is Array:', Array.isArray(vehicles));
+    console.log('🚗 First vehicle sample:', vehicles && vehicles.length > 0 ? vehicles[0] : 'none');
     
     // Eğer vehicles array'i boş veya undefined ise fallback data dön
     if (!vehicles || !Array.isArray(vehicles) || vehicles.length === 0) {
-      console.log('No vehicles found, returning empty array');
+      console.log('❌ No vehicles found, returning empty array');
       return res.json([]);
     }
     
+    console.log('✅ Returning', vehicles.length, 'vehicles');
     res.json(vehicles);
   } catch (error) {
-    console.error('Get EV data error:', error);
+    console.error('💥 Get EV data error:', error);
+    console.error('💥 Error stack:', error.stack);
     res.status(500).json({ error: 'EV verileri alınamadı', details: error.message });
   }
 });
@@ -40,7 +38,6 @@ router.get('/ev-data', async (req, res) => {
 // EV data'dan markaları getir
 router.get('/ev-brands', async (req, res) => {
   try {
-    const evDataService = getEVDataService();
     const makes = evDataService.getMakes();
     res.json(makes);
   } catch (error) {

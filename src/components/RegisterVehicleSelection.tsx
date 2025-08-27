@@ -127,6 +127,20 @@ export const RegisterVehicleSelection: React.FC<RegisterVehicleSelectionProps> =
       
       if (!res.ok) {
         console.error('❌ EV data fetch failed:', res.status, res.statusText);
+        // 500 hatası alıyorsa, ev-brands endpoint'ini dene
+        if (res.status === 500) {
+          try {
+            console.log('🔄 Trying ev-brands endpoint as fallback...');
+            const brandsRes = await fetch(`${base}/api/vehicles/ev-brands`);
+            if (brandsRes.ok) {
+              console.log('✅ ev-brands endpoint works, but ev-data has issues');
+            } else {
+              console.log('❌ ev-brands also failed:', brandsRes.status);
+            }
+          } catch (fallbackError) {
+            console.log('❌ Fallback test failed:', fallbackError);
+          }
+        }
         return [];
       }
       
@@ -220,23 +234,32 @@ export const RegisterVehicleSelection: React.FC<RegisterVehicleSelectionProps> =
     }
   };
 
-  const loadVariants = async (modelId: string) => {
+  const loadVariants = async (modelId: string, modelParam?: VehicleModel) => {
     try {
       setLoading(true);
-      console.log('🔄 Loading variants for model:', modelId, 'Source:', modelSource);
-      console.log('📊 Selected brand:', selectedBrand?.name, 'Selected model:', selectedModel?.name);
       
-      if (modelSource === 'ev' && selectedBrand && selectedModel) {
+      // Parametre olarak gelen model'i kullan veya state'den al
+      const currentModel = modelParam || selectedModel;
+      
+      console.log('🔄 Loading variants for model:', modelId, 'Source:', modelSource);
+      console.log('📊 Models:', {
+        selectedBrand: selectedBrand?.name,
+        parameterModel: modelParam?.name,
+        stateModel: selectedModel?.name,
+        currentModel: currentModel?.name
+      });
+      
+      if (modelSource === 'ev' && selectedBrand && currentModel) {
         console.log('💡 Using EV data source for variants');
         const evs = await fetchEVVehiclesOnce();
         console.log('📦 EV vehicles fetched:', evs.length);
         const filtered = evs.filter(
-          (v) => v.brand === selectedBrand.name && v.model === selectedModel.name
+          (v) => v.brand === selectedBrand.name && v.model === currentModel.name
         );
         console.log('🔍 Filtered variants:', filtered.length);
         const mapped: VehicleVariant[] = filtered.map((v) => ({
           id: String(v.id),
-          name: v.variant || selectedModel.name,
+          name: v.variant || currentModel.name,
           year: Number(v.year || new Date().getFullYear()),
           modelId,
           batteryCapacity: v.batteryCapacity ?? v.usable_battery_size ?? undefined,
@@ -269,19 +292,19 @@ export const RegisterVehicleSelection: React.FC<RegisterVehicleSelectionProps> =
       // EV fallback - hem DB boş dönerse hem de hata alırsa
       if (dbFailed || !variantsData || variantsData.length === 0) {
         console.log('🔄 Falling back to EV data for variants');
-        if (selectedBrand && selectedModel) {
+        if (selectedBrand && currentModel) {
           try {
             const evs = await fetchEVVehiclesOnce();
             console.log('📦 EV fallback - vehicles fetched:', evs.length);
             
             if (evs.length > 0) {
               const filtered = evs.filter(
-                (v) => v.brand === selectedBrand.name && v.model === selectedModel.name
+                (v) => v.brand === selectedBrand.name && v.model === currentModel.name
               );
               console.log('🔍 EV fallback - filtered variants:', filtered.length);
               variantsData = filtered.map((v) => ({
                 id: String(v.id),
-                name: v.variant || selectedModel.name,
+                name: v.variant || currentModel.name,
                 year: Number(v.year || new Date().getFullYear()),
                 modelId,
                 batteryCapacity: v.batteryCapacity ?? v.usable_battery_size ?? undefined,
@@ -331,9 +354,10 @@ export const RegisterVehicleSelection: React.FC<RegisterVehicleSelectionProps> =
   };
 
   const handleModelSelect = (model: VehicleModel) => {
+    console.log('📝 Model selected:', model.name, 'ID:', model.id);
     setSelectedModel(model);
     setSelectedVariant(null);
-    loadVariants(model.id);
+    loadVariants(model.id, model); // Model'i parametre olarak geç
   };
 
   const handleVariantSelect = (variant: VehicleVariant) => {
