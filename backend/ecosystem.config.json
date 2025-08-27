@@ -1,7 +1,7 @@
 {
   "name": "sarjet-backend",
   "script": "src/server.js",
-  "cwd": "/path/to/your/SarjEt/backend",
+  "cwd": "/opt/SarjEt/backend",
   "instances": 1,
   "exec_mode": "fork",
   "watch": false,

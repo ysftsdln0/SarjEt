@@ -158,13 +158,25 @@ export async function getVehicleVariants(modelId: string, year?: number): Promis
     ? `${base}/api/vehicles/models/${modelId}/variants?year=${year}`
     : `${base}/api/vehicles/models/${modelId}/variants`;
   
-  const res = await fetch(url);
+  console.log('🌐 Fetching variants from:', url);
   
-  if (!res.ok) {
-    throw new Error('Araç varyantları alınamadı');
+  try {
+    const res = await fetch(url);
+    console.log('📊 Variants response status:', res.status, res.statusText);
+    
+    if (!res.ok) {
+      const errorText = await res.text();
+      console.error('❌ Variants API error:', errorText);
+      throw new Error(`Araç varyantları alınamadı: ${res.status} - ${errorText}`);
+    }
+    
+    const data = await res.json();
+    console.log('✅ Variants data received:', Array.isArray(data) ? data.length : 'not array', data);
+    return data;
+  } catch (fetchError) {
+    console.error('❌ Variants fetch error:', fetchError);
+    throw fetchError;
   }
-  
-  return await res.json();
 }
 
 export async function createUserVehicle(token: string, vehicleData: CreateVehicleData): Promise<UserVehicle> {
