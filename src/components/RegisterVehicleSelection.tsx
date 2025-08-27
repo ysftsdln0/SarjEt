@@ -92,12 +92,15 @@ export const RegisterVehicleSelection: React.FC<RegisterVehicleSelectionProps> =
   const loadVariants = async (modelId: string) => {
     try {
       setLoading(true);
+      console.log('🔄 Loading variants for model:', modelId);
       const variantsData = await userVehicleService.getVehicleVariants(modelId);
+      console.log('📊 Variants loaded:', variantsData);
+      console.log('📊 Variants count:', variantsData.length);
       setVariants(variantsData);
       setStep(3);
     } catch (error) {
-      Alert.alert('Hata', 'Araç varyantları yüklenemedi');
-      console.error('Load variants error:', error);
+      console.error('❌ Load variants error:', error);
+      Alert.alert('Hata', 'Araç varyantları yüklenemedi: ' + error.message);
     } finally {
       setLoading(false);
     }
@@ -244,11 +247,19 @@ export const RegisterVehicleSelection: React.FC<RegisterVehicleSelectionProps> =
                           </Text>
                         </View>
                       )}
-                      {variant.chargingSpeedDC && (
+                      {variant.maxDCCharging && (
                         <View style={styles.specItem}>
                           <Ionicons name="flash" size={14} color={colors.warning} />
                           <Text style={[styles.specText, !isDarkMode && styles.lightSpecText]}>
-                            {variant.chargingSpeedDC} kW
+                            {variant.maxDCCharging} kW DC
+                          </Text>
+                        </View>
+                      )}
+                      {variant.maxACCharging && (
+                        <View style={styles.specItem}>
+                          <Ionicons name="battery-charging" size={14} color={colors.success} />
+                          <Text style={[styles.specText, !isDarkMode && styles.lightSpecText]}>
+                            {variant.maxACCharging} kW AC
                           </Text>
                         </View>
                       )}

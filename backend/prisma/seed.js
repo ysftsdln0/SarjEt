@@ -231,6 +231,90 @@ const vehicleData = {
               features: ['Autopilot', '15" touchscreen', 'Glass roof', 'Premium audio', 'Track mode', 'Performance brakes', '21" wheels']
             }
           ]
+        },
+        {
+          name: 'Model S',
+          category: 'Sedan',
+          bodyType: '4 kapı',
+          startYear: 2012,
+          variants: [
+            {
+              name: 'Long Range',
+              year: 2024,
+              batteryCapacity: 100,
+              usableCapacity: 95,
+              maxRange: 652,
+              cityRange: 700,
+              highwayRange: 580,
+              power: 493,
+              torque: 660,
+              acceleration: 3.1,
+              topSpeed: 322,
+              efficiency: 16.1,
+              cityEfficiency: 14.7,
+              highwayEfficiency: 18.2,
+              maxACCharging: 11,
+              maxDCCharging: 250,
+              chargingPort: 'Tesla Supercharger + Type 2',
+              connectorTypes: JSON.stringify(['Type 2', 'CCS', 'Tesla Supercharger']),
+              chargingTime: {
+                'AC 11kW': '9.1 saat',
+                'DC 250kW': '27 dakika (10-80%)'
+              },
+              length: 4979,
+              width: 1964,
+              height: 1445,
+              wheelbase: 2960,
+              weight: 2069,
+              cargoVolume: 793,
+              basePrice: 3500000,
+              currency: 'TL',
+              safetyRating: '5 yıldız',
+              features: ['Autopilot', '17" touchscreen', 'Glass roof', 'Premium audio', 'Air suspension']
+            }
+          ]
+        },
+        {
+          name: 'Model X',
+          category: 'SUV',
+          bodyType: '5 kapı',
+          startYear: 2015,
+          variants: [
+            {
+              name: 'Long Range',
+              year: 2024,
+              batteryCapacity: 100,
+              usableCapacity: 95,
+              maxRange: 580,
+              cityRange: 630,
+              highwayRange: 500,
+              power: 493,
+              torque: 660,
+              acceleration: 3.8,
+              topSpeed: 262,
+              efficiency: 18.1,
+              cityEfficiency: 16.5,
+              highwayEfficiency: 20.5,
+              maxACCharging: 11,
+              maxDCCharging: 250,
+              chargingPort: 'Tesla Supercharger + Type 2',
+              connectorTypes: JSON.stringify(['Type 2', 'CCS', 'Tesla Supercharger']),
+              chargingTime: {
+                'AC 11kW': '9.1 saat',
+                'DC 250kW': '27 dakika (10-80%)'
+              },
+              length: 5037,
+              width: 2070,
+              height: 1684,
+              wheelbase: 2965,
+              weight: 2352,
+              cargoVolume: 2487,
+              basePrice: 4500000,
+              currency: 'TL',
+              safetyRating: '5 yıldız',
+              features: ['Autopilot', '17" touchscreen', 'Falcon doors', 'Premium audio', 'Air suspension', '7 koltuk']
+            }
+          ]
         }
       ]
     },
@@ -543,6 +627,484 @@ const vehicleData = {
               currency: 'TL',
               safetyRating: '5 yıldız',
               features: ['ID.Light', 'ID.Drive', 'Travel Assist', 'Park Assist Plus']
+            }
+          ]
+        }
+      ]
+    },
+    {
+      name: 'Hyundai',
+      country: 'South Korea',
+      logo: 'https://upload.wikimedia.org/wikipedia/commons/9/9d/Hyundai_logo.svg',
+      website: 'https://www.hyundai.com.tr',
+      models: [
+        {
+          name: 'IONIQ 5',
+          category: 'SUV',
+          bodyType: '5 kapı',
+          startYear: 2021,
+          variants: [
+            {
+              name: 'Standard Range',
+              year: 2024,
+              batteryCapacity: 58,
+              usableCapacity: 54.7,
+              maxRange: 384,
+              cityRange: 420,
+              highwayRange: 320,
+              power: 125,
+              torque: 350,
+              acceleration: 8.5,
+              topSpeed: 185,
+              efficiency: 15.1,
+              cityEfficiency: 13.8,
+              highwayEfficiency: 17.2,
+              maxACCharging: 11,
+              maxDCCharging: 77,
+              chargingPort: 'Type 2 + CCS',
+              connectorTypes: JSON.stringify(['Type 2', 'CCS']),
+              chargingTime: {
+                'AC 11kW': '5.3 saat',
+                'DC 77kW': '47 dakika (10-80%)'
+              },
+              length: 4635,
+              width: 1890,
+              height: 1605,
+              wheelbase: 3000,
+              weight: 1880,
+              cargoVolume: 527,
+              basePrice: 1800000,
+              currency: 'TL',
+              safetyRating: '5 yıldız',
+              features: ['Bluelink', '12.3" touchscreen', 'V2L', 'Highway Driving Assist']
+            },
+            {
+              name: 'Long Range',
+              year: 2024,
+              batteryCapacity: 77.4,
+              usableCapacity: 72.6,
+              maxRange: 507,
+              cityRange: 560,
+              highwayRange: 430,
+              power: 168,
+              torque: 350,
+              acceleration: 7.4,
+              topSpeed: 185,
+              efficiency: 15.3,
+              cityEfficiency: 13.9,
+              highwayEfficiency: 17.5,
+              maxACCharging: 11,
+              maxDCCharging: 77,
+              chargingPort: 'Type 2 + CCS',
+              connectorTypes: JSON.stringify(['Type 2', 'CCS']),
+              chargingTime: {
+                'AC 11kW': '7.0 saat',
+                'DC 77kW': '47 dakika (10-80%)'
+              },
+              length: 4635,
+              width: 1890,
+              height: 1605,
+              wheelbase: 3000,
+              weight: 1950,
+              cargoVolume: 527,
+              basePrice: 2000000,
+              currency: 'TL',
+              safetyRating: '5 yıldız',
+              features: ['Bluelink', '12.3" touchscreen', 'V2L', 'Highway Driving Assist', 'Premium audio']
+            }
+          ]
+        }
+      ]
+    },
+    {
+      name: 'KIA',
+      country: 'South Korea',
+      logo: 'https://upload.wikimedia.org/wikipedia/commons/2/27/Kia_logo.svg',
+      website: 'https://www.kia.com.tr',
+      models: [
+        {
+          name: 'EV6',
+          category: 'SUV',
+          bodyType: '5 kapı',
+          startYear: 2021,
+          variants: [
+            {
+              name: 'Standard Range',
+              year: 2024,
+              batteryCapacity: 58,
+              usableCapacity: 54.7,
+              maxRange: 394,
+              cityRange: 430,
+              highwayRange: 340,
+              power: 125,
+              torque: 350,
+              acceleration: 8.5,
+              topSpeed: 185,
+              efficiency: 14.7,
+              cityEfficiency: 13.4,
+              highwayEfficiency: 16.8,
+              maxACCharging: 11,
+              maxDCCharging: 77,
+              chargingPort: 'Type 2 + CCS',
+              connectorTypes: JSON.stringify(['Type 2', 'CCS']),
+              chargingTime: {
+                'AC 11kW': '5.3 saat',
+                'DC 77kW': '47 dakika (10-80%)'
+              },
+              length: 4680,
+              width: 1880,
+              height: 1555,
+              wheelbase: 2900,
+              weight: 1840,
+              cargoVolume: 490,
+              basePrice: 1900000,
+              currency: 'TL',
+              safetyRating: '5 yıldız',
+              features: ['Kia Connect', '12.3" touchscreen', 'V2L', 'Highway Driving Assist']
+            },
+            {
+              name: 'Long Range',
+              year: 2024,
+              batteryCapacity: 77.4,
+              usableCapacity: 72.6,
+              maxRange: 528,
+              cityRange: 580,
+              highwayRange: 450,
+              power: 168,
+              torque: 350,
+              acceleration: 7.3,
+              topSpeed: 185,
+              efficiency: 14.7,
+              cityEfficiency: 13.4,
+              highwayEfficiency: 16.8,
+              maxACCharging: 11,
+              maxDCCharging: 77,
+              chargingPort: 'Type 2 + CCS',
+              connectorTypes: JSON.stringify(['Type 2', 'CCS']),
+              chargingTime: {
+                'AC 11kW': '7.0 saat',
+                'DC 77kW': '47 dakika (10-80%)'
+              },
+              length: 4680,
+              width: 1880,
+              height: 1555,
+              wheelbase: 2900,
+              weight: 1910,
+              cargoVolume: 490,
+              basePrice: 2100000,
+              currency: 'TL',
+              safetyRating: '5 yıldız',
+              features: ['Kia Connect', '12.3" touchscreen', 'V2L', 'Highway Driving Assist', 'Premium audio']
+            }
+          ]
+        }
+      ]
+    },
+    {
+      name: 'Volkswagen',
+      country: 'Germany',
+      logo: 'https://upload.wikimedia.org/wikipedia/commons/9/9d/Volkswagen_logo_2019.svg',
+      website: 'https://www.volkswagen.com.tr',
+      models: [
+        {
+          name: 'ID.4',
+          category: 'SUV',
+          bodyType: '5 kapı',
+          startYear: 2021,
+          variants: [
+            {
+              name: 'Pro',
+              year: 2024,
+              batteryCapacity: 77,
+              usableCapacity: 74,
+              maxRange: 520,
+              cityRange: 570,
+              highwayRange: 450,
+              power: 150,
+              torque: 310,
+              acceleration: 8.5,
+              topSpeed: 160,
+              efficiency: 16.2,
+              cityEfficiency: 14.8,
+              highwayEfficiency: 18.5,
+              maxACCharging: 11,
+              maxDCCharging: 135,
+              chargingPort: 'Type 2 + CCS',
+              connectorTypes: JSON.stringify(['Type 2', 'CCS']),
+              chargingTime: {
+                'AC 11kW': '7.0 saat',
+                'DC 135kW': '38 dakika (10-80%)'
+              },
+              length: 4584,
+              width: 1852,
+              height: 1640,
+              wheelbase: 2765,
+              weight: 2120,
+              cargoVolume: 543,
+              basePrice: 2200000,
+              currency: 'TL',
+              safetyRating: '5 yıldız',
+              features: ['ID.Light', '12" touchscreen', 'Travel Assist', 'Park Assist Plus']
+            },
+            {
+              name: 'GTX',
+              year: 2024,
+              batteryCapacity: 77,
+              usableCapacity: 74,
+              maxRange: 480,
+              cityRange: 520,
+              highwayRange: 420,
+              power: 220,
+              torque: 460,
+              acceleration: 6.3,
+              topSpeed: 180,
+              efficiency: 17.8,
+              cityEfficiency: 16.2,
+              highwayEfficiency: 20.1,
+              maxACCharging: 11,
+              maxDCCharging: 135,
+              chargingPort: 'Type 2 + CCS',
+              connectorTypes: JSON.stringify(['Type 2', 'CCS']),
+              chargingTime: {
+                'AC 11kW': '7.0 saat',
+                'DC 135kW': '38 dakika (10-80%)'
+              },
+              length: 4584,
+              width: 1852,
+              height: 1640,
+              wheelbase: 2765,
+              weight: 2180,
+              cargoVolume: 543,
+              basePrice: 2500000,
+              currency: 'TL',
+              safetyRating: '5 yıldız',
+              features: ['ID.Light', '12" touchscreen', 'Travel Assist', 'Sport mode', '20" wheels']
+            }
+          ]
+        }
+      ]
+    },
+    {
+      name: 'Audi',
+      country: 'Germany',
+      logo: 'https://upload.wikimedia.org/wikipedia/commons/9/92/Audi-Logo_2016.svg',
+      website: 'https://www.audi.com.tr',
+      models: [
+        {
+          name: 'Q4 e-tron',
+          category: 'SUV',
+          bodyType: '5 kapı',
+          startYear: 2021,
+          variants: [
+            {
+              name: '40',
+              year: 2024,
+              batteryCapacity: 77,
+              usableCapacity: 74,
+              maxRange: 520,
+              cityRange: 570,
+              highwayRange: 450,
+              power: 150,
+              torque: 310,
+              acceleration: 8.5,
+              topSpeed: 160,
+              efficiency: 16.2,
+              cityEfficiency: 14.8,
+              highwayEfficiency: 18.5,
+              maxACCharging: 11,
+              maxDCCharging: 135,
+              chargingPort: 'Type 2 + CCS',
+              connectorTypes: JSON.stringify(['Type 2', 'CCS']),
+              chargingTime: {
+                'AC 11kW': '7.0 saat',
+                'DC 135kW': '38 dakika (10-80%)'
+              },
+              length: 4588,
+              width: 1865,
+              height: 1632,
+              wheelbase: 2764,
+              weight: 2130,
+              cargoVolume: 520,
+              basePrice: 2800000,
+              currency: 'TL',
+              safetyRating: '5 yıldız',
+              features: ['Virtual Cockpit', 'MMI Navigation', 'Audi pre sense', 'Park Assist']
+            }
+          ]
+        }
+      ]
+    },
+    {
+      name: 'Mercedes-Benz',
+      country: 'Germany',
+      logo: 'https://upload.wikimedia.org/wikipedia/commons/9/90/Mercedes-Logo.svg',
+      website: 'https://www.mercedes-benz.com.tr',
+      models: [
+        {
+          name: 'EQA',
+          category: 'SUV',
+          bodyType: '5 kapı',
+          startYear: 2021,
+          variants: [
+            {
+              name: '250',
+              year: 2024,
+              batteryCapacity: 66.5,
+              usableCapacity: 63.2,
+              maxRange: 486,
+              cityRange: 530,
+              highwayRange: 420,
+              power: 140,
+              torque: 385,
+              acceleration: 8.9,
+              topSpeed: 160,
+              efficiency: 16.8,
+              cityEfficiency: 15.3,
+              highwayEfficiency: 19.2,
+              maxACCharging: 11,
+              maxDCCharging: 100,
+              chargingPort: 'Type 2 + CCS',
+              connectorTypes: JSON.stringify(['Type 2', 'CCS']),
+              chargingTime: {
+                'AC 11kW': '6.0 saat',
+                'DC 100kW': '32 dakika (10-80%)'
+              },
+              length: 4463,
+              width: 1834,
+              height: 1620,
+              wheelbase: 2729,
+              weight: 2040,
+              cargoVolume: 340,
+              basePrice: 3200000,
+              currency: 'TL',
+              safetyRating: '5 yıldız',
+              features: ['MBUX', '10.25" touchscreen', 'Driving Assistance Package', 'Park Pilot']
+            }
+          ]
+        },
+        {
+          name: 'EQB',
+          category: 'SUV',
+          bodyType: '7 kapı',
+          startYear: 2021,
+          variants: [
+            {
+              name: '250',
+              year: 2024,
+              batteryCapacity: 66.5,
+              usableCapacity: 63.2,
+              maxRange: 473,
+              cityRange: 520,
+              highwayRange: 410,
+              power: 140,
+              torque: 385,
+              acceleration: 8.8,
+              topSpeed: 160,
+              efficiency: 17.2,
+              cityEfficiency: 15.7,
+              highwayEfficiency: 19.6,
+              maxACCharging: 11,
+              maxDCCharging: 100,
+              chargingPort: 'Type 2 + CCS',
+              connectorTypes: JSON.stringify(['Type 2', 'CCS']),
+              chargingTime: {
+                'AC 11kW': '6.0 saat',
+                'DC 100kW': '32 dakika (10-80%)'
+              },
+              length: 4684,
+              width: 1834,
+              height: 1667,
+              wheelbase: 2829,
+              weight: 2120,
+              cargoVolume: 495,
+              basePrice: 3500000,
+              currency: 'TL',
+              safetyRating: '5 yıldız',
+              features: ['MBUX', '10.25" touchscreen', 'Driving Assistance Package', '7 koltuk', 'Panoramic roof']
+            }
+          ]
+        }
+      ]
+    },
+    {
+      name: 'TOGG',
+      country: 'Turkey',
+      logo: 'https://upload.wikimedia.org/wikipedia/commons/8/8a/TOGG_logo.svg',
+      website: 'https://www.togg.com.tr',
+      models: [
+        {
+          name: 'T10X',
+          category: 'SUV',
+          bodyType: '5 kapı',
+          startYear: 2023,
+          variants: [
+            {
+              name: 'Standard Range',
+              year: 2024,
+              batteryCapacity: 52.4,
+              usableCapacity: 49.7,
+              maxRange: 314,
+              cityRange: 350,
+              highwayRange: 280,
+              power: 160,
+              torque: 350,
+              acceleration: 7.6,
+              topSpeed: 180,
+              efficiency: 16.7,
+              cityEfficiency: 15.2,
+              highwayEfficiency: 18.9,
+              maxACCharging: 11,
+              maxDCCharging: 80,
+              chargingPort: 'Type 2 + CCS',
+              connectorTypes: JSON.stringify(['Type 2', 'CCS']),
+              chargingTime: {
+                'AC 11kW': '4.8 saat',
+                'DC 80kW': '30 dakika (10-80%)'
+              },
+              length: 4390,
+              width: 1881,
+              height: 1676,
+              wheelbase: 2630,
+              weight: 1850,
+              cargoVolume: 480,
+              basePrice: 1200000,
+              currency: 'TL',
+              safetyRating: '5 yıldız',
+              features: ['TOGG Smart', '12.3" touchscreen', 'Advanced Driver Assistance', 'V2L', 'Made in Turkey']
+            },
+            {
+              name: 'Long Range',
+              year: 2024,
+              batteryCapacity: 88.5,
+              usableCapacity: 84.0,
+              maxRange: 523,
+              cityRange: 580,
+              highwayRange: 450,
+              power: 160,
+              torque: 350,
+              acceleration: 7.6,
+              topSpeed: 180,
+              efficiency: 16.1,
+              cityEfficiency: 14.7,
+              highwayEfficiency: 18.2,
+              maxACCharging: 11,
+              maxDCCharging: 80,
+              chargingPort: 'Type 2 + CCS',
+              connectorTypes: JSON.stringify(['Type 2', 'CCS']),
+              chargingTime: {
+                'AC 11kW': '8.1 saat',
+                'DC 80kW': '30 dakika (10-80%)'
+              },
+              length: 4390,
+              width: 1881,
+              height: 1676,
+              wheelbase: 2630,
+              weight: 1950,
+              cargoVolume: 480,
+              basePrice: 1400000,
+              currency: 'TL',
+              safetyRating: '5 yıldız',
+              features: ['TOGG Smart', '12.3" touchscreen', 'Advanced Driver Assistance', 'V2L', 'Made in Turkey', 'Premium audio']
             }
           ]
         }
