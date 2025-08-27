@@ -86,37 +86,22 @@ router.get('/models/:modelId/variants', async (req, res) => {
     const { modelId } = req.params;
     const { year } = req.query;
     
-    console.log('🔄 Getting variants for model:', modelId);
-    console.log('📅 Year filter:', year);
-    
     const whereClause = { modelId };
     if (year) {
       whereClause.year = parseInt(year);
     }
     
-    console.log('🔍 Where clause:', whereClause);
-    
     const variants = await prisma.vehicleVariant.findMany({
       where: whereClause,
-      include: {
-        model: {
-          include: {
-            brand: true
-          }
-        }
-      },
       orderBy: [
         { year: 'desc' },
         { name: 'asc' }
       ]
     });
     
-    console.log('📊 Variants found:', variants.length);
-    console.log('📊 First variant sample:', variants[0]);
-    
     res.json(variants);
   } catch (error) {
-    console.error('❌ Get variants error:', error);
+    console.error('Get variants error:', error);
     res.status(500).json({ error: 'Varyantlar alınamadı' });
   }
 });
@@ -156,36 +141,10 @@ router.get('/test', (req, res) => {
     availableEndpoints: [
       'GET /api/vehicles/test',
       'GET /api/vehicles/brands',
-      'GET /api/vehicles/brands/:brandId/models',
-      'GET /api/vehicles/models/:modelId/variants',
       'GET /api/vehicles/user-vehicle/primary',
       'GET /api/vehicles/user-vehicles'
     ]
   });
-});
-
-// Debug endpoint - veritabanı durumunu kontrol et
-router.get('/debug', async (req, res) => {
-  try {
-    const brandCount = await prisma.vehicleBrand.count();
-    const modelCount = await prisma.vehicleModel.count();
-    const variantCount = await prisma.vehicleVariant.count();
-    
-    res.json({
-      message: 'Database status',
-      counts: {
-        brands: brandCount,
-        models: modelCount,
-        variants: variantCount
-      },
-      sampleBrands: await prisma.vehicleBrand.findMany({ take: 3 }),
-      sampleModels: await prisma.vehicleModel.findMany({ take: 3 }),
-      sampleVariants: await prisma.vehicleVariant.findMany({ take: 3 })
-    });
-  } catch (error) {
-    console.error('Debug endpoint error:', error);
-    res.status(500).json({ error: 'Debug bilgileri alınamadı' });
-  }
 });
 
 // Kullanıcının varsayılan/ana aracını getir (rota planlama için) - ÖNCE GELMELİ

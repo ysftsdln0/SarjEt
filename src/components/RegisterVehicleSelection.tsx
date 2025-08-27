@@ -17,6 +17,7 @@ import userVehicleService, {
   VehicleModel, 
   VehicleVariant 
 } from '../services/userVehicleService';
+import { getBaseUrl } from '../services/apiClient';
 
 interface RegisterVehicleSelectionProps {
   onVehicleSelected: (vehicle: {
@@ -39,6 +40,30 @@ export const RegisterVehicleSelection: React.FC<RegisterVehicleSelectionProps> =
   onBack,
   isDarkMode = false,
 }) => {
+  // Local types for EV data fallback
+  type EVCharger = { max_power?: number; ports?: string[] };
+  interface EVNormalized {
+    id: string | number;
+    brand: string;
+    model: string;
+    variant?: string;
+    year?: number;
+    batteryCapacity?: number;
+    usable_battery_size?: number;
+    range?: number;
+    consumption?: number;
+    acCharger?: EVCharger;
+    dcCharger?: EVCharger;
+    ac_charger?: EVCharger;
+    dc_charger?: EVCharger;
+    connectorTypes?: string[];
+  }
+
+  // Helpers to support multiple field names without using any
+  const getACkW = (v: VehicleVariant & { maxACCharging?: number; chargingSpeedAC?: number }): number | undefined =>
+    v.maxACCharging ?? v.chargingSpeedAC;
+  const getDCkW = (v: VehicleVariant & { maxDCCharging?: number; chargingSpeedDC?: number }): number | undefined =>
+    v.maxDCCharging ?? v.chargingSpeedDC;
   const [step, setStep] = useState(1); // 1: Brand, 2: Model, 3: Variant, 4: Details
   const [loading, setLoading] = useState(false);
 
@@ -93,14 +118,50 @@ export const RegisterVehicleSelection: React.FC<RegisterVehicleSelectionProps> =
     try {
       setLoading(true);
       console.log('🔄 Loading variants for model:', modelId);
-      const variantsData = await userVehicleService.getVehicleVariants(modelId);
+      let variantsData = await userVehicleService.getVehicleVariants(modelId);
       console.log('📊 Variants loaded:', variantsData);
       console.log('📊 Variants count:', variantsData.length);
+
+      // Fallback: Eğer DB'den varyant gelmezse EV data cache'inden üret
+      if ((!variantsData || variantsData.length === 0) && selectedBrand && selectedModel) {
+        try {
+          const base = await getBaseUrl();
+          const res = await fetch(`${base}/api/vehicles/ev-data`);
+          if (res.ok) {
+            const evVehicles: unknown = await res.json();
+            const arr: EVNormalized[] = Array.isArray(evVehicles) ? (evVehicles as EVNormalized[]) : [];
+            const filtered = arr.filter(
+              (v) => v.brand === selectedBrand.name && v.model === selectedModel.name
+            );
+            // EVDataService.normalizeVehicle çıkışı -> VehicleVariant tipine map et
+            const mapped: VehicleVariant[] = filtered.map((v) => ({
+              id: String(v.id),
+              name: v.variant || `${selectedModel.name}`,
+              year: Number(v.year || new Date().getFullYear()),
+              modelId: modelId,
+              batteryCapacity: v.batteryCapacity ?? v.usable_battery_size ?? undefined,
+              maxRange: v.range ?? undefined,
+              efficiency: v.consumption ?? undefined,
+              chargingSpeedAC: v.acCharger?.max_power ?? v.ac_charger?.max_power ?? undefined,
+              chargingSpeedDC: v.dcCharger?.max_power ?? v.dc_charger?.max_power ?? undefined,
+              connectorTypes: v.connectorTypes || v.acCharger?.ports || v.dcCharger?.ports || undefined,
+            }));
+            if (mapped.length > 0) {
+              console.log('🧰 Using EV-data fallback variants:', mapped.length);
+              variantsData = mapped;
+            }
+          }
+        } catch (fallbackErr) {
+          console.warn('EV-data fallback failed:', fallbackErr);
+        }
+      }
+
       setVariants(variantsData);
       setStep(3);
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('❌ Load variants error:', error);
-      Alert.alert('Hata', 'Araç varyantları yüklenemedi: ' + error.message);
+      const message = error instanceof Error ? error.message : String(error);
+      Alert.alert('Hata', 'Araç varyantları yüklenemedi: ' + message);
     } finally {
       setLoading(false);
     }
@@ -220,54 +281,58 @@ export const RegisterVehicleSelection: React.FC<RegisterVehicleSelectionProps> =
               Hangi yıl ve konfigürasyonu kullanıyorsunuz?
             </Text>
             <ScrollView style={styles.optionsContainer} showsVerticalScrollIndicator={false}>
-              {variants.map((variant) => (
-                <TouchableOpacity
-                  key={variant.id}
-                  style={[styles.variantButton, !isDarkMode && styles.lightVariantButton]}
-                  onPress={() => handleVariantSelect(variant)}
-                >
-                  <View style={styles.variantInfo}>
-                    <Text style={[styles.variantName, !isDarkMode && styles.lightText]}>
-                      {variant.name} ({variant.year})
-                    </Text>
-                    <View style={styles.variantSpecs}>
-                      {variant.batteryCapacity && (
-                        <View style={styles.specItem}>
-                          <Ionicons name="battery-charging" size={14} color={colors.success} />
-                          <Text style={[styles.specText, !isDarkMode && styles.lightSpecText]}>
-                            {variant.batteryCapacity} kWh
-                          </Text>
-                        </View>
-                      )}
-                      {variant.maxRange && (
-                        <View style={styles.specItem}>
-                          <Ionicons name="speedometer" size={14} color={colors.primary} />
-                          <Text style={[styles.specText, !isDarkMode && styles.lightSpecText]}>
-                            {variant.maxRange} km
-                          </Text>
-                        </View>
-                      )}
-                      {variant.maxDCCharging && (
-                        <View style={styles.specItem}>
-                          <Ionicons name="flash" size={14} color={colors.warning} />
-                          <Text style={[styles.specText, !isDarkMode && styles.lightSpecText]}>
-                            {variant.maxDCCharging} kW DC
-                          </Text>
-                        </View>
-                      )}
-                      {variant.maxACCharging && (
-                        <View style={styles.specItem}>
-                          <Ionicons name="battery-charging" size={14} color={colors.success} />
-                          <Text style={[styles.specText, !isDarkMode && styles.lightSpecText]}>
-                            {variant.maxACCharging} kW AC
-                          </Text>
-                        </View>
-                      )}
+              {variants.length === 0 ? (
+                <Text style={[styles.loadingText, !isDarkMode && styles.lightText]}>Bu model için varyant bulunamadı.</Text>
+              ) : (
+                variants.map((variant) => (
+                  <TouchableOpacity
+                    key={variant.id}
+                    style={[styles.variantButton, !isDarkMode && styles.lightVariantButton]}
+                    onPress={() => handleVariantSelect(variant)}
+                  >
+                    <View style={styles.variantInfo}>
+                      <Text style={[styles.variantName, !isDarkMode && styles.lightText]}>
+                        {variant.name} ({variant.year})
+                      </Text>
+                      <View style={styles.variantSpecs}>
+                        {variant.batteryCapacity && (
+                          <View style={styles.specItem}>
+                            <Ionicons name="battery-charging" size={14} color={colors.success} />
+                            <Text style={[styles.specText, !isDarkMode && styles.lightSpecText]}>
+                              {variant.batteryCapacity} kWh
+                            </Text>
+                          </View>
+                        )}
+                        {variant.maxRange && (
+                          <View style={styles.specItem}>
+                            <Ionicons name="speedometer" size={14} color={colors.primary} />
+                            <Text style={[styles.specText, !isDarkMode && styles.lightSpecText]}>
+                              {variant.maxRange} km
+                            </Text>
+                          </View>
+                        )}
+        {getDCkW(variant as VehicleVariant & { maxDCCharging?: number; chargingSpeedDC?: number }) ? (
+                          <View style={styles.specItem}>
+                            <Ionicons name="flash" size={14} color={colors.warning} />
+                            <Text style={[styles.specText, !isDarkMode && styles.lightSpecText]}>
+          {getDCkW(variant as VehicleVariant & { maxDCCharging?: number; chargingSpeedDC?: number })} kW DC
+                            </Text>
+                          </View>
+                        ) : null}
+        {getACkW(variant as VehicleVariant & { maxACCharging?: number; chargingSpeedAC?: number }) ? (
+                          <View style={styles.specItem}>
+                            <Ionicons name="battery-charging" size={14} color={colors.success} />
+                            <Text style={[styles.specText, !isDarkMode && styles.lightSpecText]}>
+          {getACkW(variant as VehicleVariant & { maxACCharging?: number; chargingSpeedAC?: number })} kW AC
+                            </Text>
+                          </View>
+                        ) : null}
+                      </View>
                     </View>
-                  </View>
-                  <Ionicons name="chevron-forward" size={20} color={colors.gray500} />
-                </TouchableOpacity>
-              ))}
+                    <Ionicons name="chevron-forward" size={20} color={colors.gray500} />
+                  </TouchableOpacity>
+                ))
+              )}
             </ScrollView>
           </View>
         );
