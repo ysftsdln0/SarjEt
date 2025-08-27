@@ -42,25 +42,36 @@ class EVDataService {
    * Complex JSON'dan vehicles array'ini çıkar
    */
   extractVehicles() {
-    if (!this.rawData) return [];
+    if (!this.rawData) {
+      logger.warn('No raw data available');
+      return [];
+    }
+    
+    console.log('Raw data keys:', Object.keys(this.rawData));
     
     // JSON'da vehicles array'ini bul
     let vehicles = [];
     
-    // Different possible structures to check
-    if (this.rawData.vehicles) {
+    // JSON yapısı: { brands: [...], data: [...] }
+    if (this.rawData.data && Array.isArray(this.rawData.data)) {
+      vehicles = this.rawData.data;
+      console.log('Found vehicles in data array, count:', vehicles.length);
+    } else if (this.rawData.vehicles && Array.isArray(this.rawData.vehicles)) {
       vehicles = this.rawData.vehicles;
-    } else if (this.rawData.data && this.rawData.data.vehicles) {
-      vehicles = this.rawData.data.vehicles;
+      console.log('Found vehicles in vehicles array, count:', vehicles.length);
     } else if (Array.isArray(this.rawData)) {
       vehicles = this.rawData;
+      console.log('Raw data is array, count:', vehicles.length);
     } else {
-      // JSON'da vehicles array'ini recursive olarak ara
-      vehicles = this.findVehiclesRecursive(this.rawData);
+      logger.warn('Could not find vehicles array in data structure');
+      console.log('Raw data structure:', typeof this.rawData, Object.keys(this.rawData));
+      return [];
     }
     
     // Normalize vehicle data
-    return vehicles.map(vehicle => this.normalizeVehicle(vehicle)).filter(Boolean);
+    const normalizedVehicles = vehicles.map(vehicle => this.normalizeVehicle(vehicle)).filter(Boolean);
+    console.log('Normalized vehicles count:', normalizedVehicles.length);
+    return normalizedVehicles;
   }
 
   /**
@@ -103,8 +114,8 @@ class EVDataService {
     if (!obj || typeof obj !== 'object') return false;
     
     // Vehicle object'i için gerekli field'lar
-    const hasBasicFields = (obj.brand || obj.make) && (obj.model || obj.name);
-    const hasEVFields = obj.battery_size || obj.range || obj.consumption || obj.ac_charger || obj.dc_charger;
+    const hasBasicFields = (obj.brand || obj.make) && (obj.model);
+    const hasEVFields = obj.usable_battery_size || obj.battery_size || obj.energy_consumption || obj.ac_charger || obj.dc_charger;
     
     return hasBasicFields && hasEVFields;
   }
@@ -116,7 +127,7 @@ class EVDataService {
     if (!vehicle) return null;
     
     // Brand name'i bul
-    const brandName = this.getBrandName(vehicle.brand_id) || vehicle.brand || vehicle.make;
+    const brandName = this.getBrandName(vehicle.brand_id) || vehicle.brand;
     
     // Connector types'ı çıkar
     const connectorTypes = [];
@@ -132,21 +143,29 @@ class EVDataService {
       vehicle.ac_charger?.max_power || 0,
       vehicle.dc_charger?.max_power || 0
     );
+
+    // Range hesapla (eğer yoksa battery ve consumption'dan hesapla)
+    let range = vehicle.range || 0;
+    if (!range && vehicle.usable_battery_size && vehicle.energy_consumption?.average_consumption) {
+      // Range = Battery Size / Consumption * 100 (rough calculation)
+      range = Math.round((vehicle.usable_battery_size / vehicle.energy_consumption.average_consumption) * 100);
+    }
     
     return {
       id: vehicle.id || `${brandName}-${vehicle.model}-${vehicle.variant || ''}`.replace(/\s+/g, '-').toLowerCase(),
       brand: brandName,
-      model: vehicle.model || vehicle.name,
+      model: vehicle.model,
       variant: vehicle.variant || '',
-      year: vehicle.release_year || vehicle.year || new Date().getFullYear(),
-      batteryCapacity: vehicle.battery_size || vehicle.battery_kwh || 0,
-      range: vehicle.range || vehicle.range_km || 0,
-      consumption: vehicle.consumption || vehicle.efficiency || 0,
+      year: vehicle.release_year || new Date().getFullYear(),
+      batteryCapacity: vehicle.usable_battery_size || vehicle.battery_size || 0,
+      range: range,
+      consumption: vehicle.energy_consumption?.average_consumption || 0,
       chargingPower: maxChargingPower,
       connectorTypes: [...new Set(connectorTypes)].filter(Boolean),
       acCharger: vehicle.ac_charger,
       dcCharger: vehicle.dc_charger,
-      chargingVoltage: vehicle.charging_voltage
+      chargingVoltage: vehicle.charging_voltage,
+      vehicleType: vehicle.vehicle_type || 'car'
     };
   }
 

@@ -130,9 +130,15 @@ const RoutePlanning: React.FC<RoutePlanningProps> = ({
         ? (error as any).message 
         : 'Araç bilgileriniz yüklenemedi. Lütfen profil ayarlarınızdan bir araç ekleyin.';
         
+      // Yeni kayıt olan kullanıcılar için özel mesaj
+      const isNewUser = errorMessage.includes('Henüz bir araç eklememişsiniz');
+      const alertMessage = isNewUser 
+        ? 'Yeni kayıt olduğunuz için araç bilgileriniz henüz hazır değil. Birkaç saniye bekleyip tekrar deneyin veya profil ayarlarından araç bilgilerinizi güncelleyin.'
+        : `${errorMessage}\n\nNot: Eğer yeni kayıt olduysanız, birkaç saniye bekleyip tekrar deneyin.`;
+        
       Alert.alert(
         'Araç Bilgileri',
-        `${errorMessage}\n\nNot: Eğer yeni kayıt olduysanız, birkaç saniye bekleyip tekrar deneyin.`,
+        alertMessage,
         [
           { text: 'Tamam' },
           { text: 'Tekrar Dene', onPress: () => loadUserVehicle() }

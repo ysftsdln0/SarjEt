@@ -101,6 +101,7 @@ class AuthController {
         if (process.env.NODE_ENV !== 'production') {
           console.log('🚗 Adding vehicle information');
           console.log('Vehicle data:', vehicle);
+          console.log('Vehicle variantId:', vehicle.variantId);
         }
         try {
           // Önce variant'ın var olduğunu kontrol et
@@ -125,6 +126,9 @@ class AuthController {
               }
             });
             console.log('✅ Vehicle created without variant:', createdVehicle.id);
+            
+            // Kullanıcıya bilgi ver
+            console.log('⚠️ Vehicle created without technical specs - user should add vehicle details later');
           } else {
             const createdVehicle = await prisma.userVehicle.create({
               data: {

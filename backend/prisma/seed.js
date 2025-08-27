@@ -36,6 +36,7 @@ const vehicleData = {
               maxACCharging: 11,
               maxDCCharging: 170,
               chargingPort: 'Tesla Supercharger + Type 2',
+              connectorTypes: ['Type 2', 'CCS', 'Tesla Supercharger'],
               chargingTime: {
                 'AC 11kW': '5.5 saat',
                 'DC 170kW': '27 dakika (10-80%)'
@@ -69,6 +70,7 @@ const vehicleData = {
               maxACCharging: 11,
               maxDCCharging: 250,
               chargingPort: 'Tesla Supercharger + Type 2',
+              connectorTypes: ['Type 2', 'CCS', 'Tesla Supercharger'],
               chargingTime: {
                 'AC 11kW': '7.5 saat',
                 'DC 250kW': '27 dakika (10-80%)'
@@ -102,6 +104,7 @@ const vehicleData = {
               maxACCharging: 11,
               maxDCCharging: 250,
               chargingPort: 'Tesla Supercharger + Type 2',
+              connectorTypes: ['Type 2', 'CCS', 'Tesla Supercharger'],
               chargingTime: {
                 'AC 11kW': '7.5 saat',
                 'DC 250kW': '27 dakika (10-80%)'
@@ -143,6 +146,7 @@ const vehicleData = {
               maxACCharging: 11,
               maxDCCharging: 170,
               chargingPort: 'Tesla Supercharger + Type 2',
+              connectorTypes: ['Type 2', 'CCS', 'Tesla Supercharger'],
               chargingTime: {
                 'AC 11kW': '5.5 saat',
                 'DC 170kW': '27 dakika (10-80%)'
@@ -176,6 +180,7 @@ const vehicleData = {
               maxACCharging: 11,
               maxDCCharging: 250,
               chargingPort: 'Tesla Supercharger + Type 2',
+              connectorTypes: ['Type 2', 'CCS', 'Tesla Supercharger'],
               chargingTime: {
                 'AC 11kW': '7.5 saat',
                 'DC 250kW': '27 dakika (10-80%)'
@@ -209,6 +214,7 @@ const vehicleData = {
               maxACCharging: 11,
               maxDCCharging: 250,
               chargingPort: 'Tesla Supercharger + Type 2',
+              connectorTypes: ['Type 2', 'CCS', 'Tesla Supercharger'],
               chargingTime: {
                 'AC 11kW': '7.5 saat',
                 'DC 250kW': '27 dakika (10-80%)'
@@ -258,6 +264,7 @@ const vehicleData = {
               maxACCharging: 22,
               maxDCCharging: 195,
               chargingPort: 'Type 2 + CCS',
+              connectorTypes: ['Type 2', 'CCS'],
               chargingTime: {
                 'AC 22kW': '5.5 saat',
                 'DC 195kW': '35 dakika (10-80%)'
@@ -291,6 +298,7 @@ const vehicleData = {
               maxACCharging: 22,
               maxDCCharging: 195,
               chargingPort: 'Type 2 + CCS',
+              connectorTypes: ['Type 2', 'CCS'],
               chargingTime: {
                 'AC 22kW': '5.5 saat',
                 'DC 195kW': '35 dakika (10-80%)'
@@ -332,6 +340,7 @@ const vehicleData = {
               maxACCharging: 11,
               maxDCCharging: 180,
               chargingPort: 'Type 2 + CCS',
+              connectorTypes: ['Type 2', 'CCS'],
               chargingTime: {
                 'AC 11kW': '8.5 saat',
                 'DC 180kW': '31 dakika (10-80%)'
@@ -616,6 +625,7 @@ async function seedVehicleDatabase() {
               maxDCCharging: variantData.maxDCCharging,
               chargingPort: variantData.chargingPort,
               chargingTime: variantData.chargingTime,
+              connectorTypes: variantData.connectorTypes || ['Type 2', 'CCS'],
               length: variantData.length,
               width: variantData.width,
               height: variantData.height,

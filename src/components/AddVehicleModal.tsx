@@ -103,7 +103,26 @@ export const AddVehicleModal: React.FC<AddVehicleModalProps> = ({
       // Backend EV data service'den tüm araçları çek
       const baseUrl = await getBaseUrl();
       const response = await fetch(`${baseUrl}/api/vehicles/ev-data`);
-      const vehicles: EVVehicle[] = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      console.log('EV data response:', data); // Debug için
+      
+      // Response format'ını kontrol et
+      let vehicles: EVVehicle[] = [];
+      if (Array.isArray(data)) {
+        vehicles = data;
+      } else if (data.vehicles && Array.isArray(data.vehicles)) {
+        vehicles = data.vehicles;
+      } else if (data.data && Array.isArray(data.data)) {
+        vehicles = data.data;
+      } else {
+        console.error('Unexpected data format:', data);
+        throw new Error('Araç verileri beklenmeyen formatta');
+      }
       
       setEvVehicles(vehicles);
       

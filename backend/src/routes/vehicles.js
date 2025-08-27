@@ -20,10 +20,20 @@ router.get('/ev-data', async (req, res) => {
   try {
     const evDataService = getEVDataService();
     const vehicles = evDataService.getAllVehicles();
+    
+    console.log('EV Data Service vehicles count:', vehicles ? vehicles.length : 'undefined');
+    console.log('First vehicle sample:', vehicles && vehicles.length > 0 ? vehicles[0] : 'none');
+    
+    // Eğer vehicles array'i boş veya undefined ise fallback data dön
+    if (!vehicles || !Array.isArray(vehicles) || vehicles.length === 0) {
+      console.log('No vehicles found, returning empty array');
+      return res.json([]);
+    }
+    
     res.json(vehicles);
   } catch (error) {
     console.error('Get EV data error:', error);
-    res.status(500).json({ error: 'EV verileri alınamadı' });
+    res.status(500).json({ error: 'EV verileri alınamadı', details: error.message });
   }
 });
 
@@ -199,6 +209,37 @@ router.get('/user-vehicle/primary', auth, async (req, res) => {
       });
     }
 
+    // Variant null ise (kayıt sırasında variant bulunamadıysa)
+    if (!primaryVehicle.variant) {
+      console.log('Vehicle found but variant is null - providing fallback values');
+      const vehicleWithFallbackSpecs = {
+        id: primaryVehicle.id,
+        nickname: primaryVehicle.nickname,
+        licensePlate: primaryVehicle.licensePlate,
+        color: primaryVehicle.color,
+        currentBatteryLevel: primaryVehicle.currentBatteryLevel || 100,
+        brand: 'Bilinmeyen',
+        model: 'Bilinmeyen',
+        variant: 'Bilinmeyen',
+        year: new Date().getFullYear(),
+        // Fallback teknik özellikler
+        batteryCapacity: 50, // Varsayılan 50 kWh
+        range: 300, // Varsayılan 300 km
+        cityRange: 250,
+        highwayRange: 350,
+        efficiency: 18, // Varsayılan 18 kWh/100km
+        cityEfficiency: 20,
+        highwayEfficiency: 16,
+        chargingSpeed: {
+          ac: 7, // Varsayılan 7 kW AC
+          dc: 50 // Varsayılan 50 kW DC
+        },
+        connectorTypes: ['Type 2', 'CCS']
+      };
+      
+      return res.json(vehicleWithFallbackSpecs);
+    }
+
     // Rota planlama için gerekli teknik özellikleri dahil et
     const vehicleWithSpecs = {
       id: primaryVehicle.id,
@@ -219,8 +260,8 @@ router.get('/user-vehicle/primary', auth, async (req, res) => {
       cityEfficiency: primaryVehicle.variant.cityEfficiency,
       highwayEfficiency: primaryVehicle.variant.highwayEfficiency,
       chargingSpeed: {
-        ac: primaryVehicle.variant.acChargingSpeed,
-        dc: primaryVehicle.variant.dcChargingSpeed
+        ac: primaryVehicle.variant.maxACCharging || 0,
+        dc: primaryVehicle.variant.maxDCCharging || 0
       },
       connectorTypes: primaryVehicle.variant.connectorTypes
     };
