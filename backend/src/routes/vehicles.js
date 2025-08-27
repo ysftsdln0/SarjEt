@@ -234,7 +234,7 @@ router.get('/user-vehicle/primary', auth, async (req, res) => {
           ac: 7, // Varsayılan 7 kW AC
           dc: 50 // Varsayılan 50 kW DC
         },
-        connectorTypes: ['Type 2', 'CCS']
+        connectorTypes: JSON.stringify(['Type 2', 'CCS'])
       };
       
       return res.json(vehicleWithFallbackSpecs);
@@ -263,7 +263,7 @@ router.get('/user-vehicle/primary', auth, async (req, res) => {
         ac: primaryVehicle.variant.maxACCharging || 0,
         dc: primaryVehicle.variant.maxDCCharging || 0
       },
-      connectorTypes: primaryVehicle.variant.connectorTypes
+              connectorTypes: primaryVehicle.variant.connectorTypes || ['Type 2', 'CCS']
     };
     
     res.json(vehicleWithSpecs);

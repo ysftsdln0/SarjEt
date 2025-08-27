@@ -82,8 +82,8 @@ class AuthController {
               maxDistance: 100,
               language: 'tr',
               // JSON fields (MySQL): provide defaults to satisfy non-null schema
-              preferredConnectorTypes: [],
-              preferredOperators: []
+              preferredConnectorTypes: JSON.stringify([]),
+              preferredOperators: JSON.stringify([])
             }
           }
         },

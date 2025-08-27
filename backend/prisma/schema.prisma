@@ -6,7 +6,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "mysql"
   url      = env("DATABASE_URL")
 }
 
@@ -58,8 +58,8 @@ model UserPreferences {
   language          String  @default("tr")
   
   // Vehicle preferences
-  preferredConnectorTypes String[] // ["Type 2", "CCS", "CHAdeMO"]
-  preferredOperators String[]
+  preferredConnectorTypes Json // ["Type 2", "CCS", "CHAdeMO"]
+  preferredOperators Json
   
   // Location preferences
   defaultLatitude   Float?
@@ -209,7 +209,7 @@ model Vehicle {
   batteryCapacity  Float? // kWh
   range            Int?   // km
   chargingPower    Int?   // kW max charging power
-  connectorTypes   String[] // ["Type 2", "CCS"]
+  connectorTypes   Json // ["Type 2", "CCS"]
   efficiency       Float?   // kWh/100km
   isActive         Boolean @default(true)
   
@@ -248,7 +248,7 @@ model ChargingStation {
   
   // Technical specs
   maxPowerKW        Float?
-  connectorTypes    String[] // ["Type 2", "CCS", "CHAdeMO"]
+  connectorTypes    Json // ["Type 2", "CCS", "CHAdeMO"]
   hasPaymentTerminal Boolean @default(false)
   hasWifi           Boolean @default(false)
   hasParking        Boolean @default(true)
