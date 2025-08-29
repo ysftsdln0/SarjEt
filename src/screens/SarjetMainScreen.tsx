@@ -61,6 +61,10 @@ const SarjetMainScreen: React.FC<{
 
   const [searchQuery, setSearchQuery] = useState('');
   
+  // Route Planning batarya state'leri - modal kapandığında persist olsun diye burada tutuyoruz
+  const [currentSoC, setCurrentSoC] = useState<string>('10'); // Test için %10 başlangıç
+  const [desiredArrivalSoC, setDesiredArrivalSoC] = useState<string>('20');
+  
   // Filter states - simplified
   const [filters, setFilters] = useState<FilterOptions>(FilterService.getDefaultFilters());
   const [advancedFilters, setAdvancedFilters] = useState<AdvancedFilterOptions>({
@@ -544,6 +548,10 @@ const SarjetMainScreen: React.FC<{
         stations={stations}
         presetDestination={selectedDestination}
         authToken={authToken || undefined}
+        currentSoC={currentSoC}
+        setCurrentSoC={setCurrentSoC}
+        desiredArrivalSoC={desiredArrivalSoC}
+        setDesiredArrivalSoC={setDesiredArrivalSoC}
       />
       
 

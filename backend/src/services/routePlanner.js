@@ -36,6 +36,7 @@ function pointAlongLineKm(current, destination, targetKm) {
 }
 
 function planRoute({ start, end, vehicle, currentSocPercent = 100, reservePercent = 10, corridorKm = 30, maxStops = 8, chargeAfterStopPercent = 90 }) {
+  console.log('=== ROUTE PLANNING DEBUG START ===');
   console.log('Route planning started with params:', { start, end, vehicle, currentSocPercent, reservePercent, corridorKm, maxStops, chargeAfterStopPercent });
   
   const maxRangeKm = vehicle?.maxRangeKm || vehicle?.maxRange || 300;
@@ -46,14 +47,28 @@ function planRoute({ start, end, vehicle, currentSocPercent = 100, reservePercen
   const waypoints = [];
   let hops = 0;
 
-  console.log('Initial state:', { maxRangeKm, reserveKm, currentSoc: soc });
+  console.log('=== INITIAL CALCULATIONS ===');
+  console.log(`Max range from vehicle: ${maxRangeKm} km`);
+  console.log(`Current SoC received: ${currentSocPercent}%`);
+  console.log(`Current SoC normalized: ${soc}%`);
+  console.log(`Reserve percentage: ${reservePercent}%`);
+  console.log(`Reserve distance: ${reserveKm} km`);
+  console.log('=== END INITIAL CALCULATIONS ===');
 
   while (true) {
     const availableKm = (maxRangeKm * soc) / 100;
     const distToDest = haversine(current.lat, current.lon, destination.lat, destination.lon);
     const usableRange = Math.max(0, availableKm - reserveKm);
     
-    console.log(`Loop ${hops + 1}: availableKm=${availableKm.toFixed(1)}, distToDest=${distToDest.toFixed(1)}, usableRange=${usableRange.toFixed(1)}`);
+    console.log(`=== LOOP ${hops + 1} CALCULATIONS ===`);
+    console.log(`Current SoC: ${soc}%`);
+    console.log(`Max range: ${maxRangeKm} km`);
+    console.log(`Available km (${maxRangeKm} * ${soc}% / 100): ${availableKm.toFixed(1)} km`);
+    console.log(`Distance to destination: ${distToDest.toFixed(1)} km`);
+    console.log(`Reserve km: ${reserveKm.toFixed(1)} km`);
+    console.log(`Usable range (${availableKm.toFixed(1)} - ${reserveKm.toFixed(1)}): ${usableRange.toFixed(1)} km`);
+    console.log(`Can reach destination? ${distToDest <= usableRange ? 'YES' : 'NO'}`);
+    console.log(`=== END LOOP ${hops + 1} ===`);
     
     // Flowchart: Kullanılabilir menzil >= A-B mesafesi? kontrolü
     if (distToDest <= usableRange) {

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -34,13 +34,7 @@ export const VehicleManagementModal: React.FC<VehicleManagementModalProps> = ({
   const [loading, setLoading] = useState(false);
   const [showAddVehicleModal, setShowAddVehicleModal] = useState(false);
 
-  useEffect(() => {
-    if (visible && authToken) {
-      loadVehicles();
-    }
-  }, [visible, authToken]);
-
-  const loadVehicles = async () => {
+  const loadVehicles = useCallback(async () => {
     if (!authToken) return;
     
     try {
@@ -53,7 +47,13 @@ export const VehicleManagementModal: React.FC<VehicleManagementModalProps> = ({
     } finally {
       setLoading(false);
     }
-  };
+  }, [authToken]);
+
+  useEffect(() => {
+    if (visible && authToken) {
+      loadVehicles();
+    }
+  }, [visible, loadVehicles]);
 
   const handleDeleteVehicle = async (vehicleId: string) => {
     if (!authToken) return;

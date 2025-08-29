@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
@@ -36,6 +36,16 @@ const StationDetailsCard: React.FC<StationDetailsCardProps> = ({
   const translateY = useRef(new Animated.Value(0)).current;
   const cardHeight = useRef(new Animated.Value(300)).current;
   const isExpanded = useRef(false);
+  const animationRefs = useRef<Animated.CompositeAnimation[]>([]);
+
+  // Cleanup animations on unmount
+  useEffect(() => {
+    return () => {
+      animationRefs.current.forEach(animation => {
+        animation.stop();
+      });
+    };
+  }, []);
 
   const tabs = [
     { key: 'nearby', label: 'Yakındaki istasyonlar' },
@@ -87,7 +97,7 @@ const StationDetailsCard: React.FC<StationDetailsCardProps> = ({
 
   const expandCard = () => {
     isExpanded.current = true;
-    Animated.parallel([
+    const animation = Animated.parallel([
       Animated.timing(cardHeight, {
         toValue: height * 0.8, // 80% of screen height
         duration: 300,
@@ -98,14 +108,21 @@ const StationDetailsCard: React.FC<StationDetailsCardProps> = ({
         duration: 300,
         useNativeDriver: false,
       }),
-    ]).start();
+    ]);
+    
+    animationRefs.current.push(animation);
+    animation.start((finished) => {
+      if (finished) {
+        animationRefs.current = animationRefs.current.filter(anim => anim !== animation);
+      }
+    });
     
     onHeightChange?.(height * 0.8);
   };
 
   const collapseCard = () => {
     isExpanded.current = false;
-    Animated.parallel([
+    const animation = Animated.parallel([
       Animated.timing(cardHeight, {
         toValue: 300,
         duration: 300,
@@ -116,17 +133,31 @@ const StationDetailsCard: React.FC<StationDetailsCardProps> = ({
         duration: 300,
         useNativeDriver: false,
       }),
-    ]).start();
+    ]);
+    
+    animationRefs.current.push(animation);
+    animation.start((finished) => {
+      if (finished) {
+        animationRefs.current = animationRefs.current.filter(anim => anim !== animation);
+      }
+    });
     
     onHeightChange?.(300);
   };
 
   const resetCard = () => {
-    Animated.timing(translateY, {
+    const animation = Animated.timing(translateY, {
       toValue: 0,
       duration: 200,
       useNativeDriver: false,
-    }).start();
+    });
+    
+    animationRefs.current.push(animation);
+    animation.start((finished) => {
+      if (finished) {
+        animationRefs.current = animationRefs.current.filter(anim => anim !== animation);
+      }
+    });
   };
 
   // Quick expand/collapse buttons

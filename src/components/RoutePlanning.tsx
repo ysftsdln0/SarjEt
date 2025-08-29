@@ -48,6 +48,11 @@ interface RoutePlanningProps {
   stations: ChargingStation[];
   presetDestination?: { name: string; latitude: number; longitude: number } | null;
   authToken?: string; // Token'ı props olarak al
+  // Batarya state'lerini props olarak al
+  currentSoC: string;
+  setCurrentSoC: (value: string) => void;
+  desiredArrivalSoC: string;
+  setDesiredArrivalSoC: (value: string) => void;
 }
 
 const RoutePlanning: React.FC<RoutePlanningProps> = ({
@@ -58,7 +63,14 @@ const RoutePlanning: React.FC<RoutePlanningProps> = ({
   stations,
   presetDestination,
   authToken,
+  currentSoC,
+  setCurrentSoC,
+  desiredArrivalSoC,
+  setDesiredArrivalSoC,
 }) => {
+  // DEBUG: Modal açılıp kapandığında component re-render'ını gözlemle
+  console.log('🔧 RoutePlanning render - visible:', visible);
+  
   // Helper functions to safely access vehicle information
   const getVehicleDisplayName = (vehicle: UserVehicle): string => {
     const brand = vehicle.variant?.model?.brand?.name || 'Araç';
@@ -97,9 +109,9 @@ const RoutePlanning: React.FC<RoutePlanningProps> = ({
   const [vehicleLoading, setVehicleLoading] = useState(false);
   const [showVehicleSelector, setShowVehicleSelector] = useState(false);
   
-  // Sadece batarya yüzdeleri kullanıcıdan alınır
-  const [currentSoC, setCurrentSoC] = useState<string>('80'); // %
-  const [desiredArrivalSoC, setDesiredArrivalSoC] = useState<string>('20'); // %
+  
+  // DEBUG: State değerlerini log'la
+  console.log('🔧 Current state - currentSoC:', currentSoC, 'desiredArrivalSoC:', desiredArrivalSoC);
 
   const transportModes = [
     { key: 'driving', label: 'Araç', icon: 'car', color: colors.primary },
@@ -245,6 +257,17 @@ const RoutePlanning: React.FC<RoutePlanningProps> = ({
       console.log('Selected vehicle for route planning:', selectedVehicle);
       console.log('Vehicle range being used:', selectedVehicle.variant?.maxRange);
       console.log('Current SoC being used:', currentSoC);
+      console.log('Current SoC as integer:', parseInt(currentSoC));
+      
+      // Menzil hesaplama testi
+      const vehicleRange = selectedVehicle.variant?.maxRange || 500;
+      const currentBatteryPercent = parseInt(currentSoC) || 80;
+      const availableRange = (vehicleRange * currentBatteryPercent) / 100;
+      console.log('=== RANGE CALCULATION TEST ===');
+      console.log(`Vehicle max range: ${vehicleRange} km`);
+      console.log(`Current battery: ${currentBatteryPercent}%`);
+      console.log(`Available range: ${availableRange} km`);
+      console.log('=== END RANGE TEST ===');
       
       // Flowchart'a göre backend route planner'ı çağır - araç bilgilerini otomatik al
       const request: PlanRouteRequest = {
@@ -518,6 +541,17 @@ const RoutePlanning: React.FC<RoutePlanningProps> = ({
                       ]} 
                     />
                   </View>
+                  {/* Hesaplanan menzili göster */}
+                  {selectedVehicle && (
+                    <View style={styles.calculatedRangeInfo}>
+                      <Text style={styles.calculatedRangeText}>
+                        Hesaplanan Menzil: {Math.round(((selectedVehicle.variant?.maxRange || 500) * (parseInt(currentSoC) || 80)) / 100)} km
+                      </Text>
+                      <Text style={styles.calculatedRangeSubtext}>
+                        (Max: {selectedVehicle.variant?.maxRange || 500} km × {parseInt(currentSoC) || 80}%)
+                      </Text>
+                    </View>
+                  )}
                 </View>
                 
                 <View style={styles.batteryInputCard}>
@@ -1106,6 +1140,25 @@ const styles = StyleSheet.create({
   vehicleSelectionItemSelected: {
     backgroundColor: colors.primary,
     borderColor: colors.primary,
+  },
+  // Hesaplanan menzil stil
+  calculatedRangeInfo: {
+    marginTop: 8,
+    padding: 8,
+    backgroundColor: colors.gray50,
+    borderRadius: 6,
+  },
+  calculatedRangeText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.primary,
+    textAlign: 'center',
+  },
+  calculatedRangeSubtext: {
+    fontSize: 12,
+    color: colors.gray600,
+    textAlign: 'center',
+    marginTop: 2,
   },
   vehicleSelectionText: {
     color: colors.black,

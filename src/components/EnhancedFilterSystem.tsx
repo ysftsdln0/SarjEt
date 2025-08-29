@@ -126,21 +126,32 @@ const EnhancedFilterSystem: React.FC<EnhancedFilterSystemProps> = ({
 
   // Modal animasyonları
   useEffect(() => {
+    let animationRef: Animated.CompositeAnimation | null = null;
+    
     if (visible) {
-      Animated.spring(slideAnim, {
+      animationRef = Animated.spring(slideAnim, {
         toValue: 0,
         useNativeDriver: true,
         tension: 100,
         friction: 8,
-      }).start();
+      });
+      animationRef.start();
     } else {
-      Animated.timing(slideAnim, {
+      animationRef = Animated.timing(slideAnim, {
         toValue: height,
         duration: 300,
         useNativeDriver: true,
-      }).start();
+      });
+      animationRef.start();
     }
-  }, [visible]);
+
+    // Cleanup function
+    return () => {
+      if (animationRef) {
+        animationRef.stop();
+      }
+    };
+  }, [visible, slideAnim]);
 
   // Mevcut istasyonlardan dinamik veriler
   const availableConnectionTypes = useMemo(() => {
