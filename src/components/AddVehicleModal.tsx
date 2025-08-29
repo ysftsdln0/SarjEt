@@ -200,7 +200,7 @@ export const AddVehicleModal: React.FC<AddVehicleModalProps> = ({
         currentBatteryLevel: batteryLevel ? parseInt(batteryLevel) : undefined,
       };
 
-      await userVehicleService.createUserVehicle(authToken, vehicleData);
+      await userVehicleService.addUserVehicle(selectedVariant.id, nickname, authToken);
       
       Alert.alert('Başarılı', 'Araç başarıyla eklendi', [
         { text: 'Tamam', onPress: () => {

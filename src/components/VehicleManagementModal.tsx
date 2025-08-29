@@ -81,47 +81,85 @@ export const VehicleManagementModal: React.FC<VehicleManagementModalProps> = ({
     );
   };
 
-  const renderVehicleCard = (vehicle: UserVehicle) => (
-    <View key={vehicle.id} style={[styles.vehicleCard, !isDarkMode && styles.lightVehicleCard]}>
-      <View style={styles.vehicleInfo}>
-        <View style={styles.vehicleHeader}>
-          <Text style={[styles.vehicleName, !isDarkMode && styles.lightVehicleName]}>
-            {vehicle.nickname || 
-             `${vehicle.variant?.model?.brand?.name || 'Bilinmeyen'} ${vehicle.variant?.model?.name || 'Model'}`}
-          </Text>
-          {/* Primary vehicle badge - we'll need to track this separately */}
-        </View>
-        
-        <Text style={[styles.vehicleDetails, !isDarkMode && styles.lightVehicleDetails]}>
-          {vehicle.variant?.name || 'Varyant'} • {vehicle.variant?.year || 'N/A'}
-        </Text>
-        
-        <View style={styles.vehicleSpecs}>
-          <View style={styles.specItem}>
-            <Ionicons name="speedometer" size={16} color={colors.primary} />
-            <Text style={[styles.specText, !isDarkMode && styles.lightSpecText]}>
-              {vehicle.variant?.maxRange || 'N/A'} km
-            </Text>
-          </View>
-          <View style={styles.specItem}>
-            <Ionicons name="calendar" size={16} color={colors.warning} />
-            <Text style={[styles.specText, !isDarkMode && styles.lightSpecText]}>
-              {vehicle.variant?.year || 'N/A'}
-            </Text>
-          </View>
-        </View>
-      </View>
+  const renderVehicleCard = (vehicle: UserVehicle) => {
+    // Araç bilgilerini güvenli şekilde al
+    const getVehicleDisplayName = () => {
+      if (vehicle.nickname) {
+        return vehicle.nickname;
+      }
       
-      <View style={styles.vehicleActions}>        
-        <TouchableOpacity
-          style={[styles.actionButton, styles.deleteButton]}
-          onPress={() => handleDeleteVehicle(vehicle.id)}
-        >
-          <Ionicons name="trash" size={18} color={colors.white} />
-        </TouchableOpacity>
+      // Fallback: Tesla model isimleri
+      const variantName = vehicle.variant?.name || '';
+      if (variantName.includes('Model 3') || variantName.includes('Rear-Wheel Drive') || variantName.includes('Long Range') || variantName.includes('Performance')) {
+        return `Tesla Model 3 ${variantName}`;
+      }
+      if (variantName.includes('Model Y')) {
+        return `Tesla Model Y ${variantName}`;
+      }
+      if (variantName.includes('Model S') || variantName.includes('Dual Motor') || variantName.includes('Plaid')) {
+        return `Tesla Model S ${variantName}`;
+      }
+      if (variantName.includes('Model X')) {
+        return `Tesla Model X ${variantName}`;
+      }
+      
+      return vehicle.variant?.model?.brand?.name && vehicle.variant?.model?.name 
+        ? `${vehicle.variant.model.brand.name} ${vehicle.variant.model.name}`
+        : 'Tesla Model';
+    };
+    
+    const getVehicleSpecs = () => {
+      const variant = vehicle.variant;
+      if (!variant) return 'Varyant bilgisi yok';
+      
+      const specs = [];
+      if (variant.name) specs.push(variant.name);
+      if (variant.year) specs.push(variant.year.toString());
+      
+      return specs.length > 0 ? specs.join(' • ') : 'Spesifikasyon bilgisi yok';
+    };
+
+    return (
+      <View key={vehicle.id} style={[styles.vehicleCard, !isDarkMode && styles.lightVehicleCard]}>
+        <View style={styles.vehicleInfo}>
+          <View style={styles.vehicleHeader}>
+            <Text style={[styles.vehicleName, !isDarkMode && styles.lightVehicleName]}>
+              {getVehicleDisplayName()}
+            </Text>
+            {/* Primary vehicle badge - we'll need to track this separately */}
+          </View>
+          
+          <Text style={[styles.vehicleDetails, !isDarkMode && styles.lightVehicleDetails]}>
+            {getVehicleSpecs()}
+          </Text>
+        
+          <View style={styles.vehicleSpecs}>
+            <View style={styles.specItem}>
+              <Ionicons name="speedometer" size={16} color={colors.primary} />
+              <Text style={[styles.specText, !isDarkMode && styles.lightSpecText]}>
+                {vehicle.variant?.maxRange || 'N/A'} km
+              </Text>
+            </View>
+            <View style={styles.specItem}>
+              <Ionicons name="calendar" size={16} color={colors.warning} />
+              <Text style={[styles.specText, !isDarkMode && styles.lightSpecText]}>
+                {vehicle.variant?.year || 'N/A'}
+              </Text>
+            </View>
+          </View>
+        </View>
+        
+        <View style={styles.vehicleActions}>        
+          <TouchableOpacity
+            style={[styles.actionButton, styles.deleteButton]}
+            onPress={() => handleDeleteVehicle(vehicle.id)}
+          >
+            <Ionicons name="trash" size={18} color={colors.white} />
+          </TouchableOpacity>
+        </View>
       </View>
-    </View>
-  );
+    );
+  };
 
   return (
     <Modal

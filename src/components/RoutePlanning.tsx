@@ -17,6 +17,7 @@ import { LocationService } from '../services/locationService';
 import { planRoute, PlanRouteRequest } from '../services/routeService';
 import { getRouteWithStops } from '../services/directionsService';
 import { getPrimaryVehicle, PrimaryVehicle } from '../services/userVehicleService';
+import userVehicleService, { UserVehicle } from '../services/userVehicleService';
 
 export interface RoutePoint {
   id: string;
@@ -58,6 +59,30 @@ const RoutePlanning: React.FC<RoutePlanningProps> = ({
   presetDestination,
   authToken,
 }) => {
+  // Helper functions to safely access vehicle information
+  const getVehicleDisplayName = (vehicle: UserVehicle): string => {
+    const brand = vehicle.variant?.model?.brand?.name || 'Araç';
+    const model = vehicle.variant?.model?.name || vehicle.variant?.name || '';
+    return `${brand} ${model}`.trim();
+  };
+
+  const getVehicleVariantName = (vehicle: UserVehicle): string => {
+    return vehicle.variant?.name || 'Bilinmeyen Variant';
+  };
+
+  const getVehicleYear = (vehicle: UserVehicle): number => {
+    return vehicle.variant?.year || new Date().getFullYear();
+  };
+
+  const getVehicleRange = (vehicle: UserVehicle): number | undefined => {
+    return vehicle.variant?.maxRange;
+  };
+
+  const getVehicleBatteryCapacity = (vehicle: UserVehicle): number | undefined => {
+    // Try to get battery capacity from various possible locations
+    const variant = vehicle.variant as any;
+    return variant?.batteryCapacity || variant?.model?.batteryCapacity || undefined;
+  };
   const [startPoint, setStartPoint] = useState<RoutePoint | null>(null);
   const [destination, setDestination] = useState<RoutePoint | null>(null);
   const [waypoints, setWaypoints] = useState<RoutePoint[]>([]);
@@ -66,9 +91,11 @@ const RoutePlanning: React.FC<RoutePlanningProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [routeResult, setRouteResult] = useState<any>(null);
   
-  // User vehicle data - otomatik olarak yüklenir
-  const [userVehicle, setUserVehicle] = useState<PrimaryVehicle | null>(null);
+  // User vehicle data - kullanıcı seçer
+  const [userVehicles, setUserVehicles] = useState<UserVehicle[]>([]);
+  const [selectedVehicle, setSelectedVehicle] = useState<UserVehicle | null>(null);
   const [vehicleLoading, setVehicleLoading] = useState(false);
+  const [showVehicleSelector, setShowVehicleSelector] = useState(false);
   
   // Sadece batarya yüzdeleri kullanıcıdan alınır
   const [currentSoC, setCurrentSoC] = useState<string>('80'); // %
@@ -95,57 +122,48 @@ const RoutePlanning: React.FC<RoutePlanningProps> = ({
   // Kullanıcının araç bilgilerini yükle
   useEffect(() => {
     if (visible && authToken) {
-      loadUserVehicle();
+      loadUserVehicles();
     }
   }, [visible, authToken]);
 
-  const loadUserVehicle = async () => {
-    if (!authToken) return;
-    
+  const loadUserVehicles = async () => {
     setVehicleLoading(true);
     try {
-      console.log('=== LOADING USER VEHICLE ===');
-      console.log('Auth token exists:', !!authToken);
+      console.log('=== LOADING USER VEHICLES ===');
       
-      const vehicle = await getPrimaryVehicle(authToken);
+      const vehicles = await userVehicleService.getUserVehicles();
+      console.log('User vehicles loaded:', vehicles);
       
-      console.log('User vehicle loaded:', vehicle);
-      console.log('Vehicle brand:', vehicle.brand);
-      console.log('Vehicle model:', vehicle.model);
-      console.log('Vehicle range:', vehicle.range);
-      console.log('Vehicle battery capacity:', vehicle.batteryCapacity);
-      console.log('Current battery level:', vehicle.currentBatteryLevel);
-      console.log('=== END USER VEHICLE DEBUG ===');
+      setUserVehicles(vehicles);
       
-      setUserVehicle(vehicle);
-      // Mevcut batarya seviyesini araçtan al
-      if (vehicle.currentBatteryLevel) {
-        setCurrentSoC(vehicle.currentBatteryLevel.toString());
+      // İlk aracı otomatik seç
+      if (vehicles.length > 0) {
+        setSelectedVehicle(vehicles[0]);
+        if (vehicles[0].currentBatteryLevel) {
+          setCurrentSoC(vehicles[0].currentBatteryLevel.toString());
+        }
       }
+      
+      console.log('=== END USER VEHICLES DEBUG ===');
     } catch (error) {
       console.error('Araç bilgileri yüklenirken hata:', error);
-      
-      // Eğer araç bulunamadı hatası ise daha açıklayıcı mesaj göster
-      const errorMessage = (error as any)?.message?.includes('araç') 
-        ? (error as any).message 
-        : 'Araç bilgileriniz yüklenemedi. Lütfen profil ayarlarınızdan bir araç ekleyin.';
-        
-      // Yeni kayıt olan kullanıcılar için özel mesaj
-      const isNewUser = errorMessage.includes('Henüz bir araç eklememişsiniz');
-      const alertMessage = isNewUser 
-        ? 'Yeni kayıt olduğunuz için araç bilgileriniz henüz hazır değil. Birkaç saniye bekleyip tekrar deneyin veya profil ayarlarından araç bilgilerinizi güncelleyin.'
-        : `${errorMessage}\n\nNot: Eğer yeni kayıt olduysanız, birkaç saniye bekleyip tekrar deneyin.`;
-        
       Alert.alert(
         'Araç Bilgileri',
-        alertMessage,
+        'Araç bilgileriniz yüklenemedi. Lütfen profil ayarlarınızdan bir araç ekleyin.',
         [
-          { text: 'Tamam' },
-          { text: 'Tekrar Dene', onPress: () => loadUserVehicle() }
+          { text: 'Tamam' }
         ]
       );
     } finally {
       setVehicleLoading(false);
+    }
+  };
+
+  const selectVehicle = (vehicle: UserVehicle) => {
+    setSelectedVehicle(vehicle);
+    setShowVehicleSelector(false);
+    if (vehicle.currentBatteryLevel) {
+      setCurrentSoC(vehicle.currentBatteryLevel.toString());
     }
   };
 
@@ -216,16 +234,16 @@ const RoutePlanning: React.FC<RoutePlanningProps> = ({
       return;
     }
 
-    if (!userVehicle) {
-      Alert.alert('Hata', 'Araç bilgileri yüklenmelidir. Lütfen profil ayarlarınızdan bir araç ekleyin.');
+    if (!selectedVehicle) {
+      Alert.alert('Hata', 'Lütfen bir araç seçin.');
       return;
     }
 
     setIsLoading(true);
     try {
       console.log('=== CREATING ROUTE ===');
-      console.log('User vehicle for route planning:', userVehicle);
-      console.log('Vehicle range being used:', userVehicle.range);
+      console.log('Selected vehicle for route planning:', selectedVehicle);
+      console.log('Vehicle range being used:', selectedVehicle.variant?.maxRange);
       console.log('Current SoC being used:', currentSoC);
       
       // Flowchart'a göre backend route planner'ı çağır - araç bilgilerini otomatik al
@@ -239,7 +257,7 @@ const RoutePlanning: React.FC<RoutePlanningProps> = ({
           longitude: destination.coordinates.longitude
         },
         vehicle: {
-          maxRangeKm: userVehicle.range // Kullanıcının aracının menzili
+          maxRangeKm: selectedVehicle.variant?.maxRange || 500 // Kullanıcının seçtiği aracın menzili
         },
         currentSocPercent: parseInt(currentSoC) || 80,
         reservePercent: 10, // Sabit değer
@@ -378,39 +396,87 @@ const RoutePlanning: React.FC<RoutePlanningProps> = ({
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Araç ve Batarya Ayarları</Text>
             
-            {/* Vehicle Info Display */}
+            {/* Vehicle Selection & Info Display */}
             {vehicleLoading ? (
               <View style={styles.loadingContainer}>
                 <Ionicons name="car" size={24} color={colors.primary} />
-                <Text style={styles.loadingText}>Araç bilgileri yükleniyor...</Text>
+                <Text style={styles.loadingText}>Araçlar yükleniyor...</Text>
               </View>
-            ) : userVehicle ? (
-              <View style={styles.vehicleInfoCard}>
-                <View style={styles.vehicleHeader}>
-                  <Ionicons name="car-sport" size={24} color={colors.primary} />
-                  <View style={styles.vehicleDetails}>
-                    <Text style={styles.vehicleTitle}>
-                      {userVehicle.brand} {userVehicle.model}
-                    </Text>
-                    <Text style={styles.vehicleSubtitle}>
-                      {userVehicle.variant} ({userVehicle.year})
-                    </Text>
+            ) : userVehicles.length > 0 ? (
+              <View>
+                {/* Vehicle Selection */}
+                {userVehicles.length > 1 && (
+                  <View style={styles.vehicleSelectionCard}>
+                    <Text style={styles.vehicleSelectionTitle}>Araç Seçin</Text>
+                    <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.vehicleSelectionScroll}>
+                      {userVehicles.map((vehicle, index) => (
+                        <TouchableOpacity
+                          key={vehicle.id || index}
+                          style={[
+                            styles.vehicleSelectionItem,
+                            selectedVehicle?.id === vehicle.id && styles.vehicleSelectionItemSelected
+                          ]}
+                          onPress={() => setSelectedVehicle(vehicle)}
+                        >
+                          <Ionicons 
+                            name="car-sport" 
+                            size={20} 
+                            color={selectedVehicle?.id === vehicle.id ? colors.white : colors.primary} 
+                          />
+                          <Text style={[
+                            styles.vehicleSelectionText,
+                            selectedVehicle?.id === vehicle.id && styles.vehicleSelectionTextSelected
+                          ]}>
+                            {getVehicleDisplayName(vehicle)}
+                          </Text>
+                          {vehicle.nickname && (
+                            <Text style={[
+                              styles.vehicleSelectionNickname,
+                              selectedVehicle?.id === vehicle.id && styles.vehicleSelectionNicknameSelected
+                            ]}>
+                              "{vehicle.nickname}"
+                            </Text>
+                          )}
+                        </TouchableOpacity>
+                      ))}
+                    </ScrollView>
                   </View>
-                </View>
-                <View style={styles.vehicleSpecs}>
-                  <View style={styles.specItem}>
-                    <Ionicons name="speedometer" size={16} color={colors.gray600} />
-                    <Text style={styles.specText}>{userVehicle.range} km</Text>
-                  </View>
-                  <View style={styles.specItem}>
-                    <Ionicons name="battery-charging" size={16} color={colors.gray600} />
-                    <Text style={styles.specText}>{userVehicle.batteryCapacity} kWh</Text>
-                  </View>
-                </View>
-                {userVehicle.nickname && (
-                  <View style={styles.nicknameContainer}>
-                    <Ionicons name="heart" size={14} color={colors.primary} />
-                    <Text style={styles.vehicleNickname}>"{userVehicle.nickname}"</Text>
+                )}
+                
+                {/* Selected Vehicle Info Display */}
+                {selectedVehicle && (
+                  <View style={styles.vehicleInfoCard}>
+                    <View style={styles.vehicleHeader}>
+                      <Ionicons name="car-sport" size={24} color={colors.primary} />
+                      <View style={styles.vehicleDetails}>
+                        <Text style={styles.vehicleTitle}>
+                          {getVehicleDisplayName(selectedVehicle)}
+                        </Text>
+                        <Text style={styles.vehicleSubtitle}>
+                          {getVehicleVariantName(selectedVehicle)} ({getVehicleYear(selectedVehicle)})
+                        </Text>
+                      </View>
+                    </View>
+                    <View style={styles.vehicleSpecs}>
+                      <View style={styles.specItem}>
+                        <Ionicons name="speedometer" size={16} color={colors.gray600} />
+                        <Text style={styles.specText}>
+                          {getVehicleRange(selectedVehicle) || 'N/A'} km
+                        </Text>
+                      </View>
+                      <View style={styles.specItem}>
+                        <Ionicons name="battery-charging" size={16} color={colors.gray600} />
+                        <Text style={styles.specText}>
+                          {getVehicleBatteryCapacity(selectedVehicle) || 'N/A'} kWh
+                        </Text>
+                      </View>
+                    </View>
+                    {selectedVehicle.nickname && (
+                      <View style={styles.nicknameContainer}>
+                        <Ionicons name="heart" size={14} color={colors.primary} />
+                        <Text style={styles.vehicleNickname}>"{selectedVehicle.nickname}"</Text>
+                      </View>
+                    )}
                   </View>
                 )}
               </View>
@@ -418,7 +484,7 @@ const RoutePlanning: React.FC<RoutePlanningProps> = ({
               <View style={styles.noVehicleCard}>
                 <Ionicons name="warning" size={24} color={colors.warning} />
                 <Text style={styles.noVehicleText}>
-                  Araç bilgileri bulunamadı. Lütfen profil ayarlarınızdan bir araç ekleyin.
+                  Henüz araç eklenmemiş. Lütfen profil ayarlarınızdan bir araç ekleyin.
                 </Text>
               </View>
             )}
@@ -1004,6 +1070,61 @@ const styles = StyleSheet.create({
     backgroundColor: colors.success,
     borderRadius: 2,
     height: '100%',
+  },
+  // Vehicle Selection Styles
+  vehicleSelectionCard: {
+    backgroundColor: colors.white,
+    borderRadius: 12,
+    elevation: 2,
+    marginBottom: 12,
+    padding: 16,
+    shadowColor: colors.black,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+  },
+  vehicleSelectionTitle: {
+    color: colors.black,
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 12,
+  },
+  vehicleSelectionScroll: {
+    flexGrow: 0,
+  },
+  vehicleSelectionItem: {
+    alignItems: 'center',
+    backgroundColor: colors.gray50,
+    borderColor: colors.gray300,
+    borderRadius: 10,
+    borderWidth: 1,
+    marginRight: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    minWidth: 120,
+  },
+  vehicleSelectionItemSelected: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
+  },
+  vehicleSelectionText: {
+    color: colors.black,
+    fontSize: 12,
+    fontWeight: '500',
+    marginTop: 4,
+    textAlign: 'center',
+  },
+  vehicleSelectionTextSelected: {
+    color: colors.white,
+  },
+  vehicleSelectionNickname: {
+    color: colors.gray600,
+    fontSize: 10,
+    marginTop: 2,
+    textAlign: 'center',
+  },
+  vehicleSelectionNicknameSelected: {
+    color: colors.white + 'CC',
   },
 });
 

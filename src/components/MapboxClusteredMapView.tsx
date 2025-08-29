@@ -177,7 +177,7 @@ const MapboxClusteredMapView: React.FC<Props> = ({
   const onSourcePress = async (e: unknown) => {
     const event = e as { features?: unknown[] };
     const { features } = event;
-    const feat = features && features[0];
+    const feat = features && features[0] as any;
     if (!feat || !feat.properties) return;
     if (feat.properties.cluster) {
       try {

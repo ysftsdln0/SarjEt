@@ -43,6 +43,43 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [fastChargingOnly, setFastChargingOnly] = useState(false);
 
+  // Helper functions for vehicle display
+  const getVehicleDisplayName = (vehicle: any) => {
+    if (vehicle.nickname) {
+      return vehicle.nickname;
+    }
+    
+    // Fallback: Tesla model isimleri
+    const variantName = vehicle.variant?.name || '';
+    if (variantName.includes('Model 3') || variantName.includes('Rear-Wheel Drive') || variantName.includes('Long Range') || variantName.includes('Performance')) {
+      return `Tesla Model 3`;
+    }
+    if (variantName.includes('Model Y')) {
+      return `Tesla Model Y`;
+    }
+    if (variantName.includes('Model S') || variantName.includes('Dual Motor') || variantName.includes('Plaid')) {
+      return `Tesla Model S`;
+    }
+    if (variantName.includes('Model X')) {
+      return `Tesla Model X`;
+    }
+    
+    return vehicle.variant?.model?.brand?.name && vehicle.variant?.model?.name 
+      ? `${vehicle.variant.model.brand.name} ${vehicle.variant.model.name}`
+      : 'Tesla Model';
+  };
+  
+  const getVehicleSpecs = (vehicle: any) => {
+    const variant = vehicle.variant;
+    if (!variant) return 'Varyant bilgisi yok';
+    
+    const specs = [];
+    if (variant.name) specs.push(variant.name);
+    if (variant.year) specs.push(variant.year.toString());
+    
+    return specs.length > 0 ? specs.join(' • ') : 'Spesifikasyon bilgisi yok';
+  };
+
   return (
     <Modal
       visible={visible}
@@ -100,10 +137,10 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                     </View>
                     <View style={styles.vehicleDetails}>
                       <Text style={[styles.vehicleTitle, !isDarkMode && styles.lightVehicleTitle]}>
-                        {vehicle.nickname || `${vehicle.variant.model.brand.name} ${vehicle.variant.model.name}`}
+                        {vehicle.nickname || getVehicleDisplayName(vehicle)}
                       </Text>
                       <Text style={[styles.vehicleSubtitle, !isDarkMode && styles.lightVehicleSubtitle]}>
-                        {vehicle.variant.name} • {vehicle.variant.year}
+                        {getVehicleSpecs(vehicle)}
                       </Text>
                     </View>
                     <View style={styles.batteryStatus}>
@@ -124,13 +161,13 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                     <View style={styles.specItem}>
                       <Ionicons name="battery-charging" size={16} color={colors.success} />
                       <Text style={[styles.specText, !isDarkMode && styles.lightSpecText]}>
-                        {vehicle.variant.batteryCapacity} kWh
+                        {vehicle.variant?.batteryCapacity || 'N/A'} kWh
                       </Text>
                     </View>
                     <View style={styles.specItem}>
                       <Ionicons name="speedometer" size={16} color={colors.warning} />
                       <Text style={[styles.specText, !isDarkMode && styles.lightSpecText]}>
-                        {vehicle.variant.maxRange} km
+                        {vehicle.variant?.maxRange || 'N/A'} km
                       </Text>
                     </View>
                   </View>

@@ -76,7 +76,7 @@ export interface PrimaryVehicle {
   connectorTypes: string[];
 }
 
-export const getUserVehicles = async (): Promise<UserVehicleVariant[]> => {
+export const getUserVehicles = async (): Promise<UserVehicle[]> => {
   try {
     const currentToken = await tokenStorage.getToken();
     if (!currentToken) {
@@ -89,11 +89,40 @@ export const getUserVehicles = async (): Promise<UserVehicleVariant[]> => {
     });
     
     if (!response.ok) {
+      console.error('Failed to fetch user vehicles:', response.status, response.statusText);
       return [];
     }
     
     const data = await response.json();
-    return data || [];
+    console.log('📊 getUserVehicles API response:', data);
+    
+    // API'den gelen veriyi UserVehicle formatına dönüştür
+    if (Array.isArray(data)) {
+      return data.map((item: any) => ({
+        id: item.id || item.ID || Math.random().toString(),
+        nickname: item.nickname || item.Nickname,
+        licensePlate: item.licensePlate || item.LicensePlate,
+        color: item.color || item.Color,
+        currentBatteryLevel: item.currentBatteryLevel || item.CurrentBatteryLevel || 100,
+        variant: item.variant || item.Variant || {
+          id: item.variantId || item.VariantId || 'unknown',
+          name: item.variantName || item.VariantName || 'Tesla Model',
+          year: item.year || item.Year || new Date().getFullYear(),
+          maxRange: item.maxRange || item.MaxRange || 500,
+          batteryCapacity: item.batteryCapacity || item.BatteryCapacity || 75,
+          model: {
+            id: item.modelId || item.ModelId || 'tesla-model',
+            name: item.modelName || item.ModelName || 'Model',
+            brand: {
+              id: 'tesla',
+              name: 'Tesla'
+            }
+          }
+        }
+      }));
+    }
+    
+    return [];
   } catch (error) {
     console.error('Error getting user vehicles:', error);
     return [];
