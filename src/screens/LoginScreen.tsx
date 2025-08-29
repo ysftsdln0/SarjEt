@@ -14,17 +14,24 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../constants/colors';
 import { post } from '../services/apiClient';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { RouteProp } from '@react-navigation/native';
+import { RootStackParamList, User } from '../types';
 
 const { height } = Dimensions.get('window');
 
+type LoginScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Login'>;
+type LoginScreenRouteProp = RouteProp<RootStackParamList, 'Login'>;
+
 interface LoginScreenProps {
-  onLoginSuccess: (token: string, user: { name?: string; email?: string }) => void;
-  onSwitchToRegister: () => void;
+  navigation: LoginScreenNavigationProp;
+  route: LoginScreenRouteProp;
+  onLoginSuccess: (token: string, user: User) => void;
 }
 
 const LoginScreen: React.FC<LoginScreenProps> = ({
-  onLoginSuccess,
-  onSwitchToRegister
+  navigation,
+  onLoginSuccess
 }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -151,7 +158,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({
 
           <TouchableOpacity
             style={styles.registerButton}
-            onPress={onSwitchToRegister}
+            onPress={() => navigation.navigate('Register')}
             disabled={loading}
           >
             <Text style={styles.registerButtonText}>Hesap Oluştur</Text>

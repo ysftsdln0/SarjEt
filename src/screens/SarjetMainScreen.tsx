@@ -36,6 +36,8 @@ import AnalyticsService from '../services/AnalyticsService';
 import MapboxClusteredMapView from '../components/MapboxClusteredMapView';
 import { BottomNavigation } from '../components/BottomNavigation';
 import { useTheme } from '../contexts/ThemeContext';
+import { useModalManager } from '../hooks/useModalManager';
+import { useAsyncOperation } from '../hooks/useAsyncOperation';
 import { Linking } from 'react-native';
 import { 
   bounce, 
@@ -49,6 +51,8 @@ const SarjetMainScreen: React.FC<{
   onLogout: () => void;
 }> = ({ authToken, user, onLogout }) => {
   const { isDarkMode, colors: themeColors } = useTheme();
+  const modalManager = useModalManager();
+  const stationsOperation = useAsyncOperation<ChargingStation[]>();
   
   const [stations, setStations] = useState<ChargingStation[]>([]);
   const [allStations, setAllStations] = useState<ChargingStation[]>([]);
@@ -57,20 +61,7 @@ const SarjetMainScreen: React.FC<{
 
   const [searchQuery, setSearchQuery] = useState('');
   
-  // Modal visibility states
-  const [profileVisible, setProfileVisible] = useState(false);
-  const [editProfileVisible, setEditProfileVisible] = useState(false);
-  const [vehicleManagementVisible, setVehicleManagementVisible] = useState(false);
-  const [favoritesVisible, setFavoritesVisible] = useState(false);
-  const [privacySettingsVisible, setPrivacySettingsVisible] = useState(false);
-  const [filterVisible, setFilterVisible] = useState(false);
-  const [advancedFilterVisible, setAdvancedFilterVisible] = useState(false);
-  const [enhancedFilterVisible, setEnhancedFilterVisible] = useState(false);
-  const [routePlanningVisible, setRoutePlanningVisible] = useState(false);
-
-  const [themeSettingsVisible, setThemeSettingsVisible] = useState(false);
-  const [reviewsModalVisible, setReviewsModalVisible] = useState(false);
-  
+  // Filter states - simplified
   const [filters, setFilters] = useState<FilterOptions>(FilterService.getDefaultFilters());
   const [advancedFilters, setAdvancedFilters] = useState<AdvancedFilterOptions>({
     connectionTypes: [],
@@ -85,7 +76,6 @@ const SarjetMainScreen: React.FC<{
     fastCharging: false,
     freeCharging: false,
   });
-  
   const [enhancedFilters, setEnhancedFilters] = useState<EnhancedFilterOptions>(
     EnhancedFilterService.getDefaultFilters()
   );
@@ -198,13 +188,13 @@ const SarjetMainScreen: React.FC<{
     const filteredStations = FilterService.applyFilters(allStations, newFilters);
     setStations(filteredStations);
     setFilters(newFilters);
-    setFilterVisible(false);
+    modalManager.closeModal('filter');
   }, [allStations]);
 
   // Apply advanced filters
   const applyAdvancedFilters = useCallback((newFilters: AdvancedFilterOptions) => {
     setAdvancedFilters(newFilters);
-    setAdvancedFilterVisible(false);
+    modalManager.closeModal('advancedFilter');
     
     // Apply advanced filters logic here
     showToast('Gelişmiş filtreler uygulandı', 'success');
@@ -251,7 +241,7 @@ const SarjetMainScreen: React.FC<{
   // Handle station press
   const handleStationPress = useCallback((station: ChargingStation) => {
     setSelectedStation(station);
-    setReviewsModalVisible(true);
+    modalManager.openModal('reviews');
     AnalyticsService.updateStationAnalytics(station.ID.toString(), 'view');
     AnalyticsService.trackUserBehavior(userId, sessionId, 'station_viewed', { stationId: station.ID });
     bounce(fadeAnim).start();
@@ -261,7 +251,7 @@ const SarjetMainScreen: React.FC<{
   const handleTabPress = useCallback((tab: string) => {
     switch (tab) {
       case 'route':
-        setRoutePlanningVisible(true);
+        modalManager.openModal('routePlanning');
         if (selectedDestination) {
           showToast('Hedefi seçili rota planlama açılıyor', 'info');
         }
@@ -270,7 +260,7 @@ const SarjetMainScreen: React.FC<{
         showToast('Kampanyalar çok yakında!', 'info');
         break;
       case 'profile':
-        setProfileVisible(true);
+        modalManager.openModal('profile');
         break;
       default:
         console.log('Tab pressed:', tab);
@@ -416,7 +406,11 @@ const SarjetMainScreen: React.FC<{
         onChangeText={handleSearchInputChange}
         onSearch={() => handleSearch(searchQuery)}
         activeFilters={[]}
-        onFilterPress={(filter) => {}}
+        onFilterPress={(filter) => {
+          if (filter === 'filter') {
+            modalManager.openModal('filter');
+          }
+        }}
         searchSuggestion={presetDestination}
         onSuggestionSelect={handleSuggestionSelect}
         onSuggestionDismiss={handleSuggestionDismiss}
@@ -449,13 +443,13 @@ const SarjetMainScreen: React.FC<{
         <View style={styles.mapActionButtons}>
           <TouchableOpacity 
             style={styles.actionButton} 
-            onPress={() => setAdvancedFilterVisible(true)}
+            onPress={() => modalManager.openModal('advancedFilter')}
           >
             <Ionicons name="heart-outline" size={24} color={themeColors.textSecondary} />
           </TouchableOpacity>
           <TouchableOpacity 
             style={styles.actionButton} 
-            onPress={() => setEnhancedFilterVisible(true)}
+            onPress={() => modalManager.openModal('enhancedFilter')}
           >
             <Ionicons name="options-outline" size={24} color={themeColors.textSecondary} />
           </TouchableOpacity>
@@ -515,8 +509,8 @@ const SarjetMainScreen: React.FC<{
       
       {/* Modals */}
       <FilterModal
-        visible={filterVisible}
-        onClose={() => setFilterVisible(false)}
+        visible={modalManager.isModalOpen('filter')}
+        onClose={() => modalManager.closeModal('filter')}
         onApplyFilters={applyFilters}
         filters={filters}
         stations={allStations}
@@ -524,8 +518,8 @@ const SarjetMainScreen: React.FC<{
       />
       
       <AdvancedFilterModal
-        visible={advancedFilterVisible}
-        onClose={() => setAdvancedFilterVisible(false)}
+        visible={modalManager.isModalOpen('advancedFilter')}
+        onClose={() => modalManager.closeModal('advancedFilter')}
         onApplyFilters={applyAdvancedFilters}
         currentFilters={advancedFilters}
         stations={allStations}
@@ -533,8 +527,8 @@ const SarjetMainScreen: React.FC<{
 
       {/* Enhanced Filter System */}
       <EnhancedFilterSystem
-        visible={enhancedFilterVisible}
-        onClose={() => setEnhancedFilterVisible(false)}
+        visible={modalManager.isModalOpen('enhancedFilter')}
+        onClose={() => modalManager.closeModal('enhancedFilter')}
         onApplyFilters={handleEnhancedFilterApply}
         currentFilters={enhancedFilters}
         stations={allStations}
@@ -543,8 +537,8 @@ const SarjetMainScreen: React.FC<{
       />
       
       <RoutePlanning
-        visible={routePlanningVisible}
-        onClose={() => setRoutePlanningVisible(false)}
+        visible={modalManager.isModalOpen('routePlanning')}
+        onClose={() => modalManager.closeModal('routePlanning')}
         onRouteCreated={handleRouteCreated}
         userLocation={userLocation}
         stations={stations}
@@ -555,39 +549,39 @@ const SarjetMainScreen: React.FC<{
 
       
       <ThemeSettings
-        visible={themeSettingsVisible}
-        onClose={() => setThemeSettingsVisible(false)}
+        visible={modalManager.isModalOpen('themeSettings')}
+        onClose={() => modalManager.closeModal('themeSettings')}
       />
       
       <ProfileModal
-        visible={profileVisible}
-        onClose={() => setProfileVisible(false)}
+        visible={modalManager.isModalOpen('profile')}
+        onClose={() => modalManager.closeModal('profile')}
         userLocation={userLocation}
         isDarkMode={isDarkMode}
         onToggleDarkMode={() => {}}
         onLogout={onLogout}
         user={user}
         onEditProfile={() => {
-          setProfileVisible(false);
-          setEditProfileVisible(true);
+          modalManager.closeModal('profile');
+          modalManager.openModal('editProfile');
         }}
         onEditVehicles={() => {
-          setProfileVisible(false);
-          setVehicleManagementVisible(true);
+          modalManager.closeModal('profile');
+          modalManager.openModal('vehicleManagement');
         }}
         onEditFavorites={() => {
-          setProfileVisible(false);
-          setFavoritesVisible(true);
+          modalManager.closeModal('profile');
+          modalManager.openModal('favorites');
         }}
         onEditPrivacy={() => {
-          setProfileVisible(false);
-          setPrivacySettingsVisible(true);
+          modalManager.closeModal('profile');
+          modalManager.openModal('privacySettings');
         }}
       />
 
       <EditProfileModal
-        visible={editProfileVisible}
-        onClose={() => setEditProfileVisible(false)}
+        visible={modalManager.isModalOpen('editProfile')}
+        onClose={() => modalManager.closeModal('editProfile')}
         isDarkMode={isDarkMode}
         user={user || undefined}
         onSave={async (userData) => {
@@ -597,15 +591,15 @@ const SarjetMainScreen: React.FC<{
       />
 
       <VehicleManagementModal
-        visible={vehicleManagementVisible}
-        onClose={() => setVehicleManagementVisible(false)}
+        visible={modalManager.isModalOpen('vehicleManagement')}
+        onClose={() => modalManager.closeModal('vehicleManagement')}
         isDarkMode={isDarkMode}
         authToken={authToken || ''}
       />
 
       <FavoritesModal
-        visible={favoritesVisible}
-        onClose={() => setFavoritesVisible(false)}
+        visible={modalManager.isModalOpen('favorites')}
+        onClose={() => modalManager.closeModal('favorites')}
         isDarkMode={isDarkMode}
         onNavigateToStation={(stationId) => {
           // TODO: Navigate to station on map
@@ -614,16 +608,16 @@ const SarjetMainScreen: React.FC<{
       />
 
       <PrivacySettingsModal
-        visible={privacySettingsVisible}
-        onClose={() => setPrivacySettingsVisible(false)}
+        visible={modalManager.isModalOpen('privacySettings')}
+        onClose={() => modalManager.closeModal('privacySettings')}
         isDarkMode={isDarkMode}
       />
       
       {/* Station Reviews Modal */}
       <StationReviewsModal
         station={selectedStation}
-        visible={reviewsModalVisible}
-        onClose={() => setReviewsModalVisible(false)}
+        visible={modalManager.isModalOpen('reviews')}
+        onClose={() => modalManager.closeModal('reviews')}
         onHeightChange={handleMapHeightChange}
       />
     </SafeAreaView>

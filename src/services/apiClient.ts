@@ -11,14 +11,18 @@ async function resolveBaseUrl(): Promise<string> {
     }
     const stored = await AsyncStorage.getItem(STORAGE_KEY);
     if (stored) return stored;
-  } catch (_) {
-    // no-op
+  } catch (error) {
+    console.error('Failed to resolve base URL:', error);
   }
+  
+  // Development fallback
   if (__DEV__) {
-     
-    console.warn('[apiClient] EXPO_PUBLIC_BACKEND_URL is not set and no stored base URL found. API calls may fail.');
+    const fallbackUrl = 'http://localhost:3000';
+    console.warn(`[apiClient] Using fallback URL: ${fallbackUrl}`);
+    return fallbackUrl;
   }
-  return '';
+  
+  throw new Error('Backend base URL is not configured. Please set EXPO_PUBLIC_BACKEND_URL environment variable.');
 }
 
 export async function getBaseUrl(): Promise<string> {

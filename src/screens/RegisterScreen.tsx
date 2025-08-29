@@ -13,6 +13,9 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../constants/colors';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { RouteProp } from '@react-navigation/native';
+import { RootStackParamList, User } from '../types';
 
 interface RegisterFormData {
   name: string;
@@ -26,14 +29,18 @@ import { post } from '../services/apiClient';
 
 const { height } = Dimensions.get('window');
 
+type RegisterScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Register'>;
+type RegisterScreenRouteProp = RouteProp<RootStackParamList, 'Register'>;
+
 interface RegisterScreenProps {
-  onRegisterSuccess: (token: string, user: { name?: string; email?: string }) => void;
-  onSwitchToLogin: () => void;
+  navigation: RegisterScreenNavigationProp;
+  route: RegisterScreenRouteProp;
+  onRegisterSuccess: (token: string, user: User) => void;
 }
 
 const RegisterScreen: React.FC<RegisterScreenProps> = ({
-  onRegisterSuccess,
-  onSwitchToLogin
+  navigation,
+  onRegisterSuccess
 }) => {
   const [step, setStep] = useState<'form' | 'vehicle'>('form');
   
@@ -261,7 +268,7 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({
 
       <TouchableOpacity
         style={styles.loginButton}
-        onPress={onSwitchToLogin}
+        onPress={() => navigation.navigate('Login')}
         disabled={loading}
       >
         <Text style={styles.loginButtonText}>Zaten hesabım var</Text>

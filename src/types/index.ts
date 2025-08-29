@@ -136,6 +136,8 @@ export interface Connection {
 export type RootStackParamList = {
   Home: undefined;
   StationDetail: { station: ChargingStation };
+  Login: undefined;
+  Register: undefined;
 };
 
 // Arama filtreleri

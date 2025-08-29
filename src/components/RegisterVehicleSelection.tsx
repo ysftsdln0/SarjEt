@@ -18,6 +18,7 @@ import userVehicleService, {
   VehicleVariant,
 } from '../services/userVehicleService';
 import { getBaseUrl } from '../services/apiClient';
+import { useAsyncOperation } from '../hooks/useAsyncOperation';
 
 interface RegisterVehicleSelectionProps {
   onVehicleSelected: (vehicle: {
@@ -65,9 +66,16 @@ export const RegisterVehicleSelection: React.FC<RegisterVehicleSelectionProps> =
   const getDCkW = (v: VehicleVariant & { maxDCCharging?: number; chargingSpeedDC?: number }): number | undefined =>
     v.maxDCCharging ?? v.chargingSpeedDC;
 
-  // step + loading
+  // step
   const [step, setStep] = useState(1);
-  const [loading, setLoading] = useState(false);
+  
+  // async operations
+  const { loading: brandsLoading, execute: executeBrandsLoad } = useAsyncOperation();
+  const { loading: modelsLoading, execute: executeModelsLoad } = useAsyncOperation();
+  const { loading: variantsLoading, execute: executeVariantsLoad } = useAsyncOperation();
+  
+  // Overall loading state
+  const loading = brandsLoading || modelsLoading || variantsLoading;
 
   // data states
   const [brands, setBrands] = useState<VehicleBrand[]>([]);
@@ -89,10 +97,10 @@ export const RegisterVehicleSelection: React.FC<RegisterVehicleSelectionProps> =
   const [batteryLevel, setBatteryLevel] = useState('80');
 
   useEffect(() => {
-    loadBrands();
+    executeBrandsLoad(loadBrands);
   }, []);
 
-  const fetchEVVehiclesOnce = async (): Promise<EVNormalized[]> => {
+  const fetchEVVehiclesOnce = async (signal?: AbortSignal): Promise<EVNormalized[]> => {
     if (evVehicles && Array.isArray(evVehicles) && evVehicles.length > 0) {
       console.log('📦 Using cached EV vehicles:', evVehicles.length);
       return evVehicles;
@@ -110,18 +118,13 @@ export const RegisterVehicleSelection: React.FC<RegisterVehicleSelectionProps> =
       const url = `${base}/api/vehicles/ev-data`;
       console.log('🌐 EV data URL:', url);
       
-      // 10 second timeout
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000);
-      
       const res = await fetch(url, { 
-        signal: controller.signal,
+        signal,
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json'
         }
       });
-      clearTimeout(timeoutId);
       
       console.log('📊 EV data response status:', res.status, res.statusText);
       
@@ -131,13 +134,14 @@ export const RegisterVehicleSelection: React.FC<RegisterVehicleSelectionProps> =
         if (res.status === 500) {
           try {
             console.log('🔄 Trying ev-brands endpoint as fallback...');
-            const brandsRes = await fetch(`${base}/api/vehicles/ev-brands`);
+            const brandsRes = await fetch(`${base}/api/vehicles/ev-brands`, { signal });
             if (brandsRes.ok) {
               console.log('✅ ev-brands endpoint works, but ev-data has issues');
             } else {
               console.log('❌ ev-brands also failed:', brandsRes.status);
             }
           } catch (fallbackError) {
+            if (signal?.aborted) return [];
             console.log('❌ Fallback test failed:', fallbackError);
           }
         }
@@ -150,227 +154,206 @@ export const RegisterVehicleSelection: React.FC<RegisterVehicleSelectionProps> =
       setEvVehicles(arr);
       return arr;
     } catch (error) {
+      if (signal?.aborted) return [];
       console.error('❌ EV vehicles fetch error:', error);
       // Network veya server hatası durumunda boş array döndür
       return [];
     }
   };
 
-  const loadBrands = async () => {
+  const loadBrands = async (signal?: AbortSignal) => {
+    // Her zaman hem DB hem EV data'yı al ve birleştir
+    let allBrands: VehicleBrand[] = [];
+    
+    // DB brands
     try {
-      setLoading(true);
-      
-      // Her zaman hem DB hem EV data'yı al ve birleştir
-      let allBrands: VehicleBrand[] = [];
-      
-      // DB brands
-      try {
-        const dbBrands = await userVehicleService.getVehicleBrands();
-        console.log('🗄️ DB brands loaded:', dbBrands.length);
-        allBrands.push(...dbBrands);
-      } catch (error) {
-        console.error('❌ DB brands error:', error);
-      }
+      const dbBrands = await userVehicleService.getVehicleBrands();
+      console.log('🗄️ DB brands loaded:', dbBrands.length);
+      allBrands.push(...dbBrands);
+    } catch (error) {
+      console.error('❌ DB brands error:', error);
+    }
 
-      // EV brands - always try to get these too
+    // EV brands - always try to get these too
+    try {
+      const base = await getBaseUrl();
+      const res = await fetch(`${base}/api/vehicles/ev-brands`, { signal });
+      if (res.ok) {
+        const list: unknown = await res.json();
+        const names: string[] = Array.isArray(list) ? (list as string[]) : [];
+        console.log('⚡ EV brands loaded:', names.length);
+        
+        // EV brandlerini ekle, ancak aynı isimde DB brand varsa ekleme
+        const existingBrandNames = new Set(allBrands.map(b => b.name.toLowerCase()));
+        const evBrands: VehicleBrand[] = names
+          .filter(name => !existingBrandNames.has(name.toLowerCase()))
+          .map((name) => ({ id: `ev:${slugify(name)}`, name }));
+        
+        allBrands.push(...evBrands);
+        console.log('🔗 Combined brands total:', allBrands.length);
+      }
+    } catch (error) {
+      if (signal?.aborted) return;
+      console.error('❌ EV brands endpoint error:', error);
+      
+      // EV brands endpoint başarısız olursa ev-data'dan compute et
       try {
-        const base = await getBaseUrl();
-        const res = await fetch(`${base}/api/vehicles/ev-brands`);
-        if (res.ok) {
-          const list: unknown = await res.json();
-          const names: string[] = Array.isArray(list) ? (list as string[]) : [];
-          console.log('⚡ EV brands loaded:', names.length);
-          
-          // EV brandlerini ekle, ancak aynı isimde DB brand varsa ekleme
-          const existingBrandNames = new Set(allBrands.map(b => b.name.toLowerCase()));
-          const evBrands: VehicleBrand[] = names
-            .filter(name => !existingBrandNames.has(name.toLowerCase()))
-            .map((name) => ({ id: `ev:${slugify(name)}`, name }));
-          
-          allBrands.push(...evBrands);
-          console.log('🔗 Combined brands total:', allBrands.length);
-        }
-      } catch (error) {
-        console.error('❌ EV brands endpoint error:', error);
+        const evs = await fetchEVVehiclesOnce(signal);
+        const brandNames = [...new Set(evs.map((v) => v.brand))].filter(Boolean) as string[];
+        console.log('📊 EV data computed brands:', brandNames.length);
         
-        // EV brands endpoint başarısız olursa ev-data'dan compute et
-        try {
-          const evs = await fetchEVVehiclesOnce();
-          const brandNames = [...new Set(evs.map((v) => v.brand))].filter(Boolean) as string[];
-          console.log('📊 EV data computed brands:', brandNames.length);
-          
-          const existingBrandNames = new Set(allBrands.map(b => b.name.toLowerCase()));
-          const evBrands: VehicleBrand[] = brandNames
-            .filter(name => !existingBrandNames.has(name.toLowerCase()))
-            .map((name) => ({ id: `ev:${slugify(name)}`, name }));
-          
-          allBrands.push(...evBrands);
-          console.log('🔗 Final combined brands total:', allBrands.length);
-        } catch (evError) {
-          console.error('❌ EV data compute error:', evError);
-        }
+        const existingBrandNames = new Set(allBrands.map(b => b.name.toLowerCase()));
+        const evBrands: VehicleBrand[] = brandNames
+          .filter(name => !existingBrandNames.has(name.toLowerCase()))
+          .map((name) => ({ id: `ev:${slugify(name)}`, name }));
+        
+        allBrands.push(...evBrands);
+        console.log('🔗 Final combined brands total:', allBrands.length);
+      } catch (evError) {
+        if (signal?.aborted) return;
+        console.error('❌ EV data compute error:', evError);
       }
+    }
 
-      if (allBrands.length > 0) {
-        // MVP için sadece Tesla markasını filtrele
-        const teslaOnly = allBrands.filter(brand => 
-          brand.name.toLowerCase() === 'tesla'
-        );
-        
-        // Eğer Tesla bulunamazsa, manuel olarak ekle
-        if (teslaOnly.length === 0) {
-          teslaOnly.push({ id: 'tesla-manual', name: 'Tesla' });
-        }
-        
-        setBrands(teslaOnly);
-        setBrandSource(teslaOnly.some(b => !b.id.startsWith('ev:')) ? 'db' : 'ev');
-        console.log('✅ Tesla-only brands set:', teslaOnly.length);
-      } else {
-        Alert.alert('Hata', 'Araç markaları yüklenemedi');
+    if (allBrands.length > 0) {
+      // MVP için sadece Tesla markasını filtrele
+      const teslaOnly = allBrands.filter(brand => 
+        brand.name.toLowerCase() === 'tesla'
+      );
+      
+      // Eğer Tesla bulunamazsa, manuel olarak ekle
+      if (teslaOnly.length === 0) {
+        teslaOnly.push({ id: 'tesla-manual', name: 'Tesla' });
       }
-    } finally {
-      setLoading(false);
+      
+      setBrands(teslaOnly);
+      setBrandSource(teslaOnly.some(b => !b.id.startsWith('ev:')) ? 'db' : 'ev');
+      console.log('✅ Tesla-only brands set:', teslaOnly.length);
+    } else {
+      throw new Error('Araç markaları yüklenemedi');
     }
   };
 
-  const loadModelsForBrand = async (brand: VehicleBrand) => {
-    try {
-      setLoading(true);
-      if (brandSource === 'db' && !brand.id.startsWith('ev:')) {
-        const modelsData = await userVehicleService.getVehicleModels(brand.id);
-        setModels(modelsData);
-        setModelSource('db');
-        setStep(2);
-        return;
-      }
-
-      const evs = await fetchEVVehiclesOnce();
-      const modelNames = [...new Set(
-        evs.filter((v) => v.brand === brand.name).map((v) => v.model)
-      )].filter(Boolean) as string[];
-      const evModels: VehicleModel[] = modelNames.map((name) => ({
-        id: `ev:${slugify(brand.name)}:${slugify(name)}`,
-        name,
-        brandId: brand.id,
-        brand,
-      }));
-      setModels(evModels);
-      setModelSource('ev');
+  const loadModelsForBrand = async (brand: VehicleBrand, signal?: AbortSignal) => {
+    if (brandSource === 'db' && !brand.id.startsWith('ev:')) {
+      const modelsData = await userVehicleService.getVehicleModels(brand.id);
+      setModels(modelsData);
+      setModelSource('db');
       setStep(2);
-    } finally {
-      setLoading(false);
+      return;
     }
+
+    const evs = await fetchEVVehiclesOnce(signal);
+    const modelNames = [...new Set(
+      evs.filter((v: EVNormalized) => v.brand === brand.name).map((v: EVNormalized) => v.model)
+    )].filter(Boolean) as string[];
+    const evModels: VehicleModel[] = modelNames.map((name) => ({
+      id: `ev:${slugify(brand.name)}:${slugify(name)}`,
+      name,
+      brandId: brand.id,
+      brand,
+    }));
+    setModels(evModels);
+    setModelSource('ev');
+    setStep(2);
   };
 
-  const loadVariants = async (modelId: string, modelParam?: VehicleModel) => {
-    try {
-      setLoading(true);
-      
-      // Parametre olarak gelen model'i kullan veya state'den al
-      const currentModel = modelParam || selectedModel;
-      
-      console.log('🔄 Loading variants for model:', modelId, 'Source:', modelSource);
-      console.log('📊 Models:', {
-        selectedBrand: selectedBrand?.name,
-        parameterModel: modelParam?.name,
-        stateModel: selectedModel?.name,
-        currentModel: currentModel?.name
-      });
-      
-      if (modelSource === 'ev' && selectedBrand && currentModel) {
-        console.log('💡 Using EV data source for variants');
-        const evs = await fetchEVVehiclesOnce();
-        console.log('📦 EV vehicles fetched:', evs.length);
-        const filtered = evs.filter(
-          (v) => v.brand === selectedBrand.name && v.model === currentModel.name
-        );
-        console.log('🔍 Filtered variants:', filtered.length);
-        const mapped: VehicleVariant[] = filtered.map((v) => ({
-          id: String(v.id),
-          name: v.variant || currentModel.name,
-          year: Number(v.year || new Date().getFullYear()),
-          modelId,
-          batteryCapacity: v.batteryCapacity ?? v.usable_battery_size ?? undefined,
-          maxRange: v.range ?? undefined,
-          efficiency: v.consumption ?? undefined,
-          chargingSpeedAC: v.acCharger?.max_power ?? v.ac_charger?.max_power ?? undefined,
-          chargingSpeedDC: v.dcCharger?.max_power ?? v.dc_charger?.max_power ?? undefined,
-          connectorTypes: v.connectorTypes || v.acCharger?.ports || v.dcCharger?.ports || undefined,
-        }));
-        setVariants(mapped);
-        setStep(3);
-        return;
-      }
+  const loadVariants = async (modelId: string, modelParam?: VehicleModel, signal?: AbortSignal) => {
+    // Parametre olarak gelen model'i kullan veya state'den al
+    const currentModel = modelParam || selectedModel;
+    
+    console.log('🔄 Loading variants for model:', modelId, 'Source:', modelSource);
+    console.log('📊 Models:', {
+      selectedBrand: selectedBrand?.name,
+      parameterModel: modelParam?.name,
+      stateModel: selectedModel?.name,
+      currentModel: currentModel?.name
+    });
+    
+    if (modelSource === 'ev' && selectedBrand && currentModel) {
+      console.log('💡 Using EV data source for variants');
+      const evs = await fetchEVVehiclesOnce(signal);
+      console.log('📦 EV vehicles fetched:', evs.length);
+      const filtered = evs.filter(
+        (v: EVNormalized) => v.brand === selectedBrand.name && v.model === currentModel.name
+      );
+      console.log('🔍 Filtered variants:', filtered.length);
+      const mapped: VehicleVariant[] = filtered.map((v: EVNormalized) => ({
+        id: String(v.id),
+        name: v.variant || currentModel.name,
+        year: Number(v.year || new Date().getFullYear()),
+        modelId,
+        batteryCapacity: v.batteryCapacity ?? v.usable_battery_size ?? undefined,
+        maxRange: v.range ?? undefined,
+        efficiency: v.consumption ?? undefined,
+        chargingSpeedAC: v.acCharger?.max_power ?? v.ac_charger?.max_power ?? undefined,
+        chargingSpeedDC: v.dcCharger?.max_power ?? v.dc_charger?.max_power ?? undefined,
+        connectorTypes: v.connectorTypes || v.acCharger?.ports || v.dcCharger?.ports || undefined,
+      }));
+      setVariants(mapped);
+      setStep(3);
+      return;
+    }
 
-      // DB first
-      console.log('🏦 Trying database first for variants');
-      let variantsData: VehicleVariant[] = [];
-      let dbFailed = false;
-      
-      try {
-        variantsData = await userVehicleService.getVehicleVariants(modelId);
-        console.log('📊 DB variants loaded:', variantsData.length);
-      } catch (dbError: unknown) {
-        console.error('❌ DB variants error:', dbError);
-        const dbMessage = dbError instanceof Error ? dbError.message : String(dbError);
-        console.log('⚠️ DB error details:', dbMessage);
-        dbFailed = true;
-      }
-      
-      // EV fallback - hem DB boş dönerse hem de hata alırsa
-      if (dbFailed || !variantsData || variantsData.length === 0) {
-        console.log('🔄 Falling back to EV data for variants');
-        if (selectedBrand && currentModel) {
-          try {
-            const evs = await fetchEVVehiclesOnce();
-            console.log('📦 EV fallback - vehicles fetched:', evs.length);
-            
-            if (evs.length > 0) {
-              const filtered = evs.filter(
-                (v) => v.brand === selectedBrand.name && v.model === currentModel.name
-              );
-              console.log('🔍 EV fallback - filtered variants:', filtered.length);
-              variantsData = filtered.map((v) => ({
-                id: String(v.id),
-                name: v.variant || currentModel.name,
-                year: Number(v.year || new Date().getFullYear()),
-                modelId,
-                batteryCapacity: v.batteryCapacity ?? v.usable_battery_size ?? undefined,
-                maxRange: v.range ?? undefined,
-                efficiency: v.consumption ?? undefined,
-                chargingSpeedAC: v.acCharger?.max_power ?? v.ac_charger?.max_power ?? undefined,
-                chargingSpeedDC: v.dcCharger?.max_power ?? v.dc_charger?.max_power ?? undefined,
-                connectorTypes: v.connectorTypes || v.acCharger?.ports || v.dcCharger?.ports || undefined,
-              }));
-            } else {
-              console.log('⚠️ No EV data available for fallback');
-            }
-          } catch (evError: unknown) {
-            console.error('❌ EV fallback error:', evError);
-            const evMessage = evError instanceof Error ? evError.message : String(evError);
-            console.log('⚠️ EV fallback error details:', evMessage);
+    // DB first
+    console.log('🏦 Trying database first for variants');
+    let variantsData: VehicleVariant[] = [];
+    let dbFailed = false;
+    
+    try {
+      variantsData = await userVehicleService.getVehicleVariants(modelId);
+      console.log('📊 DB variants loaded:', variantsData.length);
+    } catch (dbError: unknown) {
+      console.error('❌ DB variants error:', dbError);
+      const dbMessage = dbError instanceof Error ? dbError.message : String(dbError);
+      console.log('⚠️ DB error details:', dbMessage);
+      dbFailed = true;
+    }
+    
+    // EV fallback - hem DB boş dönerse hem de hata alırsa
+    if (dbFailed || !variantsData || variantsData.length === 0) {
+      console.log('🔄 Falling back to EV data for variants');
+      if (selectedBrand && currentModel) {
+        try {
+          const evs = await fetchEVVehiclesOnce(signal);
+          console.log('📦 EV fallback - vehicles fetched:', evs.length);
+          
+          if (evs.length > 0) {
+            const filtered = evs.filter(
+              (v: EVNormalized) => v.brand === selectedBrand.name && v.model === currentModel.name
+            );
+            console.log('🔍 EV fallback - filtered variants:', filtered.length);
+            variantsData = filtered.map((v: EVNormalized) => ({
+              id: String(v.id),
+              name: v.variant || currentModel.name,
+              year: Number(v.year || new Date().getFullYear()),
+              modelId,
+              batteryCapacity: v.batteryCapacity ?? v.usable_battery_size ?? undefined,
+              maxRange: v.range ?? undefined,
+              efficiency: v.consumption ?? undefined,
+              chargingSpeedAC: v.acCharger?.max_power ?? v.ac_charger?.max_power ?? undefined,
+              chargingSpeedDC: v.dcCharger?.max_power ?? v.dc_charger?.max_power ?? undefined,
+              connectorTypes: v.connectorTypes || v.acCharger?.ports || v.dcCharger?.ports || undefined,
+            }));
+          } else {
+            console.log('⚠️ No EV data available for fallback');
           }
+        } catch (evError: unknown) {
+          if (signal?.aborted) return;
+          console.error('❌ EV fallback error:', evError);
+          const evMessage = evError instanceof Error ? evError.message : String(evError);
+          console.log('⚠️ EV fallback error details:', evMessage);
         }
       }
-      
-      console.log('✅ Final variants count:', variantsData.length);
-      setVariants(variantsData);
-      setStep(3);
-      
-      // Backend erişilemiyor ve EV data da yoksa kullanıcıya bilgi ver
-      if (dbFailed && variantsData.length === 0) {
-        Alert.alert(
-          'Bağlantı Sorunu', 
-          'Sunucuya erişilemiyor. Lütfen internet bağlantınızı kontrol edin ve tekrar deneyin.'
-        );
-      }
-    } catch (error: unknown) {
-      console.error('❌ Load variants general error:', error);
-      const message = error instanceof Error ? error.message : String(error);
-      console.log('⚠️ General error details:', message);
-      Alert.alert('Hata', 'Araç varyantları yüklenemedi. Lütfen tekrar deneyin.');
-    } finally {
-      setLoading(false);
+    }
+    
+    console.log('✅ Final variants count:', variantsData.length);
+    setVariants(variantsData);
+    setStep(3);
+    
+    // Backend erişilemiyor ve EV data da yoksa kullanıcıya bilgi ver
+    if (dbFailed && variantsData.length === 0) {
+      throw new Error('Sunucuya erişilemiyor. Lütfen internet bağlantınızı kontrol edin ve tekrar deneyin.');
     }
   };
 
@@ -378,14 +361,14 @@ export const RegisterVehicleSelection: React.FC<RegisterVehicleSelectionProps> =
     setSelectedBrand(brand);
     setSelectedModel(null);
     setSelectedVariant(null);
-    loadModelsForBrand(brand);
+    executeModelsLoad(() => loadModelsForBrand(brand));
   };
 
   const handleModelSelect = (model: VehicleModel) => {
     console.log('📝 Model selected:', model.name, 'ID:', model.id);
     setSelectedModel(model);
     setSelectedVariant(null);
-    loadVariants(model.id, model); // Model'i parametre olarak geç
+    executeVariantsLoad(() => loadVariants(model.id, model));
   };
 
   const handleVariantSelect = (variant: VehicleVariant) => {
