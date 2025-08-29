@@ -246,163 +246,163 @@ export const PrivacySettingsModal: React.FC<PrivacySettingsModalProps> = ({
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.black,
-  },
-  lightContainer: {
-    backgroundColor: colors.white,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.gray800,
-  },
-  lightHeader: {
-    borderBottomColor: colors.gray200,
-  },
-  closeButton: {
-    width: 40,
-    height: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: colors.white,
-  },
-  lightTitle: {
-    color: colors.black,
-  },
-  saveButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 8,
-    backgroundColor: colors.primary,
-  },
-  saveButtonText: {
-    color: colors.white,
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  content: {
-    flex: 1,
-    padding: 16,
-  },
-  section: {
-    marginBottom: 32,
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: colors.white,
-    marginBottom: 16,
-  },
-  lightSectionTitle: {
-    color: colors.black,
-  },
-  optionContainer: {
-    backgroundColor: colors.gray900,
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 8,
-    borderWidth: 1,
-    borderColor: colors.gray800,
-  },
-  lightOptionContainer: {
-    backgroundColor: colors.gray100,
-    borderColor: colors.gray200,
-  },
-  optionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  iconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: colors.primary + '15',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 12,
-  },
-  optionContent: {
-    flex: 1,
-    marginRight: 12,
-  },
-  optionTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: colors.white,
-    marginBottom: 4,
-  },
-  lightOptionTitle: {
-    color: colors.black,
-  },
-  optionDescription: {
-    fontSize: 14,
-    color: colors.gray400,
-    lineHeight: 20,
-  },
-  lightOptionDescription: {
-    color: colors.gray600,
-  },
-  actionContainer: {
-    backgroundColor: colors.gray900,
-    borderRadius: 12,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: colors.gray800,
-  },
-  lightActionContainer: {
-    backgroundColor: colors.gray100,
-    borderColor: colors.gray200,
-  },
   actionButton: {
-    flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
     borderRadius: 8,
+    flexDirection: 'row',
     marginBottom: 8,
-  },
-  exportButton: {
-    backgroundColor: colors.primary + '15',
-  },
-  deleteButton: {
-    backgroundColor: colors.error + '15',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
   },
   actionButtonText: {
     fontSize: 16,
     fontWeight: '500',
     marginLeft: 12,
   },
-  linkButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  actionContainer: {
     backgroundColor: colors.gray900,
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 8,
-    borderWidth: 1,
     borderColor: colors.gray800,
+    borderRadius: 12,
+    borderWidth: 1,
+    padding: 16,
+  },
+  closeButton: {
+    alignItems: 'center',
+    height: 40,
+    justifyContent: 'center',
+    width: 40,
+  },
+  container: {
+    backgroundColor: colors.black,
+    flex: 1,
+  },
+  content: {
+    flex: 1,
+    padding: 16,
+  },
+  deleteButton: {
+    backgroundColor: colors.error + '15',
+  },
+  exportButton: {
+    backgroundColor: colors.primary + '15',
+  },
+  header: {
+    alignItems: 'center',
+    borderBottomColor: colors.gray800,
+    borderBottomWidth: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    padding: 16,
+  },
+  iconContainer: {
+    alignItems: 'center',
+    backgroundColor: colors.primary + '15',
+    borderRadius: 20,
+    height: 40,
+    justifyContent: 'center',
+    marginRight: 12,
+    width: 40,
+  },
+  lightActionContainer: {
+    backgroundColor: colors.gray100,
+    borderColor: colors.gray200,
+  },
+  lightContainer: {
+    backgroundColor: colors.white,
+  },
+  lightHeader: {
+    borderBottomColor: colors.gray200,
   },
   lightLinkButton: {
     backgroundColor: colors.gray100,
     borderColor: colors.gray200,
   },
-  linkButtonText: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: colors.white,
-    marginLeft: 12,
-    flex: 1,
-  },
   lightLinkButtonText: {
     color: colors.black,
+  },
+  lightOptionContainer: {
+    backgroundColor: colors.gray100,
+    borderColor: colors.gray200,
+  },
+  lightOptionDescription: {
+    color: colors.gray600,
+  },
+  lightOptionTitle: {
+    color: colors.black,
+  },
+  lightSectionTitle: {
+    color: colors.black,
+  },
+  lightTitle: {
+    color: colors.black,
+  },
+  linkButton: {
+    alignItems: 'center',
+    backgroundColor: colors.gray900,
+    borderColor: colors.gray800,
+    borderRadius: 12,
+    borderWidth: 1,
+    flexDirection: 'row',
+    marginBottom: 8,
+    padding: 16,
+  },
+  linkButtonText: {
+    color: colors.white,
+    flex: 1,
+    fontSize: 16,
+    fontWeight: '500',
+    marginLeft: 12,
+  },
+  optionContainer: {
+    backgroundColor: colors.gray900,
+    borderColor: colors.gray800,
+    borderRadius: 12,
+    borderWidth: 1,
+    marginBottom: 8,
+    padding: 16,
+  },
+  optionContent: {
+    flex: 1,
+    marginRight: 12,
+  },
+  optionDescription: {
+    color: colors.gray400,
+    fontSize: 14,
+    lineHeight: 20,
+  },
+  optionHeader: {
+    alignItems: 'center',
+    flexDirection: 'row',
+  },
+  optionTitle: {
+    color: colors.white,
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  saveButton: {
+    backgroundColor: colors.primary,
+    borderRadius: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+  },
+  saveButtonText: {
+    color: colors.white,
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  section: {
+    marginBottom: 32,
+  },
+  sectionTitle: {
+    color: colors.white,
+    fontSize: 20,
+    fontWeight: '600',
+    marginBottom: 16,
+  },
+  title: {
+    color: colors.white,
+    fontSize: 18,
+    fontWeight: '600',
   },
 });

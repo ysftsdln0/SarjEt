@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   View,
   Text,
@@ -13,7 +13,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { ChargingStation } from '../types';
 import colors from '../constants/colors';
 
-const { width, height } = Dimensions.get('window');
+const { height } = Dimensions.get('window');
 
 interface StationDetailsCardProps {
   stations: ChargingStation[];
@@ -25,7 +25,6 @@ interface StationDetailsCardProps {
 const StationDetailsCard: React.FC<StationDetailsCardProps> = ({
   stations,
   onStationPress,
-  isDarkMode = false,
   onHeightChange,
 }) => {
   const [activeTab, setActiveTab] = useState<'nearby' | 'favorites'>('nearby');
@@ -48,11 +47,6 @@ const StationDetailsCard: React.FC<StationDetailsCardProps> = ({
     onStationPress(station);
   };
 
-  const getStationRating = (station: ChargingStation) => {
-    // Mock rating - gerçek uygulamada station'dan gelecek
-    return { rating: 4.5, reviewCount: 12 };
-  };
-
   const getStationDistance = (station: ChargingStation) => {
     return station.AddressInfo?.Distance || 0;
   };
@@ -64,23 +58,13 @@ const StationDetailsCard: React.FC<StationDetailsCardProps> = ({
     return `${distance.toFixed(2)} KM`;
   };
 
-  const getConnectionTypes = (station: ChargingStation) => {
-    if (!station.Connections || station.Connections.length === 0) return [];
-    
-    const types = station.Connections
-      .map(conn => conn.ConnectionType?.Title)
-      .filter(Boolean);
-    
-    return [...new Set(types)];
-  };
-
   // Pan gesture handler
   const onPanGestureEvent = Animated.event(
     [{ nativeEvent: { translationY: translateY } }],
     { useNativeDriver: false }
   );
 
-  const onPanHandlerStateChange = (event: any) => {
+  const onPanHandlerStateChange = (event: { nativeEvent: { state: number; translationY: number; velocityY: number } }) => {
     if (event.nativeEvent.state === State.END) {
       const { translationY, velocityY } = event.nativeEvent;
       

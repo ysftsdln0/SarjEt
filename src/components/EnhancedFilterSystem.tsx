@@ -10,13 +10,12 @@ import {
   TextInput,
   Animated,
   Dimensions,
-  FlatList,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ChargingStation } from '../types';
 import colors from '../constants/colors';
 
-const { width, height } = Dimensions.get('window');
+const { height } = Dimensions.get('window');
 
 // Gelişmiş Filter Tipi
 export interface EnhancedFilterOptions {
@@ -108,7 +107,6 @@ const EnhancedFilterSystem: React.FC<EnhancedFilterSystemProps> = ({
   onApplyFilters,
   currentFilters,
   stations,
-  userLocation,
   isDarkMode = true,
 }) => {
   const [filters, setFilters] = useState<EnhancedFilterOptions>(currentFilters);
@@ -188,7 +186,7 @@ const EnhancedFilterSystem: React.FC<EnhancedFilterSystemProps> = ({
   const handleFilterChange = <K extends keyof EnhancedFilterOptions>(
     section: K,
     key: keyof EnhancedFilterOptions[K],
-    value: any
+    value: unknown
   ) => {
     setFilters(prev => ({
       ...prev,
@@ -303,7 +301,7 @@ const EnhancedFilterSystem: React.FC<EnhancedFilterSystemProps> = ({
             onPress={() => handleQuickFilterToggle(filter.key as keyof typeof filters.quickFilters)}
           >
             <Ionicons
-              name={filter.icon as any}
+              name={filter.icon as keyof typeof Ionicons.glyphMap}
               size={24}
               color={
                 filters.quickFilters[filter.key as keyof typeof filters.quickFilters]
@@ -592,7 +590,7 @@ const EnhancedFilterSystem: React.FC<EnhancedFilterSystemProps> = ({
               }
             >
               <Ionicons
-                name={amenity.icon as any}
+                name={amenity.icon as keyof typeof Ionicons.glyphMap}
                 size={20}
                 color={
                   filters.amenities[amenity.key as keyof typeof filters.amenities]
@@ -663,7 +661,7 @@ const EnhancedFilterSystem: React.FC<EnhancedFilterSystemProps> = ({
                   onPress={() => setActiveTab(index)}
                 >
                   <Ionicons
-                    name={tab.icon as any}
+                    name={tab.icon as keyof typeof Ionicons.glyphMap}
                     size={18}
                     color={activeTab === index ? colors.white : colors.gray600}
                   />

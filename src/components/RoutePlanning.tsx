@@ -14,7 +14,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { ChargingStation } from '../types';
 import colors from '../constants/colors';
 import { LocationService } from '../services/locationService';
-import { planRoute, PlanRouteRequest, PlannedRoutePoint } from '../services/routeService';
+import { planRoute, PlanRouteRequest } from '../services/routeService';
 import { getRouteWithStops } from '../services/directionsService';
 import { getPrimaryVehicle, PrimaryVehicle } from '../services/userVehicleService';
 
@@ -339,16 +339,6 @@ const RoutePlanning: React.FC<RoutePlanningProps> = ({
     }
   };
 
-  const getTransportModeIcon = (mode: string) => {
-    const modeInfo = transportModes.find(m => m.key === mode);
-    return modeInfo?.icon || 'car';
-  };
-
-  const getTransportModeColor = (mode: string) => {
-    const modeInfo = transportModes.find(m => m.key === mode);
-    return modeInfo?.color || colors.primary;
-  };
-
   return (
     <Modal
       visible={visible}
@@ -629,13 +619,13 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     padding: 20,
   },
+  closeButton: {
+    padding: 4,
+  },
   title: {
     color: colors.black,
     fontSize: 18,
     fontWeight: '600',
-  },
-  closeButton: {
-    padding: 4,
   },
   createButton: {
     backgroundColor: colors.primary,

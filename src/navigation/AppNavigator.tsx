@@ -1,7 +1,7 @@
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator, CardStyleInterpolators } from '@react-navigation/stack';
-import { RootStackParamList } from '../types';
+import { RootStackParamList, User } from '../types';
 import SarjetMainScreen from '../screens/SarjetMainScreen';
 import { StationDetailScreen } from '../screens/StationDetailScreen';
 
@@ -9,7 +9,7 @@ const Stack = createStackNavigator<RootStackParamList>();
 
 interface AppNavigatorProps {
   authToken: string | null;
-  user: any;
+  user: User | null;
   onLogout: () => void;
 }
 

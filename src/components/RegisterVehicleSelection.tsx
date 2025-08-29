@@ -212,11 +212,19 @@ export const RegisterVehicleSelection: React.FC<RegisterVehicleSelectionProps> =
       }
 
       if (allBrands.length > 0) {
-        // Markaları alfabetik olarak sırala
-        const sortedBrands = allBrands.sort((a, b) => a.name.localeCompare(b.name));
-        setBrands(sortedBrands);
-        setBrandSource(allBrands.some(b => !b.id.startsWith('ev:')) ? 'db' : 'ev');
-        console.log('✅ Total brands set:', sortedBrands.length);
+        // MVP için sadece Tesla markasını filtrele
+        const teslaOnly = allBrands.filter(brand => 
+          brand.name.toLowerCase() === 'tesla'
+        );
+        
+        // Eğer Tesla bulunamazsa, manuel olarak ekle
+        if (teslaOnly.length === 0) {
+          teslaOnly.push({ id: 'tesla-manual', name: 'Tesla' });
+        }
+        
+        setBrands(teslaOnly);
+        setBrandSource(teslaOnly.some(b => !b.id.startsWith('ev:')) ? 'db' : 'ev');
+        console.log('✅ Tesla-only brands set:', teslaOnly.length);
       } else {
         Alert.alert('Hata', 'Araç markaları yüklenemedi');
       }
@@ -619,224 +627,224 @@ export const RegisterVehicleSelection: React.FC<RegisterVehicleSelectionProps> =
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.gray900,
-  },
-  lightContainer: {
-    backgroundColor: colors.white,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.gray800,
-  },
-  lightHeader: {
-    borderBottomColor: colors.gray200,
-  },
   backButton: {
     padding: 4,
   },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: colors.white,
-    flex: 1,
-    textAlign: 'center',
-  },
-  lightHeaderTitle: {
-    color: colors.gray900,
-  },
-  placeholder: {
-    width: 32,
-  },
-  progressContainer: {
+  completeButton: {
+    alignItems: 'center',
+    backgroundColor: colors.primary,
+    borderRadius: 12,
     flexDirection: 'row',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    gap: 8,
+    justifyContent: 'center',
+    padding: 16,
   },
-  progressStep: {
+  completeButtonText: {
+    color: colors.white,
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  container: {
+    backgroundColor: colors.gray900,
     flex: 1,
-    height: 4,
-    backgroundColor: colors.gray700,
-    borderRadius: 2,
-  },
-  progressStepActive: {
-    backgroundColor: colors.primary,
-  },
-  lightProgressStepActive: {
-    backgroundColor: colors.primary,
   },
   content: {
     flex: 1,
   },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  loadingText: {
-    marginTop: 16,
-    fontSize: 16,
-    color: colors.gray400,
-  },
-  lightText: {
-    color: colors.gray700,
-  },
-  stepContainer: {
-    flex: 1,
+  footer: {
+    borderTopColor: colors.gray800,
+    borderTopWidth: 1,
     padding: 20,
-  },
-  stepTitle: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: colors.white,
-    marginBottom: 8,
-  },
-  stepSubtitle: {
-    fontSize: 16,
-    color: colors.gray400,
-    marginBottom: 24,
-    lineHeight: 22,
-  },
-  lightSubtitle: {
-    color: colors.gray600,
-  },
-  optionsContainer: {
-    flex: 1,
-  },
-  optionButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: 16,
-    backgroundColor: colors.gray800,
-    borderRadius: 12,
-    marginBottom: 12,
-  },
-  lightOptionButton: {
-    backgroundColor: colors.gray50,
-  },
-  optionText: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: colors.white,
-  },
-  variantButton: {
-    backgroundColor: colors.gray800,
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  lightVariantButton: {
-    backgroundColor: colors.gray50,
-  },
-  variantInfo: {
-    flex: 1,
-  },
-  variantName: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: colors.white,
-    marginBottom: 8,
-  },
-  variantSpecs: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12,
-  },
-  specItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  specText: {
-    fontSize: 12,
-    color: colors.gray300,
-  },
-  lightSpecText: {
-    color: colors.gray700,
-  },
-  summaryCard: {
-    backgroundColor: colors.gray800,
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 24,
-  },
-  lightSummaryCard: {
-    backgroundColor: colors.gray50,
-  },
-  summaryHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 12,
-    gap: 8,
-  },
-  summaryTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: colors.white,
-  },
-  summaryText: {
-    fontSize: 14,
-    color: colors.gray400,
-    marginBottom: 4,
-  },
-  lightDetailText: {
-    color: colors.gray600,
   },
   formContainer: {
     gap: 20,
+  },
+  header: {
+    alignItems: 'center',
+    borderBottomColor: colors.gray800,
+    borderBottomWidth: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+  },
+  headerTitle: {
+    color: colors.white,
+    flex: 1,
+    fontSize: 18,
+    fontWeight: '600',
+    textAlign: 'center',
   },
   inputGroup: {
     gap: 8,
   },
   inputLabel: {
+    color: colors.white,
     fontSize: 16,
     fontWeight: '500',
-    color: colors.white,
   },
-  textInput: {
-    backgroundColor: colors.gray800,
-    borderRadius: 12,
-    padding: 16,
-    fontSize: 16,
-    color: colors.white,
-    borderWidth: 1,
-    borderColor: colors.gray700,
+  lightContainer: {
+    backgroundColor: colors.white,
+  },
+  lightDetailText: {
+    color: colors.gray600,
+  },
+  lightFooter: {
+    borderTopColor: colors.gray200,
+  },
+  lightHeader: {
+    borderBottomColor: colors.gray200,
+  },
+  lightHeaderTitle: {
+    color: colors.gray900,
+  },
+  lightOptionButton: {
+    backgroundColor: colors.gray50,
+  },
+  lightProgressStepActive: {
+    backgroundColor: colors.primary,
+  },
+  lightSpecText: {
+    color: colors.gray700,
+  },
+  lightSubtitle: {
+    color: colors.gray600,
+  },
+  lightSummaryCard: {
+    backgroundColor: colors.gray50,
+  },
+  lightText: {
+    color: colors.gray700,
   },
   lightTextInput: {
     backgroundColor: colors.gray50,
     borderColor: colors.gray200,
     color: colors.gray900,
   },
-  footer: {
-    padding: 20,
-    borderTopWidth: 1,
-    borderTopColor: colors.gray800,
+  lightVariantButton: {
+    backgroundColor: colors.gray50,
   },
-  lightFooter: {
-    borderTopColor: colors.gray200,
-  },
-  completeButton: {
-    backgroundColor: colors.primary,
-    borderRadius: 12,
-    padding: 16,
+  loadingContainer: {
     alignItems: 'center',
+    flex: 1,
     justifyContent: 'center',
-    flexDirection: 'row',
   },
-  completeButtonText: {
+  loadingText: {
+    color: colors.gray400,
+    fontSize: 16,
+    marginTop: 16,
+  },
+  optionButton: {
+    alignItems: 'center',
+    backgroundColor: colors.gray800,
+    borderRadius: 12,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+    padding: 16,
+  },
+  optionText: {
+    color: colors.white,
+    fontSize: 16,
+    fontWeight: '500',
+  },
+  optionsContainer: {
+    flex: 1,
+  },
+  placeholder: {
+    width: 32,
+  },
+  progressContainer: {
+    flexDirection: 'row',
+    gap: 8,
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+  },
+  progressStep: {
+    backgroundColor: colors.gray700,
+    borderRadius: 2,
+    flex: 1,
+    height: 4,
+  },
+  progressStepActive: {
+    backgroundColor: colors.primary,
+  },
+  specItem: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 4,
+  },
+  specText: {
+    color: colors.gray300,
+    fontSize: 12,
+  },
+  stepContainer: {
+    flex: 1,
+    padding: 20,
+  },
+  stepSubtitle: {
+    color: colors.gray400,
+    fontSize: 16,
+    lineHeight: 22,
+    marginBottom: 24,
+  },
+  stepTitle: {
+    color: colors.white,
+    fontSize: 24,
+    fontWeight: '700',
+    marginBottom: 8,
+  },
+  summaryCard: {
+    backgroundColor: colors.gray800,
+    borderRadius: 12,
+    marginBottom: 24,
+    padding: 16,
+  },
+  summaryHeader: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 12,
+  },
+  summaryText: {
+    color: colors.gray400,
+    fontSize: 14,
+    marginBottom: 4,
+  },
+  summaryTitle: {
     color: colors.white,
     fontSize: 16,
     fontWeight: '600',
+  },
+  textInput: {
+    backgroundColor: colors.gray800,
+    borderColor: colors.gray700,
+    borderRadius: 12,
+    borderWidth: 1,
+    color: colors.white,
+    fontSize: 16,
+    padding: 16,
+  },
+  variantButton: {
+    alignItems: 'center',
+    backgroundColor: colors.gray800,
+    borderRadius: 12,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+    padding: 16,
+  },
+  variantInfo: {
+    flex: 1,
+  },
+  variantName: {
+    color: colors.white,
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 8,
+  },
+  variantSpecs: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
   },
 });

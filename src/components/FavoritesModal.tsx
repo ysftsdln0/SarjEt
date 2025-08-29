@@ -219,171 +219,171 @@ export const FavoritesModal: React.FC<FavoritesModalProps> = ({
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.black,
-  },
-  lightContainer: {
-    backgroundColor: colors.white,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.gray800,
-  },
-  lightHeader: {
-    borderBottomColor: colors.gray200,
-  },
   closeButton: {
-    width: 40,
+    alignItems: 'center',
     height: 40,
-    alignItems: 'center',
     justifyContent: 'center',
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: colors.white,
-  },
-  lightTitle: {
-    color: colors.black,
-  },
-  placeholder: {
     width: 40,
   },
-  content: {
-    flex: 1,
-    padding: 16,
+  connectorBadge: {
+    backgroundColor: colors.primary + '20',
+    borderRadius: 6,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
   },
-  loadingContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingTop: 100,
-  },
-  loadingText: {
-    marginTop: 16,
-    fontSize: 16,
-    color: colors.gray500,
-  },
-  lightLoadingText: {
-    color: colors.gray600,
-  },
-  emptyContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingTop: 100,
-  },
-  emptyTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: colors.white,
-    marginTop: 16,
-    marginBottom: 8,
-  },
-  lightEmptyTitle: {
-    color: colors.black,
-  },
-  emptyDescription: {
-    fontSize: 16,
-    color: colors.gray500,
-    textAlign: 'center',
-    marginBottom: 24,
-    paddingHorizontal: 32,
-  },
-  lightEmptyDescription: {
-    color: colors.gray600,
-  },
-  favoritesList: {
-    // No additional styles needed
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: colors.white,
-    marginBottom: 16,
-  },
-  lightSectionTitle: {
-    color: colors.black,
-  },
-  favoriteCard: {
-    backgroundColor: colors.gray900,
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: colors.gray800,
-  },
-  lightFavoriteCard: {
-    backgroundColor: colors.gray100,
-    borderColor: colors.gray200,
-  },
-  stationInfo: {
-    flex: 1,
-  },
-  stationHeader: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    justifyContent: 'space-between',
-    marginBottom: 4,
-  },
-  stationName: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: colors.white,
-    flex: 1,
-    marginRight: 8,
-  },
-  lightStationName: {
-    color: colors.black,
-  },
-  removeButton: {
-    padding: 4,
-  },
-  stationAddress: {
-    fontSize: 14,
-    color: colors.gray400,
-    marginBottom: 8,
-  },
-  lightStationAddress: {
-    color: colors.gray600,
-  },
-  stationDetails: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 8,
-    gap: 16,
-  },
-  detailItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  detailText: {
+  connectorText: {
+    color: colors.primary,
     fontSize: 12,
-    color: colors.gray500,
-  },
-  lightDetailText: {
-    color: colors.gray600,
+    fontWeight: '500',
   },
   connectorTypes: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 6,
   },
-  connectorBadge: {
-    backgroundColor: colors.primary + '20',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
+  container: {
+    backgroundColor: colors.black,
+    flex: 1,
   },
-  connectorText: {
+  content: {
+    flex: 1,
+    padding: 16,
+  },
+  detailItem: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 4,
+  },
+  detailText: {
+    color: colors.gray500,
     fontSize: 12,
-    color: colors.primary,
-    fontWeight: '500',
+  },
+  emptyContainer: {
+    alignItems: 'center',
+    flex: 1,
+    justifyContent: 'center',
+    paddingTop: 100,
+  },
+  emptyDescription: {
+    color: colors.gray500,
+    fontSize: 16,
+    marginBottom: 24,
+    paddingHorizontal: 32,
+    textAlign: 'center',
+  },
+  emptyTitle: {
+    color: colors.white,
+    fontSize: 20,
+    fontWeight: '600',
+    marginBottom: 8,
+    marginTop: 16,
+  },
+  favoriteCard: {
+    backgroundColor: colors.gray900,
+    borderColor: colors.gray800,
+    borderRadius: 12,
+    borderWidth: 1,
+    marginBottom: 12,
+    padding: 16,
+  },
+  favoritesList: {
+    // No additional styles needed
+  },
+  header: {
+    alignItems: 'center',
+    borderBottomColor: colors.gray800,
+    borderBottomWidth: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    padding: 16,
+  },
+  lightContainer: {
+    backgroundColor: colors.white,
+  },
+  lightDetailText: {
+    color: colors.gray600,
+  },
+  lightEmptyDescription: {
+    color: colors.gray600,
+  },
+  lightEmptyTitle: {
+    color: colors.black,
+  },
+  lightFavoriteCard: {
+    backgroundColor: colors.gray100,
+    borderColor: colors.gray200,
+  },
+  lightHeader: {
+    borderBottomColor: colors.gray200,
+  },
+  lightLoadingText: {
+    color: colors.gray600,
+  },
+  lightSectionTitle: {
+    color: colors.black,
+  },
+  lightStationAddress: {
+    color: colors.gray600,
+  },
+  lightStationName: {
+    color: colors.black,
+  },
+  lightTitle: {
+    color: colors.black,
+  },
+  loadingContainer: {
+    alignItems: 'center',
+    flex: 1,
+    justifyContent: 'center',
+    paddingTop: 100,
+  },
+  loadingText: {
+    color: colors.gray500,
+    fontSize: 16,
+    marginTop: 16,
+  },
+  placeholder: {
+    width: 40,
+  },
+  removeButton: {
+    padding: 4,
+  },
+  sectionTitle: {
+    color: colors.white,
+    fontSize: 20,
+    fontWeight: '600',
+    marginBottom: 16,
+  },
+  stationAddress: {
+    color: colors.gray400,
+    fontSize: 14,
+    marginBottom: 8,
+  },
+  stationDetails: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 16,
+    marginBottom: 8,
+  },
+  stationHeader: {
+    alignItems: 'flex-start',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 4,
+  },
+  stationInfo: {
+    flex: 1,
+  },
+  stationName: {
+    color: colors.white,
+    flex: 1,
+    fontSize: 16,
+    fontWeight: '600',
+    marginRight: 8,
+  },
+  title: {
+    color: colors.white,
+    fontSize: 18,
+    fontWeight: '600',
   },
 });

@@ -1,10 +1,11 @@
 import { withAuth, getBaseUrl } from './apiClient';
+import * as tokenStorage from './tokenStorage';
 
 export interface UserVehicleVariant {
   id: string;
   name: string;
   year: number;
-  maxRange?: number; // backend VehicleVariant.maxRange (km)
+  maxRange?: number;
   model?: { name?: string; brand?: { name?: string } };
 }
 
@@ -75,21 +76,34 @@ export interface PrimaryVehicle {
   connectorTypes: string[];
 }
 
-export async function getUserVehicles(token: string): Promise<UserVehicle[]> {
-  const base = await getBaseUrl();
-  const res = await fetch(`${base}/api/vehicles/user-vehicles`, {
-    headers: withAuth(token) as any,
-  });
-  if (!res.ok) throw new Error('Kullanıcı araçları alınamadı');
-  const data = await res.json();
-  // routes/vehicles.js returns array directly, not wrapped
-  return Array.isArray(data) ? (data as UserVehicle[]) : (data as any).vehicles || [];
-}
+export const getUserVehicles = async (): Promise<UserVehicleVariant[]> => {
+  try {
+    const currentToken = await tokenStorage.getToken();
+    if (!currentToken) {
+      return [];
+    }
+    
+    const base = await getBaseUrl();
+    const response = await fetch(`${base}/api/vehicles/user-vehicles`, {
+      headers: withAuth(currentToken) as Record<string, string>,
+    });
+    
+    if (!response.ok) {
+      return [];
+    }
+    
+    const data = await response.json();
+    return data || [];
+  } catch (error) {
+    console.error('Error getting user vehicles:', error);
+    return [];
+  }
+};
 
 export async function getPrimaryVehicle(token: string): Promise<PrimaryVehicle> {
   const base = await getBaseUrl();
   const res = await fetch(`${base}/api/vehicles/user-vehicle/primary`, {
-    headers: withAuth(token) as any,
+    headers: withAuth(token) as Record<string, string>,
   });
   
   if (!res.ok) {
@@ -179,7 +193,7 @@ export async function getVehicleVariants(modelId: string, year?: number): Promis
   }
 }
 
-export async function createUserVehicle(token: string, vehicleData: CreateVehicleData): Promise<UserVehicle> {
+export async function addUserVehicle(vehicleVariantId: string, nickname: string, token: string): Promise<Record<string, unknown>> {
   const base = await getBaseUrl();
   const res = await fetch(`${base}/api/vehicles/user-vehicles`, {
     method: 'POST',
@@ -187,7 +201,7 @@ export async function createUserVehicle(token: string, vehicleData: CreateVehicl
       ...withAuth(token),
       'Content-Type': 'application/json',
     } as any,
-    body: JSON.stringify(vehicleData),
+    body: JSON.stringify({ vehicleVariantId, nickname }),
   });
   
   if (!res.ok) {
@@ -206,5 +220,5 @@ export default {
   getVehicleBrands,
   getVehicleModels,
   getVehicleVariants,
-  createUserVehicle
+  addUserVehicle
 };

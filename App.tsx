@@ -52,7 +52,7 @@ export default function App() {
       const base = await apiClient.getBaseUrl();
       if (!base) return false;
       const response = await fetch(`${base}/api/auth/profile`, {
-        headers: withAuth(token) as any,
+        headers: withAuth(token) as Record<string, string>,
       });
       return response.ok;
     } catch (error) {

@@ -52,7 +52,18 @@ export interface ChargingStation {
     PhonePrimaryContact?: string;
     PhoneSecondaryContact?: string;
     IsPrivateIndividual?: boolean;
-    AddressInfo?: any;
+    AddressInfo?: {
+      ID: number;
+      Title: string;
+      AddressLine1?: string;
+      AddressLine2?: string;
+      Town?: string;
+      StateOrProvince?: string;
+      Postcode?: string;
+      CountryID: number;
+      Latitude?: number;
+      Longitude?: number;
+    };
     BookingURL?: string;
     ContactEmail?: string;
     FaultReportEmail?: string;
@@ -67,8 +78,20 @@ export interface ChargingStation {
     ID: number;
     Title: string;
   };
-  UserComments?: any[];
-  MediaItems?: any[];
+  UserComments?: Array<{
+    ID?: number;
+    Comment?: string;
+    Rating?: number;
+    UserName?: string;
+    CommentDate?: string;
+  }>;
+  MediaItems?: Array<{
+    ID?: number;
+    ItemURL?: string;
+    ItemThumbnailURL?: string;
+    Comment?: string;
+    ItemType?: string;
+  }>;
   IsRecentlyVerified?: boolean;
   DateLastVerified?: string;
 }

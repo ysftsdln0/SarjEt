@@ -5,7 +5,7 @@ export interface UserBehavior {
   sessionId: string;
   timestamp: number;
   action: string;
-  data?: any;
+  data?: Record<string, unknown>;
 }
 
 export interface StationAnalytics {
@@ -107,7 +107,7 @@ class AnalyticsService {
   }
 
   // Kullanıcı davranışı kaydet
-  public trackUserBehavior(userId: string, sessionId: string, action: string, data?: any) {
+  public trackUserBehavior(userId: string, sessionId: string, action: string, data?: Record<string, unknown>) {
     const behavior: UserBehavior = {
       userId,
       sessionId,
@@ -128,7 +128,7 @@ class AnalyticsService {
   }
 
   // İstasyon analitiklerini güncelle
-  public updateStationAnalytics(stationId: string, action: 'view' | 'favorite' | 'route' | 'rating', data?: any) {
+  public updateStationAnalytics(stationId: string, action: 'view' | 'favorite' | 'route' | 'rating', data?: Record<string, unknown>) {
     let analytics = this.stationAnalytics.get(stationId);
     
     if (!analytics) {
@@ -170,7 +170,7 @@ class AnalyticsService {
   }
 
   // Kullanıcı analitiklerini güncelle
-  private updateUserAnalytics(userId: string, action: string, data?: any) {
+  private updateUserAnalytics(userId: string, action: string, data?: Record<string, unknown>) {
     let analytics = this.userAnalytics.get(userId);
     
     if (!analytics) {
@@ -191,27 +191,27 @@ class AnalyticsService {
         analytics.totalSessions++;
         break;
       case 'favorite_station':
-        if (data?.stationId && !analytics.favoriteStations.includes(data.stationId)) {
-          analytics.favoriteStations.push(data.stationId);
+        if (data?.stationId && !analytics.favoriteStations.includes(data.stationId as string)) {
+          analytics.favoriteStations.push(data.stationId as string);
         }
         break;
       case 'visit_station':
         if (data?.stationId) {
-          const index = analytics.frequentlyVisited.indexOf(data.stationId);
+          const index = analytics.frequentlyVisited.indexOf(data.stationId as string);
           if (index > -1) {
             analytics.frequentlyVisited.splice(index, 1);
           }
-          analytics.frequentlyVisited.unshift(data.stationId);
+          analytics.frequentlyVisited.unshift(data.stationId as string);
           analytics.frequentlyVisited = analytics.frequentlyVisited.slice(0, 10); // Top 10
         }
         break;
       case 'session_end':
         if (data?.duration) {
           analytics.averageSessionDuration = 
-            (analytics.averageSessionDuration + data.duration) / 2;
+            (analytics.averageSessionDuration + (data.duration as number)) / 2;
         }
         if (data?.distance) {
-          analytics.totalDistance += data.distance;
+          analytics.totalDistance += data.distance as number;
         }
         break;
     }
@@ -272,14 +272,14 @@ class AnalyticsService {
   }
 
   // A/B test sonucu kaydet
-  public recordABTestResult(testId: string, variant: 'A' | 'B', metrics: any) {
+  public recordABTestResult(testId: string, variant: 'A' | 'B', metrics: Record<string, unknown>) {
     const result: ABTestResult = {
       testId,
       variant,
       metrics: {
-        conversionRate: metrics.conversionRate || 0,
-        sessionDuration: metrics.sessionDuration || 0,
-        userSatisfaction: metrics.userSatisfaction || 0,
+        conversionRate: (metrics.conversionRate as number) || 0,
+        sessionDuration: (metrics.sessionDuration as number) || 0,
+        userSatisfaction: (metrics.userSatisfaction as number) || 0,
       },
     };
 
@@ -337,7 +337,7 @@ class AnalyticsService {
   }
 
   // Rapor oluştur
-  public generateReport(): any {
+  public generateReport(): Record<string, unknown> {
     return {
       totalUsers: this.userAnalytics.size,
       totalStations: this.stationAnalytics.size,

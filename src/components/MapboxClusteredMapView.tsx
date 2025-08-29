@@ -174,8 +174,9 @@ const MapboxClusteredMapView: React.FC<Props> = ({
     }
   }, [centerTo]);
 
-  const onSourcePress = async (e: any) => {
-    const { features } = e;
+  const onSourcePress = async (e: unknown) => {
+    const event = e as { features?: unknown[] };
+    const { features } = event;
     const feat = features && features[0];
     if (!feat || !feat.properties) return;
     if (feat.properties.cluster) {
@@ -500,11 +501,11 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderWidth: 4,
     height: 24,
-    width: 24,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
+    width: 24,
   },
   userLocationMarker: {
     alignItems: 'center',

@@ -13,8 +13,7 @@ interface StationMarkerProps {
 
 const StationMarker: React.FC<StationMarkerProps> = ({ 
   station, 
-  isSelected = false,
-  onPress 
+  isSelected = false
 }) => {
   const scaleAnim = useRef(new Animated.Value(1)).current;
   const pulseAnim = useRef(new Animated.Value(1)).current;

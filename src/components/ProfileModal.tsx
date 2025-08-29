@@ -39,17 +39,9 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
   onEditVehicles,
   onEditFavorites,
   onEditPrivacy,
-  onEditPrivacySettings,
 }) => {
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [fastChargingOnly, setFastChargingOnly] = useState(false);
-
-  const userStats = {
-    stationsVisited: 12,
-    totalChargingSessions: 24,
-    energyConsumed: 450, // kWh
-    carbonSaved: 120, // kg CO2
-  };
 
   return (
     <Modal
@@ -462,13 +454,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 16,
   },
+  headerSpacer: {
+    width: 40,
+  },
   headerTitle: {
     color: colors.darkText,
     fontSize: 20,
     fontWeight: 'bold',
-  },
-  headerSpacer: {
-    width: 40,
   },
   content: {
     flex: 1,
@@ -660,86 +652,86 @@ const styles = StyleSheet.create({
   
   // Yeni Modern Profil Tasarımı
   profileSection: {
-    marginTop: 16,
     marginBottom: 8,
+    marginTop: 16,
   },
   profileCard: {
     backgroundColor: colors.darkCard,
     borderRadius: 20,
-    padding: 24,
+    elevation: 8,
     marginHorizontal: 4,
+    padding: 24,
     shadowColor: colors.black,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.15,
     shadowRadius: 12,
-    elevation: 8,
   },
   lightProfileCard: {
     backgroundColor: colors.lightCard,
     shadowColor: colors.gray600,
   },
   profileHeader: {
-    flexDirection: 'row',
     alignItems: 'center',
+    flexDirection: 'row',
   },
   avatarContainer: {
-    width: 70,
-    height: 70,
-    borderRadius: 35,
-    backgroundColor: colors.primary,
     alignItems: 'center',
+    backgroundColor: colors.primary,
+    borderRadius: 35,
+    elevation: 6,
+    height: 70,
     justifyContent: 'center',
-    position: 'relative',
     marginRight: 16,
+    position: 'relative',
     shadowColor: colors.primary,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
-    elevation: 6,
+    width: 70,
   },
   lightAvatarContainer: {
     shadowColor: colors.primary,
   },
   statusIndicator: {
-    position: 'absolute',
+    backgroundColor: colors.success,
+    borderColor: colors.white,
+    borderRadius: 9,
+    borderWidth: 3,
     bottom: 2,
+    height: 18,
+    position: 'absolute',
     right: 2,
     width: 18,
-    height: 18,
-    borderRadius: 9,
-    backgroundColor: colors.success,
-    borderWidth: 3,
-    borderColor: colors.white,
   },
   userInfo: {
     flex: 1,
   },
   displayName: {
+    color: colors.darkText,
     fontSize: 22,
     fontWeight: '700',
-    color: colors.darkText,
     marginBottom: 4,
   },
   lightDisplayName: {
     color: colors.lightText,
   },
   emailText: {
-    fontSize: 14,
     color: colors.gray400,
+    fontSize: 14,
     marginBottom: 6,
   },
   lightEmailText: {
     color: colors.gray600,
   },
   locationRow: {
-    flexDirection: 'row',
     alignItems: 'center',
+    flexDirection: 'row',
   },
   locationText: {
-    fontSize: 13,
     color: colors.primary,
-    marginLeft: 4,
+    fontSize: 13,
     fontWeight: '600',
+    marginLeft: 4,
   },
   lightLocationText: {
     color: colors.primary,
@@ -749,46 +741,46 @@ const styles = StyleSheet.create({
   modernVehicleCard: {
     backgroundColor: colors.darkCard,
     borderRadius: 16,
-    padding: 16,
+    elevation: 4,
     marginBottom: 12,
+    padding: 16,
     shadowColor: colors.black,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 8,
-    elevation: 4,
   },
   lightModernVehicleCard: {
     backgroundColor: colors.lightCard,
     shadowColor: colors.gray400,
   },
   vehicleHeader: {
-    flexDirection: 'row',
     alignItems: 'center',
+    flexDirection: 'row',
     marginBottom: 12,
   },
   vehicleIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
     alignItems: 'center',
+    borderRadius: 20,
+    height: 40,
     justifyContent: 'center',
     marginRight: 12,
+    width: 40,
   },
   vehicleDetails: {
     flex: 1,
   },
   vehicleTitle: {
+    color: colors.darkText,
     fontSize: 16,
     fontWeight: '600',
-    color: colors.darkText,
     marginBottom: 2,
   },
   lightVehicleTitle: {
     color: colors.lightText,
   },
   vehicleSubtitle: {
-    fontSize: 13,
     color: colors.gray400,
+    fontSize: 13,
   },
   lightVehicleSubtitle: {
     color: colors.gray600,
@@ -797,22 +789,22 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
   },
   batteryPercent: {
+    color: colors.darkText,
     fontSize: 14,
     fontWeight: '600',
-    color: colors.darkText,
     marginBottom: 4,
   },
   lightBatteryPercent: {
     color: colors.lightText,
   },
   specItem: {
-    flexDirection: 'row',
     alignItems: 'center',
+    flexDirection: 'row',
     marginRight: 16,
   },
   specText: {
-    fontSize: 12,
     color: colors.gray400,
+    fontSize: 12,
     marginLeft: 4,
   },
   lightSpecText: {
@@ -827,12 +819,12 @@ const styles = StyleSheet.create({
   modernCard: {
     backgroundColor: colors.darkCard,
     borderRadius: 16,
+    elevation: 4,
     overflow: 'hidden',
     shadowColor: colors.black,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 8,
-    elevation: 4,
   },
   lightModernCard: {
     backgroundColor: colors.lightCard,
@@ -841,23 +833,23 @@ const styles = StyleSheet.create({
   
   // Modern Ayar Öğeleri
   modernSettingItem: {
-    flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 16,
-    paddingHorizontal: 16,
-    borderBottomWidth: 1,
     borderBottomColor: colors.gray700,
+    borderBottomWidth: 1,
+    flexDirection: 'row',
+    paddingHorizontal: 16,
+    paddingVertical: 16,
   },
   lightModernSettingItem: {
     borderBottomColor: colors.gray200,
   },
   modernMenuItem: {
-    flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 16,
-    paddingHorizontal: 16,
-    borderBottomWidth: 1,
     borderBottomColor: colors.gray700,
+    borderBottomWidth: 1,
+    flexDirection: 'row',
+    paddingHorizontal: 16,
+    paddingVertical: 16,
   },
   lightModernMenuItem: {
     borderBottomColor: colors.gray200,
@@ -866,27 +858,27 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   settingIcon: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
     alignItems: 'center',
+    borderRadius: 18,
+    height: 36,
     justifyContent: 'center',
+    width: 36,
   },
   settingContent: {
     flex: 1,
   },
   settingTitle: {
+    color: colors.darkText,
     fontSize: 16,
     fontWeight: '600',
-    color: colors.darkText,
     marginBottom: 2,
   },
   lightSettingTitle: {
     color: colors.lightText,
   },
   settingDescription: {
-    fontSize: 13,
     color: colors.gray400,
+    fontSize: 13,
     lineHeight: 16,
   },
   lightSettingDescription: {
@@ -898,27 +890,27 @@ const styles = StyleSheet.create({
   
   // Modern Çıkış Kartı
   logoutCard: {
-    backgroundColor: colors.error + '08',
-    borderRadius: 16,
-    padding: 16,
-    flexDirection: 'row',
     alignItems: 'center',
-    borderWidth: 1,
+    backgroundColor: colors.error + '08',
     borderColor: colors.error + '20',
+    borderRadius: 16,
+    borderWidth: 1,
+    elevation: 3,
+    flexDirection: 'row',
+    padding: 16,
     shadowColor: colors.error,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 8,
-    elevation: 3,
   },
   lightLogoutCard: {
     backgroundColor: colors.error + '05',
     borderColor: colors.error + '15',
   },
   logoutTitle: {
+    color: colors.error,
     fontSize: 16,
     fontWeight: '600',
-    color: colors.error,
     marginBottom: 2,
   },
   lightLogoutTitle: {
@@ -928,21 +920,21 @@ const styles = StyleSheet.create({
   // Footer
   footerSection: {
     alignItems: 'center',
-    paddingVertical: 24,
     marginTop: 8,
+    paddingVertical: 24,
   },
   appVersionText: {
+    color: colors.gray400,
     fontSize: 14,
     fontWeight: '600',
-    color: colors.gray400,
     marginBottom: 4,
   },
   lightAppVersionText: {
     color: colors.gray600,
   },
   copyrightText: {
-    fontSize: 12,
     color: colors.gray500,
+    fontSize: 12,
     textAlign: 'center',
   },
   lightCopyrightText: {

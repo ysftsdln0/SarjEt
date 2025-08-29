@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+ import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -14,9 +14,6 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import colors from '../constants/colors';
 import userVehicleService, { 
-  VehicleBrand, 
-  VehicleModel, 
-  VehicleVariant, 
   CreateVehicleData
 } from '../services/userVehicleService';
 import { getBaseUrl } from '../services/apiClient';
@@ -124,11 +121,13 @@ export const AddVehicleModal: React.FC<AddVehicleModalProps> = ({
         throw new Error('Araç verileri beklenmeyen formatta');
       }
       
-      setEvVehicles(vehicles);
+      // MVP için sadece Tesla markalı araçları filtrele
+      const teslaVehicles = vehicles.filter(v => v.brand.toLowerCase() === 'tesla');
+      setEvVehicles(teslaVehicles);
       
-      // Unique brand listesi çıkar
-      const uniqueBrands = Array.from(new Set(vehicles.map(v => v.brand))).sort();
-      setBrands(uniqueBrands);
+      // Unique brand listesi çıkar (sadece Tesla)
+      const uniqueBrands = Array.from(new Set(teslaVehicles.map(v => v.brand))).sort();
+      setBrands(uniqueBrands.length > 0 ? uniqueBrands : ['Tesla']); // Fallback olarak Tesla ekle
     } catch (error) {
       Alert.alert('Hata', 'Araç verileri yüklenemedi');
       console.error('Load EV data error:', error);
@@ -209,8 +208,9 @@ export const AddVehicleModal: React.FC<AddVehicleModalProps> = ({
           onClose();
         }}
       ]);
-    } catch (error: any) {
-      Alert.alert('Hata', error.message || 'Araç eklenirken bir hata oluştu');
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Araç eklenirken bir hata oluştu';
+      Alert.alert('Hata', errorMessage);
       console.error('Create vehicle error:', error);
     } finally {
       setSubmitting(false);
@@ -491,177 +491,143 @@ export const AddVehicleModal: React.FC<AddVehicleModalProps> = ({
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.gray900,
-  },
-  lightContainer: {
-    backgroundColor: colors.white,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.gray800,
-  },
-  lightHeader: {
-    borderBottomColor: colors.gray200,
-  },
-  headerLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-  },
   backButton: {
     marginRight: 12,
-  },
-  headerTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: colors.white,
-  },
-  lightHeaderTitle: {
-    color: colors.gray900,
   },
   closeButton: {
     padding: 4,
   },
-  progressContainer: {
-    flexDirection: 'row',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    gap: 8,
-  },
-  progressStep: {
+  container: {
+    backgroundColor: colors.gray900,
     flex: 1,
-    height: 4,
-    backgroundColor: colors.gray700,
-    borderRadius: 2,
-  },
-  progressStepActive: {
-    backgroundColor: colors.primary,
-  },
-  lightProgressStepActive: {
-    backgroundColor: colors.primary,
   },
   content: {
     flex: 1,
   },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  loadingText: {
-    marginTop: 16,
-    fontSize: 16,
-    color: colors.gray400,
-  },
-  lightText: {
-    color: colors.gray700,
-  },
-  stepContainer: {
-    flex: 1,
+  footer: {
+    borderTopColor: colors.gray800,
+    borderTopWidth: 1,
     padding: 20,
-  },
-  stepTitle: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: colors.white,
-    marginBottom: 24,
-  },
-  optionsContainer: {
-    flex: 1,
-  },
-  optionButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: 16,
-    backgroundColor: colors.gray800,
-    borderRadius: 12,
-    marginBottom: 12,
-  },
-  lightOptionButton: {
-    backgroundColor: colors.gray50,
-  },
-  optionText: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: colors.white,
-  },
-  variantInfo: {
-    flex: 1,
-  },
-  variantDetail: {
-    fontSize: 14,
-    color: colors.gray400,
-    marginTop: 4,
-  },
-  lightDetailText: {
-    color: colors.gray600,
-  },
-  summaryCard: {
-    backgroundColor: colors.gray800,
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 24,
-  },
-  lightSummaryCard: {
-    backgroundColor: colors.gray50,
-  },
-  summaryTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: colors.white,
-    marginBottom: 8,
-  },
-  summaryText: {
-    fontSize: 14,
-    color: colors.gray400,
-    marginBottom: 4,
   },
   formContainer: {
     gap: 20,
+  },
+  header: {
+    alignItems: 'center',
+    borderBottomColor: colors.gray800,
+    borderBottomWidth: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+  },
+  headerLeft: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    flex: 1,
+  },
+  headerTitle: {
+    color: colors.white,
+    fontSize: 20,
+    fontWeight: '600',
   },
   inputGroup: {
     gap: 8,
   },
   inputLabel: {
+    color: colors.white,
     fontSize: 16,
     fontWeight: '500',
-    color: colors.white,
   },
-  textInput: {
-    backgroundColor: colors.gray800,
-    borderRadius: 12,
-    padding: 16,
-    fontSize: 16,
-    color: colors.white,
-    borderWidth: 1,
-    borderColor: colors.gray700,
+  lightContainer: {
+    backgroundColor: colors.white,
+  },
+  lightDetailText: {
+    color: colors.gray600,
+  },
+  lightFooter: {
+    borderTopColor: colors.gray200,
+  },
+  lightHeader: {
+    borderBottomColor: colors.gray200,
+  },
+  lightHeaderTitle: {
+    color: colors.gray900,
+  },
+  lightOptionButton: {
+    backgroundColor: colors.gray50,
+  },
+  lightProgressStepActive: {
+    backgroundColor: colors.primary,
+  },
+  lightSummaryCard: {
+    backgroundColor: colors.gray50,
+  },
+  lightText: {
+    color: colors.gray700,
   },
   lightTextInput: {
     backgroundColor: colors.gray50,
     borderColor: colors.gray200,
     color: colors.gray900,
   },
-  footer: {
-    padding: 20,
-    borderTopWidth: 1,
-    borderTopColor: colors.gray800,
+  loadingContainer: {
+    alignItems: 'center',
+    flex: 1,
+    justifyContent: 'center',
   },
-  lightFooter: {
-    borderTopColor: colors.gray200,
+  loadingText: {
+    color: colors.gray400,
+    fontSize: 16,
+    marginTop: 16,
+  },
+  optionButton: {
+    alignItems: 'center',
+    backgroundColor: colors.gray800,
+    borderRadius: 12,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+    padding: 16,
+  },
+  optionText: {
+    color: colors.white,
+    fontSize: 16,
+    fontWeight: '500',
+  },
+  optionsContainer: {
+    flex: 1,
+  },
+  progressContainer: {
+    flexDirection: 'row',
+    gap: 8,
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+  },
+  progressStep: {
+    backgroundColor: colors.gray700,
+    borderRadius: 2,
+    flex: 1,
+    height: 4,
+  },
+  progressStepActive: {
+    backgroundColor: colors.primary,
+  },
+  stepContainer: {
+    flex: 1,
+    padding: 20,
+  },
+  stepTitle: {
+    color: colors.white,
+    fontSize: 24,
+    fontWeight: '700',
+    marginBottom: 24,
   },
   submitButton: {
+    alignItems: 'center',
     backgroundColor: colors.primary,
     borderRadius: 12,
     padding: 16,
-    alignItems: 'center',
   },
   submitButtonDisabled: {
     opacity: 0.6,
@@ -670,5 +636,39 @@ const styles = StyleSheet.create({
     color: colors.white,
     fontSize: 16,
     fontWeight: '600',
+  },
+  summaryCard: {
+    backgroundColor: colors.gray800,
+    borderRadius: 12,
+    marginBottom: 24,
+    padding: 16,
+  },
+  summaryText: {
+    color: colors.gray400,
+    fontSize: 14,
+    marginBottom: 4,
+  },
+  summaryTitle: {
+    color: colors.white,
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 8,
+  },
+  textInput: {
+    backgroundColor: colors.gray800,
+    borderColor: colors.gray700,
+    borderRadius: 12,
+    borderWidth: 1,
+    color: colors.white,
+    fontSize: 16,
+    padding: 16,
+  },
+  variantDetail: {
+    color: colors.gray400,
+    fontSize: 14,
+    marginTop: 4,
+  },
+  variantInfo: {
+    flex: 1,
   },
 });

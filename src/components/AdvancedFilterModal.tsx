@@ -76,7 +76,7 @@ const AdvancedFilterModal: React.FC<AdvancedFilterModalProps> = ({
     { key: 'CHAdeMO', label: 'CHAdeMO', icon: 'battery-charging' },
   ];
 
-  const handleFilterChange = (key: keyof AdvancedFilterOptions, value: any) => {
+  const handleFilterChange = (key: keyof AdvancedFilterOptions, value: AdvancedFilterOptions[keyof AdvancedFilterOptions]) => {
     setFilters(prev => ({
       ...prev,
       [key]: value,
@@ -161,10 +161,10 @@ const AdvancedFilterModal: React.FC<AdvancedFilterModalProps> = ({
                 styles.tab,
                 activeTab === tab.key && styles.activeTab,
               ]}
-              onPress={() => setActiveTab(tab.key as any)}
+              onPress={() => setActiveTab(tab.key as 'basic' | 'advanced' | 'preferences')}
             >
               <Ionicons 
-                name={tab.icon as any} 
+                name={tab.icon as keyof typeof Ionicons.glyphMap} 
                 size={20} 
                 color={activeTab === tab.key ? colors.primary : colors.gray600} 
               />
@@ -196,7 +196,7 @@ const AdvancedFilterModal: React.FC<AdvancedFilterModalProps> = ({
                       onPress={() => handleConnectionTypeToggle(type.key)}
                     >
                       <Ionicons 
-                        name={type.icon as any} 
+                        name={type.icon as keyof typeof Ionicons.glyphMap} 
                         size={20} 
                         color={filters.connectionTypes.includes(type.key) ? colors.white : colors.gray600} 
                       />

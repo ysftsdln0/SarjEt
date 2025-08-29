@@ -117,7 +117,8 @@ export class FilterService {
    * Mesafe filtresini kontrol et
    */
   private static checkDistanceFilter(station: ChargingStation, filters: FilterOptions): boolean {
-    if (filters.maxDistance === 10000) return true;
+    // Default değer 1000 olduğu için, 1000km ise filtreleme yapma
+    if (filters.maxDistance >= 1000) return true;
     
     const distance = station.AddressInfo?.Distance;
     if (distance === undefined || distance === null) return true;
@@ -222,8 +223,8 @@ export class FilterService {
     // Güç filtresi
     if (filters.minPowerKW > 0 || filters.maxPowerKW < 1000) count++;
     
-    // Mesafe filtresi
-    if (filters.maxDistance < 10000) count++;
+    // Mesafe filtresi - Default değer 1000 olduğu için 1000'den küçükse aktif sayılır
+    if (filters.maxDistance < 1000) count++;
     
     // Switch filtreler
     if (filters.onlyFastCharging) count++;
@@ -258,8 +259,8 @@ export class FilterService {
       }
     }
     
-    // Mesafe
-    if (filters.maxDistance < 10000) {
+    // Mesafe - Default değer 1000 olduğu için 1000'den küçükse aktif sayılır
+    if (filters.maxDistance < 1000) {
       parts.push(`${filters.maxDistance}km yakın`);
     }
     

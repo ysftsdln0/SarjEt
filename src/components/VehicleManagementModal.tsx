@@ -9,15 +9,11 @@ import {
   ScrollView,
   Alert,
   ActivityIndicator,
-  TextInput,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import colors from '../constants/colors';
 import userVehicleService, { 
-  UserVehicle, 
-  VehicleBrand, 
-  VehicleModel, 
-  VehicleVariant 
+  UserVehicle
 } from '../services/userVehicleService';
 import { AddVehicleModal } from './AddVehicleModal';
 
@@ -49,7 +45,7 @@ export const VehicleManagementModal: React.FC<VehicleManagementModalProps> = ({
     
     try {
       setLoading(true);
-      const userVehicles = await userVehicleService.getUserVehicles(authToken);
+      const userVehicles = await userVehicleService.getUserVehicles();
       setVehicles(userVehicles);
     } catch (error) {
       console.error('Error loading vehicles:', error);
@@ -83,19 +79,6 @@ export const VehicleManagementModal: React.FC<VehicleManagementModalProps> = ({
         },
       ]
     );
-  };
-
-  const handleSetPrimary = async (vehicleId: string) => {
-    if (!authToken) return;
-    
-    try {
-      await userVehicleService.setPrimaryVehicle(authToken, vehicleId);
-      Alert.alert('Başarılı', 'Ana araç değiştirildi.');
-      await loadVehicles();
-    } catch (error) {
-      console.error('Error setting primary vehicle:', error);
-      Alert.alert('Hata', 'Ana araç değiştirilirken bir hata oluştu.');
-    }
   };
 
   const renderVehicleCard = (vehicle: UserVehicle) => (
@@ -214,334 +197,13 @@ export const VehicleManagementModal: React.FC<VehicleManagementModalProps> = ({
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.gray900,
-  },
-  lightContainer: {
-    backgroundColor: colors.gray50,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingVertical: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.gray800,
-  },
-  lightHeader: {
-    borderBottomColor: colors.gray200,
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: colors.white,
-  },
-  lightHeaderTitle: {
-    color: colors.gray900,
-  },
-  placeholder: {
-    width: 24,
-  },
-  content: {
-    flex: 1,
-  },
-  loadingContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 50,
-  },
-  loadingText: {
-    marginTop: 10,
-    color: colors.gray400,
-    fontSize: 16,
-  },
-  lightLoadingText: {
-    color: colors.gray600,
-  },
-  emptyContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 40,
-    paddingVertical: 50,
-  },
-  emptyTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: colors.white,
-    marginTop: 20,
-    marginBottom: 10,
-  },
-  lightEmptyTitle: {
-    color: colors.gray900,
-  },
-  emptyText: {
-    fontSize: 16,
-    color: colors.gray400,
-    textAlign: 'center',
-    marginBottom: 30,
-  },
-  lightEmptyText: {
-    color: colors.gray600,
-  },
-  addFirstButton: {
-    backgroundColor: colors.primary,
-    paddingHorizontal: 30,
-    paddingVertical: 15,
-    borderRadius: 10,
-  },
-  addFirstButtonText: {
-    color: colors.white,
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  vehiclesList: {
-    padding: 20,
-  },
-  vehicleCard: {
-    backgroundColor: colors.gray800,
-    borderRadius: 12,
-    padding: 15,
-    marginBottom: 15,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  lightVehicleCard: {
-    backgroundColor: colors.white,
-    borderWidth: 1,
-    borderColor: colors.gray200,
-  },
-  vehicleInfo: {
-    flex: 1,
-  },
-  vehicleHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 5,
-  },
-  vehicleName: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: colors.white,
-    flex: 1,
-  },
-  lightVehicleName: {
-    color: colors.gray900,
-  },
-  primaryBadge: {
-    backgroundColor: colors.primary,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  primaryText: {
-    color: colors.white,
-    fontSize: 12,
-    fontWeight: '500',
-  },
-  vehicleDetails: {
-    fontSize: 14,
-    color: colors.gray400,
-    marginBottom: 10,
-  },
-  lightVehicleDetails: {
-    color: colors.gray600,
-  },
-  vehicleSpecs: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  specItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginRight: 15,
-  },
-  specText: {
-    fontSize: 12,
-    color: colors.gray300,
-    marginLeft: 4,
-  },
-  lightSpecText: {
-    color: colors.gray700,
-  },
-  vehicleActions: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
   actionButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
     alignItems: 'center',
+    borderRadius: 20,
+    height: 40,
     justifyContent: 'center',
     marginLeft: 10,
-  },
-  primaryButton: {
-    backgroundColor: colors.primary,
-  },
-  deleteButton: {
-    backgroundColor: colors.error,
-  },
-  addFormContainer: {
-    padding: 20,
-  },
-  addFormTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: colors.white,
-    textAlign: 'center',
-    marginBottom: 30,
-  },
-  lightAddFormTitle: {
-    color: colors.gray900,
-  },
-  stepTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: colors.white,
-    marginTop: 20,
-    marginBottom: 15,
-  },
-  lightStepTitle: {
-    color: colors.gray900,
-  },
-  horizontalScroll: {
-    marginBottom: 10,
-  },
-  brandCard: {
-    backgroundColor: colors.gray800,
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    borderRadius: 8,
-    marginRight: 10,
-    borderWidth: 1,
-    borderColor: 'transparent',
-  },
-  lightBrandCard: {
-    backgroundColor: colors.white,
-    borderColor: colors.gray200,
-  },
-  selectedBrandCard: {
-    borderColor: colors.primary,
-    backgroundColor: colors.primary + '20',
-  },
-  brandText: {
-    color: colors.white,
-    fontSize: 14,
-    fontWeight: '500',
-  },
-  lightBrandText: {
-    color: colors.gray900,
-  },
-  selectedBrandText: {
-    color: colors.primary,
-  },
-  modelCard: {
-    backgroundColor: colors.gray800,
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    borderRadius: 8,
-    marginRight: 10,
-    borderWidth: 1,
-    borderColor: 'transparent',
-  },
-  lightModelCard: {
-    backgroundColor: colors.white,
-    borderColor: colors.gray200,
-  },
-  selectedModelCard: {
-    borderColor: colors.primary,
-    backgroundColor: colors.primary + '20',
-  },
-  modelText: {
-    color: colors.white,
-    fontSize: 14,
-    fontWeight: '500',
-  },
-  lightModelText: {
-    color: colors.gray900,
-  },
-  selectedModelText: {
-    color: colors.primary,
-  },
-  variantCard: {
-    backgroundColor: colors.gray800,
-    padding: 15,
-    borderRadius: 8,
-    marginBottom: 10,
-    borderWidth: 1,
-    borderColor: 'transparent',
-  },
-  lightVariantCard: {
-    backgroundColor: colors.white,
-    borderColor: colors.gray200,
-  },
-  selectedVariantCard: {
-    borderColor: colors.primary,
-    backgroundColor: colors.primary + '20',
-  },
-  variantName: {
-    color: colors.white,
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 5,
-  },
-  lightVariantName: {
-    color: colors.gray900,
-  },
-  selectedVariantName: {
-    color: colors.primary,
-  },
-  variantSpecs: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  variantSpecText: {
-    color: colors.gray400,
-    fontSize: 14,
-  },
-  lightVariantSpecText: {
-    color: colors.gray600,
-  },
-  nicknameInput: {
-    backgroundColor: colors.gray800,
-    borderWidth: 1,
-    borderColor: colors.gray700,
-    borderRadius: 8,
-    paddingHorizontal: 15,
-    paddingVertical: 12,
-    color: colors.white,
-    fontSize: 16,
-    marginBottom: 20,
-  },
-  lightNicknameInput: {
-    backgroundColor: colors.white,
-    borderColor: colors.gray200,
-    color: colors.gray900,
-  },
-  formActions: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 30,
-  },
-  formButton: {
-    flex: 1,
-    paddingVertical: 15,
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  cancelButton: {
-    backgroundColor: colors.gray600,
-    marginRight: 10,
-  },
-  cancelButtonText: {
-    color: colors.white,
-    fontSize: 16,
-    fontWeight: '600',
+    width: 40,
   },
   addButton: {
     backgroundColor: colors.primary,
@@ -552,7 +214,328 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
   },
+  addFirstButton: {
+    backgroundColor: colors.primary,
+    borderRadius: 10,
+    paddingHorizontal: 30,
+    paddingVertical: 15,
+  },
+  addFirstButtonText: {
+    color: colors.white,
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  addFormContainer: {
+    padding: 20,
+  },
+  addFormTitle: {
+    color: colors.white,
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 30,
+    textAlign: 'center',
+  },
+  brandCard: {
+    backgroundColor: colors.gray800,
+    borderColor: 'transparent',
+    borderRadius: 8,
+    borderWidth: 1,
+    marginRight: 10,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+  },
+  brandText: {
+    color: colors.white,
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  cancelButton: {
+    backgroundColor: colors.gray600,
+    marginRight: 10,
+  },
+  cancelButtonText: {
+    color: colors.white,
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  container: {
+    backgroundColor: colors.gray900,
+    flex: 1,
+  },
+  content: {
+    flex: 1,
+  },
+  deleteButton: {
+    backgroundColor: colors.error,
+  },
   disabledButton: {
     opacity: 0.5,
+  },
+  emptyContainer: {
+    alignItems: 'center',
+    flex: 1,
+    justifyContent: 'center',
+    paddingHorizontal: 40,
+    paddingVertical: 50,
+  },
+  emptyText: {
+    color: colors.gray400,
+    fontSize: 16,
+    marginBottom: 30,
+    textAlign: 'center',
+  },
+  emptyTitle: {
+    color: colors.white,
+    fontSize: 20,
+    fontWeight: '600',
+    marginBottom: 10,
+    marginTop: 20,
+  },
+  formActions: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 30,
+  },
+  formButton: {
+    alignItems: 'center',
+    borderRadius: 8,
+    flex: 1,
+    justifyContent: 'center',
+    paddingVertical: 15,
+  },
+  header: {
+    alignItems: 'center',
+    borderBottomColor: colors.gray800,
+    borderBottomWidth: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingVertical: 15,
+  },
+  headerTitle: {
+    color: colors.white,
+    fontSize: 18,
+    fontWeight: '600',
+  },
+  horizontalScroll: {
+    marginBottom: 10,
+  },
+  lightAddFormTitle: {
+    color: colors.gray900,
+  },
+  lightBrandCard: {
+    backgroundColor: colors.white,
+    borderColor: colors.gray200,
+  },
+  lightBrandText: {
+    color: colors.gray900,
+  },
+  lightContainer: {
+    backgroundColor: colors.gray50,
+  },
+  lightEmptyText: {
+    color: colors.gray600,
+  },
+  lightEmptyTitle: {
+    color: colors.gray900,
+  },
+  lightHeader: {
+    borderBottomColor: colors.gray200,
+  },
+  lightHeaderTitle: {
+    color: colors.gray900,
+  },
+  lightLoadingText: {
+    color: colors.gray600,
+  },
+  lightModelCard: {
+    backgroundColor: colors.white,
+    borderColor: colors.gray200,
+  },
+  lightModelText: {
+    color: colors.gray900,
+  },
+  lightNicknameInput: {
+    backgroundColor: colors.white,
+    borderColor: colors.gray200,
+    color: colors.gray900,
+  },
+  lightSpecText: {
+    color: colors.gray700,
+  },
+  lightStepTitle: {
+    color: colors.gray900,
+  },
+  lightVariantCard: {
+    backgroundColor: colors.white,
+    borderColor: colors.gray200,
+  },
+  lightVariantName: {
+    color: colors.gray900,
+  },
+  lightVariantSpecText: {
+    color: colors.gray600,
+  },
+  lightVehicleCard: {
+    backgroundColor: colors.white,
+    borderColor: colors.gray200,
+    borderWidth: 1,
+  },
+  lightVehicleDetails: {
+    color: colors.gray600,
+  },
+  lightVehicleName: {
+    color: colors.gray900,
+  },
+  loadingContainer: {
+    alignItems: 'center',
+    flex: 1,
+    justifyContent: 'center',
+    paddingVertical: 50,
+  },
+  loadingText: {
+    color: colors.gray400,
+    fontSize: 16,
+    marginTop: 10,
+  },
+  modelCard: {
+    backgroundColor: colors.gray800,
+    borderColor: 'transparent',
+    borderRadius: 8,
+    borderWidth: 1,
+    marginRight: 10,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+  },
+  modelText: {
+    color: colors.white,
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  nicknameInput: {
+    backgroundColor: colors.gray800,
+    borderColor: colors.gray700,
+    borderRadius: 8,
+    borderWidth: 1,
+    color: colors.white,
+    fontSize: 16,
+    marginBottom: 20,
+    paddingHorizontal: 15,
+    paddingVertical: 12,
+  },
+  placeholder: {
+    width: 24,
+  },
+  primaryBadge: {
+    backgroundColor: colors.primary,
+    borderRadius: 12,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+  },
+  primaryButton: {
+    backgroundColor: colors.primary,
+  },
+  primaryText: {
+    color: colors.white,
+    fontSize: 12,
+    fontWeight: '500',
+  },
+  selectedBrandCard: {
+    backgroundColor: colors.primary + '20',
+    borderColor: colors.primary,
+  },
+  selectedBrandText: {
+    color: colors.primary,
+  },
+  selectedModelCard: {
+    backgroundColor: colors.primary + '20',
+    borderColor: colors.primary,
+  },
+  selectedModelText: {
+    color: colors.primary,
+  },
+  selectedVariantCard: {
+    backgroundColor: colors.primary + '20',
+    borderColor: colors.primary,
+  },
+  selectedVariantName: {
+    color: colors.primary,
+  },
+  specItem: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    marginRight: 15,
+  },
+  specText: {
+    color: colors.gray300,
+    fontSize: 12,
+    marginLeft: 4,
+  },
+  stepTitle: {
+    color: colors.white,
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: 15,
+    marginTop: 20,
+  },
+  variantCard: {
+    backgroundColor: colors.gray800,
+    borderColor: 'transparent',
+    borderRadius: 8,
+    borderWidth: 1,
+    marginBottom: 10,
+    padding: 15,
+  },
+  variantName: {
+    color: colors.white,
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 5,
+  },
+  variantSpecText: {
+    color: colors.gray400,
+    fontSize: 14,
+  },
+  variantSpecs: {
+    alignItems: 'center',
+    flexDirection: 'row',
+  },
+  vehicleActions: {
+    alignItems: 'center',
+    flexDirection: 'row',
+  },
+  vehicleCard: {
+    alignItems: 'center',
+    backgroundColor: colors.gray800,
+    borderRadius: 12,
+    flexDirection: 'row',
+    marginBottom: 15,
+    padding: 15,
+  },
+  vehicleDetails: {
+    color: colors.gray400,
+    fontSize: 14,
+    marginBottom: 10,
+  },
+  vehicleHeader: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    marginBottom: 5,
+  },
+  vehicleInfo: {
+    flex: 1,
+  },
+  vehicleName: {
+    color: colors.white,
+    flex: 1,
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  vehicleSpecs: {
+    alignItems: 'center',
+    flexDirection: 'row',
+  },
+  vehiclesList: {
+    padding: 20,
   },
 });

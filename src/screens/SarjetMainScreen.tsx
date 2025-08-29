@@ -22,7 +22,6 @@ import { PrivacySettingsModal } from '../components/PrivacySettingsModal';
 import { FilterModal } from '../components/FilterModal';
 import AdvancedFilterModal, { AdvancedFilterOptions } from '../components/AdvancedFilterModal';
 import EnhancedFilterSystem, { EnhancedFilterOptions } from '../components/EnhancedFilterSystem';
-import QuickFilterBar from '../components/QuickFilterBar';
 import RoutePlanning, { RouteInfo } from '../components/RoutePlanning';
 
 import Toast, { ToastType } from '../components/Toast';
@@ -90,9 +89,6 @@ const SarjetMainScreen: React.FC<{
   const [enhancedFilters, setEnhancedFilters] = useState<EnhancedFilterOptions>(
     EnhancedFilterService.getDefaultFilters()
   );
-  
-  // Filter state for quick filter buttons
-  const [activeQuickFilters, setActiveQuickFilters] = useState<string[]>([]);
   
   // Popup state
   const [selectedStation, setSelectedStation] = useState<ChargingStation | null>(null);
@@ -252,19 +248,6 @@ const SarjetMainScreen: React.FC<{
     AnalyticsService.trackUserBehavior(userId, sessionId, 'search_performed', { query });
   }, [allStations]);
 
-  // Handle quick filter press
-  const handleQuickFilterPress = useCallback((filter: string) => {
-    setActiveQuickFilters(prev => {
-      if (prev.includes(filter)) {
-        return prev.filter(f => f !== filter);
-      } else {
-        return [...prev, filter];
-      }
-    });
-    
-    AnalyticsService.trackUserBehavior(userId, sessionId, 'quick_filter_used', { filter });
-  }, []);
-
   // Handle station press
   const handleStationPress = useCallback((station: ChargingStation) => {
     setSelectedStation(station);
@@ -368,42 +351,6 @@ const SarjetMainScreen: React.FC<{
     setPresetDestination(null);
   }, []);
 
-  // Handle quick filter toggle with enhanced filters
-  const handleQuickFilterToggle = useCallback((filter: string) => {
-    setActiveQuickFilters(prev => {
-      if (prev.includes(filter)) {
-        return prev.filter(f => f !== filter);
-      } else {
-        return [...prev, filter];
-      }
-    });
-    
-    // Enhanced filter sistemini de güncelle
-    const newEnhancedFilters = { ...enhancedFilters };
-    switch (filter) {
-      case 'available':
-        newEnhancedFilters.quickFilters.available = !enhancedFilters.quickFilters.available;
-        break;
-      case 'fast':
-        newEnhancedFilters.quickFilters.fastCharging = !enhancedFilters.quickFilters.fastCharging;
-        break;
-      case 'free':
-        newEnhancedFilters.quickFilters.free = !enhancedFilters.quickFilters.free;
-        break;
-      case 'nearby':
-        newEnhancedFilters.quickFilters.nearby = !enhancedFilters.quickFilters.nearby;
-        break;
-      case 'favorite':
-        newEnhancedFilters.quickFilters.favorite = !enhancedFilters.quickFilters.favorite;
-        break;
-    }
-    
-    setEnhancedFilters(newEnhancedFilters);
-    applyEnhancedFilters(newEnhancedFilters);
-    
-    AnalyticsService.trackUserBehavior(userId, sessionId, 'quick_filter_used', { filter });
-  }, [enhancedFilters]);
-
   // Apply enhanced filters
   const applyEnhancedFilters = useCallback((filtersToApply: EnhancedFilterOptions) => {
     let filtered = EnhancedFilterService.applyFilters(allStations, filtersToApply, userLocation);
@@ -420,16 +367,6 @@ const SarjetMainScreen: React.FC<{
   const handleEnhancedFilterApply = useCallback((newFilters: EnhancedFilterOptions) => {
     setEnhancedFilters(newFilters);
     applyEnhancedFilters(newFilters);
-    
-    // Quick filter state'ini de güncelle
-    const newQuickFilters: string[] = [];
-    if (newFilters.quickFilters.available) newQuickFilters.push('available');
-    if (newFilters.quickFilters.fastCharging) newQuickFilters.push('fast');
-    if (newFilters.quickFilters.free) newQuickFilters.push('free');
-    if (newFilters.quickFilters.nearby) newQuickFilters.push('nearby');
-    if (newFilters.quickFilters.favorite) newQuickFilters.push('favorite');
-    
-    setActiveQuickFilters(newQuickFilters);
     
     AnalyticsService.trackUserBehavior(userId, sessionId, 'enhanced_filter_applied', { 
       filterCount: EnhancedFilterService.getActiveFilterCount(newFilters) 
@@ -707,6 +644,9 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     width: 44,
   },
+  bottomNavigationContainer: {
+    paddingBottom: 0, // Alt menüyü daha aşağı it
+  },
   clearRouteButton: {
     backgroundColor: colors.gray600,
     borderRadius: 8,
@@ -789,9 +729,6 @@ const styles = StyleSheet.create({
   startJourneyText: {
     color: colors.white,
     fontWeight: '700',
-  },
-  bottomNavigationContainer: {
-    paddingBottom: 0, // Alt menüyü daha aşağı it
   },
 });
 

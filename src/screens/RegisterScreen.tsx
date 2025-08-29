@@ -4,7 +4,6 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  SafeAreaView,
   TextInput,
   Alert,
   KeyboardAvoidingView,
@@ -14,11 +13,18 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../constants/colors';
+
+interface RegisterFormData {
+  name: string;
+  email: string;
+  password: string;
+  phone?: string;
+}
 import { RegisterVehicleSelection } from '../components/RegisterVehicleSelection';
 import { VehicleBrand, VehicleModel, VehicleVariant } from '../services/userVehicleService';
 import { post } from '../services/apiClient';
 
-const { width, height } = Dimensions.get('window');
+const { height } = Dimensions.get('window');
 
 interface RegisterScreenProps {
   onRegisterSuccess: (token: string, user: { name?: string; email?: string }) => void;
@@ -79,7 +85,14 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({
     console.log('✅ selectedVehicle state updated');
   };
 
-  const handleRegister = async () => {
+  const handleRegister = async (userData: RegisterFormData) => {
+    const { name, email, password, phone } = userData;
+    
+    if (!name || !email || !password) {
+      Alert.alert('Eksik Bilgi', 'Lütfen tüm alanları doldurunuz.');
+      return;
+    }
+
     if (!selectedVehicle) {
       Alert.alert('Hata', 'Lütfen bir araç seçiniz.');
       return;
@@ -88,9 +101,7 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({
     setLoading(true);
     console.log('🚀 Starting registration process...');
     console.log('📝 Form data:', { name, email, phone, password: '***' });
-    console.log('🚗 Selected vehicle:', selectedVehicle);
-
-    try {
+    console.log('🚗 Selected vehicle:', selectedVehicle);    try {
       const requestBody: any = {
         name,
         email: email.toLowerCase(),
@@ -314,7 +325,7 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({
             
             <TouchableOpacity
               style={[styles.registerButton, loading && styles.registerButtonDisabled]}
-              onPress={handleRegister}
+              onPress={() => handleRegister({ name, email, password, phone })}
               disabled={loading}
             >
               {loading ? (
@@ -381,6 +392,20 @@ const styles = StyleSheet.create({
   container: {
     backgroundColor: colors.white,
     flex: 1,
+  },
+  customizationItem: {
+    color: colors.gray600,
+    fontSize: 14,
+    marginBottom: 4,
+  },
+  customizationsSection: {
+    marginBottom: 24,
+  },
+  customizationsTitle: {
+    color: colors.gray800,
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 8,
   },
   formContainer: {
     paddingBottom: 40,
@@ -469,10 +494,10 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   selectedVehicleHeader: {
-    flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 16,
+    flexDirection: 'row',
     gap: 8,
+    marginBottom: 16,
   },
   selectedVehicleInfo: {
     color: colors.primary,
@@ -494,20 +519,6 @@ const styles = StyleSheet.create({
     color: colors.gray800,
     fontSize: 16,
     fontWeight: '600',
-  },
-  customizationsSection: {
-    marginBottom: 24,
-  },
-  customizationsTitle: {
-    color: colors.gray800,
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 8,
-  },
-  customizationItem: {
-    color: colors.gray600,
-    fontSize: 14,
-    marginBottom: 4,
   },
   subtitle: {
     color: colors.gray600,

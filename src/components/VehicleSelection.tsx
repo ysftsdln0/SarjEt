@@ -83,7 +83,7 @@ const VehicleSelection: React.FC<VehicleSelectionProps> = ({
   }, []);
 
   const loadMockData = () => {
-    // Gerçek uygulamada bu veriler API'den gelecek
+    // MVP için sadece Tesla markalı araçlar
     const mockBrands: VehicleBrand[] = [
       {
         id: '1',
@@ -91,34 +91,6 @@ const VehicleSelection: React.FC<VehicleSelectionProps> = ({
         country: 'USA',
         logo: 'https://upload.wikimedia.org/wikipedia/commons/e/e8/Tesla_logo.png',
         website: 'https://www.tesla.com'
-      },
-      {
-        id: '2',
-        name: 'BMW',
-        country: 'Germany',
-        logo: 'https://upload.wikimedia.org/wikipedia/commons/4/44/BMW.svg',
-        website: 'https://www.bmw.com.tr'
-      },
-      {
-        id: '3',
-        name: 'Mercedes-Benz',
-        country: 'Germany',
-        logo: 'https://upload.wikimedia.org/wikipedia/commons/9/90/Mercedes-Logo.svg',
-        website: 'https://www.mercedes-benz.com.tr'
-      },
-      {
-        id: '4',
-        name: 'Audi',
-        country: 'Germany',
-        logo: 'https://upload.wikimedia.org/wikipedia/commons/9/92/Audi-Logo_2016.svg',
-        website: 'https://www.audi.com.tr'
-      },
-      {
-        id: '5',
-        name: 'Volkswagen',
-        country: 'Germany',
-        logo: 'https://upload.wikimedia.org/wikipedia/commons/9/9d/Volkswagen_logo_2019.svg',
-        website: 'https://www.volkswagen.com.tr'
       }
     ];
     
@@ -135,30 +107,48 @@ const VehicleSelection: React.FC<VehicleSelectionProps> = ({
   };
 
   const loadModelsForBrand = (brandId: string) => {
-    // Mock model verisi
+    // Tesla modelleri - gerçek dünya yapısına uygun
     const mockModels: VehicleModel[] = [];
     
     if (brandId === '1') { // Tesla
       mockModels.push(
-        { id: '1', name: 'Model 3', category: 'Sedan', bodyType: '4 kapı', startYear: 2017 },
-        { id: '2', name: 'Model Y', category: 'SUV', bodyType: '5 kapı', startYear: 2020 }
-      );
-    } else if (brandId === '2') { // BMW
-      mockModels.push(
-        { id: '3', name: 'iX', category: 'SUV', bodyType: '5 kapı', startYear: 2021 },
-        { id: '4', name: 'i4', category: 'Sedan', bodyType: '4 kapı', startYear: 2021 }
-      );
-    } else if (brandId === '3') { // Mercedes
-      mockModels.push(
-        { id: '5', name: 'EQS', category: 'Sedan', bodyType: '4 kapı', startYear: 2021 },
-        { id: '6', name: 'EQE', category: 'Sedan', bodyType: '4 kapı', startYear: 2022 }
+        {
+          id: '1',
+          name: 'Model 3',
+          category: 'Compact Executive',
+          bodyType: 'Sedan',
+          startYear: 2017,
+          endYear: undefined
+        },
+        {
+          id: '2',
+          name: 'Model Y',
+          category: 'Compact SUV',
+          bodyType: 'SUV',
+          startYear: 2020,
+          endYear: undefined
+        },
+        {
+          id: '3',
+          name: 'Model S',
+          category: 'Full-Size Luxury',
+          bodyType: 'Sedan',
+          startYear: 2012,
+          endYear: undefined
+        },
+        {
+          id: '4',
+          name: 'Model X',
+          category: 'Mid-Size Luxury',
+          bodyType: 'SUV',
+          startYear: 2015,
+          endYear: undefined
+        }
       );
     }
     
     setModels(mockModels);
-  };
-
-  const handleModelSelect = (model: VehicleModel) => {
+  };  const handleModelSelect = (model: VehicleModel) => {
     setSelectedModel(model);
     setSelectedVariant(null);
     
@@ -167,51 +157,135 @@ const VehicleSelection: React.FC<VehicleSelectionProps> = ({
   };
 
   const loadVariantsForModel = (modelId: string) => {
-    // Mock varyant verisi
+    // Tesla modelleri için gerçek varyantlar - sadece mevcut olanlar
     const mockVariants: VehicleVariant[] = [];
     
     if (modelId === '1') { // Model 3
       mockVariants.push(
         {
           id: '1',
-          name: 'Standard Range',
+          name: 'Rear-Wheel Drive',
           year: 2024,
-          batteryCapacity: 60,
-          maxRange: 409,
-          power: 175,
-          efficiency: 15.6,
+          batteryCapacity: 57.5,
+          maxRange: 491,
+          power: 208,
+          efficiency: 15.1,
           maxDCCharging: 170,
           chargingPort: 'Tesla Supercharger + Type 2',
-          basePrice: 1250000,
+          basePrice: 1350000,
           currency: 'TL'
         },
         {
           id: '2',
           name: 'Long Range',
           year: 2024,
-          batteryCapacity: 82,
-          maxRange: 576,
+          batteryCapacity: 78,
+          maxRange: 629,
           power: 324,
           efficiency: 15.6,
           maxDCCharging: 250,
           chargingPort: 'Tesla Supercharger + Type 2',
-          basePrice: 1450000,
+          basePrice: 1550000,
+          currency: 'TL'
+        },
+        {
+          id: '3',
+          name: 'Performance',
+          year: 2024,
+          batteryCapacity: 78,
+          maxRange: 547,
+          power: 393,
+          efficiency: 16.1,
+          maxDCCharging: 250,
+          chargingPort: 'Tesla Supercharger + Type 2',
+          basePrice: 1750000,
           currency: 'TL'
         }
       );
     } else if (modelId === '2') { // Model Y
       mockVariants.push(
         {
-          id: '3',
-          name: 'Standard Range',
+          id: '4',
+          name: 'Long Range',
           year: 2024,
-          batteryCapacity: 60,
-          maxRange: 394,
-          power: 175,
-          efficiency: 16.1,
-          maxDCCharging: 170,
+          batteryCapacity: 78,
+          maxRange: 533,
+          power: 324,
+          efficiency: 16.9,
+          maxDCCharging: 250,
           chargingPort: 'Tesla Supercharger + Type 2',
-          basePrice: 1350000,
+          basePrice: 1650000,
+          currency: 'TL'
+        },
+        {
+          id: '5',
+          name: 'Performance',
+          year: 2024,
+          batteryCapacity: 78,
+          maxRange: 514,
+          power: 393,
+          efficiency: 17.1,
+          maxDCCharging: 250,
+          chargingPort: 'Tesla Supercharger + Type 2',
+          basePrice: 1850000,
+          currency: 'TL'
+        }
+      );
+    } else if (modelId === '3') { // Model S
+      mockVariants.push(
+        {
+          id: '6',
+          name: 'Dual Motor',
+          year: 2024,
+          batteryCapacity: 100,
+          maxRange: 634,
+          power: 493,
+          efficiency: 16.4,
+          maxDCCharging: 250,
+          chargingPort: 'Tesla Supercharger + Type 2',
+          basePrice: 2750000,
+          currency: 'TL'
+        },
+        {
+          id: '7',
+          name: 'Plaid',
+          year: 2024,
+          batteryCapacity: 100,
+          maxRange: 600,
+          power: 750,
+          efficiency: 17.3,
+          maxDCCharging: 250,
+          chargingPort: 'Tesla Supercharger + Type 2',
+          basePrice: 3350000,
+          currency: 'TL'
+        }
+      );
+    } else if (modelId === '4') { // Model X
+      mockVariants.push(
+        {
+          id: '8',
+          name: 'Dual Motor',
+          year: 2024,
+          batteryCapacity: 100,
+          maxRange: 560,
+          power: 493,
+          efficiency: 18.5,
+          maxDCCharging: 250,
+          chargingPort: 'Tesla Supercharger + Type 2',
+          basePrice: 3050000,
+          currency: 'TL'
+        },
+        {
+          id: '9',
+          name: 'Plaid',
+          year: 2024,
+          batteryCapacity: 100,
+          maxRange: 528,
+          power: 750,
+          efficiency: 19.6,
+          maxDCCharging: 250,
+          chargingPort: 'Tesla Supercharger + Type 2',
+          basePrice: 3650000,
           currency: 'TL'
         }
       );

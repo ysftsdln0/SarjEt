@@ -488,6 +488,9 @@ const styles = StyleSheet.create({
     backgroundColor: colors.white, // Koyu modda da beyaz (örneklerde koyu mod yok)
   },
   // Header Styles
+  darkHeader: {
+    backgroundColor: colors.white,
+  },
   header: {
     alignItems: 'center',
     backgroundColor: colors.white,
@@ -499,9 +502,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 16,
     shadowOpacity: 0,
-  },
-  darkHeader: {
-    backgroundColor: colors.white,
   },
   backButton: {
     backgroundColor: colors.stationDetail_lightGray,

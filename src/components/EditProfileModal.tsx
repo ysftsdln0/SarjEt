@@ -41,39 +41,28 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
   const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
+  const isValidEmail = (email: string): boolean => {
+    return /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/.test(email);
+  };
+
   const handleSave = async () => {
-    if (!name.trim() || !email.trim()) {
-      Alert.alert('Hata', 'İsim ve e-posta alanları zorunludur.');
+    if (name.trim() === '') {
+      Alert.alert('Hata', 'Ad alanı boş olamaz.');
       return;
     }
 
-    if (isChangingPassword) {
-      if (!currentPassword || !newPassword || !confirmPassword) {
-        Alert.alert('Hata', 'Şifre değişikliği için tüm alanları doldurun.');
-        return;
-      }
-      if (newPassword !== confirmPassword) {
-        Alert.alert('Hata', 'Yeni şifreler eşleşmiyor.');
-        return;
-      }
-      if (newPassword.length < 6) {
-        Alert.alert('Hata', 'Yeni şifre en az 6 karakter olmalıdır.');
-        return;
-      }
+    if (email.trim() === '' || !isValidEmail(email)) {
+      Alert.alert('Hata', 'Geçerli bir e-posta adresi giriniz.');
+      return;
     }
 
-    setIsLoading(true);
     try {
-      await onSave({
-        name: name.trim(),
-        email: email.trim(),
-        phone: phone.trim(),
-      });
-      Alert.alert('Başarılı', 'Profil bilgileriniz güncellendi.', [
-        { text: 'Tamam', onPress: onClose }
-      ]);
-    } catch (error) {
-      Alert.alert('Hata', 'Profil güncellenirken bir hata oluştu.');
+      setIsLoading(true);
+      await onSave({ name, email, phone });
+      onClose();
+    } catch (err) {
+      console.error('Profile save error:', err);
+      Alert.alert('Hata', 'Profil kaydedilemedi. Tekrar deneyin.');
     } finally {
       setIsLoading(false);
     }
@@ -212,104 +201,104 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
 };
 
 const styles = StyleSheet.create({
+  closeButton: {
+    alignItems: 'center',
+    height: 40,
+    justifyContent: 'center',
+    width: 40,
+  },
   container: {
-    flex: 1,
     backgroundColor: colors.black,
+    flex: 1,
+  },
+  content: {
+    flex: 1,
+    padding: 16,
+  },
+  disabledText: {
+    opacity: 0.5,
+  },
+  header: {
+    alignItems: 'center',
+    borderBottomColor: colors.gray800,
+    borderBottomWidth: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    padding: 16,
+  },
+  input: {
+    backgroundColor: colors.gray900,
+    borderColor: colors.gray700,
+    borderRadius: 12,
+    borderWidth: 1,
+    color: colors.white,
+    fontSize: 16,
+    padding: 16,
+  },
+  inputContainer: {
+    marginBottom: 16,
+  },
+  label: {
+    color: colors.white,
+    fontSize: 16,
+    fontWeight: '500',
+    marginBottom: 8,
   },
   lightContainer: {
     backgroundColor: colors.white,
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.gray800,
-  },
   lightHeader: {
     borderBottomColor: colors.gray200,
   },
-  closeButton: {
-    width: 40,
-    height: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
+  lightInput: {
+    backgroundColor: colors.gray100,
+    borderColor: colors.gray300,
+    color: colors.black,
   },
-  title: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: colors.white,
+  lightInputContainer: {
+    // No additional styles needed
+  },
+  lightLabel: {
+    color: colors.black,
+  },
+  lightPasswordToggle: {
+    // No additional styles needed
+  },
+  lightSectionTitle: {
+    color: colors.black,
   },
   lightTitle: {
     color: colors.black,
   },
+  passwordToggle: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 16,
+  },
   saveButton: {
+    backgroundColor: colors.primary,
+    borderRadius: 8,
     paddingHorizontal: 16,
     paddingVertical: 8,
-    borderRadius: 8,
-    backgroundColor: colors.primary,
   },
   saveButtonText: {
     color: colors.white,
     fontSize: 16,
     fontWeight: '600',
   },
-  disabledText: {
-    opacity: 0.5,
-  },
-  content: {
-    flex: 1,
-    padding: 16,
-  },
   section: {
     marginBottom: 24,
   },
   sectionTitle: {
+    color: colors.white,
     fontSize: 20,
     fontWeight: '600',
-    color: colors.white,
     marginBottom: 16,
   },
-  lightSectionTitle: {
-    color: colors.black,
-  },
-  passwordToggle: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 16,
-  },
-  lightPasswordToggle: {
-    // No additional styles needed
-  },
-  inputContainer: {
-    marginBottom: 16,
-  },
-  lightInputContainer: {
-    // No additional styles needed
-  },
-  label: {
-    fontSize: 16,
-    fontWeight: '500',
+  title: {
     color: colors.white,
-    marginBottom: 8,
-  },
-  lightLabel: {
-    color: colors.black,
-  },
-  input: {
-    backgroundColor: colors.gray900,
-    borderRadius: 12,
-    padding: 16,
-    fontSize: 16,
-    color: colors.white,
-    borderWidth: 1,
-    borderColor: colors.gray700,
-  },
-  lightInput: {
-    backgroundColor: colors.gray100,
-    color: colors.black,
-    borderColor: colors.gray300,
+    fontSize: 18,
+    fontWeight: '600',
   },
 });
