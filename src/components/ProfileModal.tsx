@@ -43,6 +43,11 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [fastChargingOnly, setFastChargingOnly] = useState(false);
 
+  // DEBUG: User nesnesini log'la
+  console.log('🔧 ProfileModal - user object:', JSON.stringify(user, null, 2));
+  console.log('🔧 ProfileModal - userVehicles:', user?.userVehicles);
+  console.log('🔧 ProfileModal - userVehicles length:', user?.userVehicles?.length);
+
   // Helper functions for vehicle display
   const getVehicleDisplayName = (vehicle: any) => {
     if (vehicle.nickname) {
@@ -96,7 +101,11 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
           <View style={styles.headerSpacer} />
         </View>
 
-        <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+        <ScrollView 
+          style={styles.content} 
+          contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 20, paddingBottom: 100 }}
+          showsVerticalScrollIndicator={false}
+        >
           {/* Kullanıcı Profil Kartı */}
           <View style={styles.profileSection}>
             <View style={[styles.profileCard, !isDarkMode && styles.lightProfileCard]}>
@@ -124,57 +133,6 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
               </View>
             </View>
           </View>
-
-          {/* Araç Bilgileri */}
-          {user?.userVehicles && user.userVehicles.length > 0 && (
-            <View style={styles.section}>
-              <Text style={[styles.sectionTitle, !isDarkMode && styles.lightSectionTitle]}>Araçlarım</Text>
-              {user.userVehicles.map((vehicle: any, index: number) => (
-                <View key={index} style={[styles.modernVehicleCard, !isDarkMode && styles.lightModernVehicleCard]}>
-                  <View style={styles.vehicleHeader}>
-                    <View style={[styles.vehicleIcon, { backgroundColor: colors.primary + '15' }]}>
-                      <Ionicons name="car-sport" size={20} color={colors.primary} />
-                    </View>
-                    <View style={styles.vehicleDetails}>
-                      <Text style={[styles.vehicleTitle, !isDarkMode && styles.lightVehicleTitle]}>
-                        {vehicle.nickname || getVehicleDisplayName(vehicle)}
-                      </Text>
-                      <Text style={[styles.vehicleSubtitle, !isDarkMode && styles.lightVehicleSubtitle]}>
-                        {getVehicleSpecs(vehicle)}
-                      </Text>
-                    </View>
-                    <View style={styles.batteryStatus}>
-                      <Text style={[styles.batteryPercent, !isDarkMode && styles.lightBatteryPercent]}>
-                        {vehicle.currentBatteryLevel || 100}%
-                      </Text>
-                      <View style={styles.batteryIndicator}>
-                        <View 
-                          style={[
-                            styles.batteryFill, 
-                            { width: `${vehicle.currentBatteryLevel || 100}%` }
-                          ]} 
-                        />
-                      </View>
-                    </View>
-                  </View>
-                  <View style={styles.modernVehicleSpecs}>
-                    <View style={styles.specItem}>
-                      <Ionicons name="battery-charging" size={16} color={colors.success} />
-                      <Text style={[styles.specText, !isDarkMode && styles.lightSpecText]}>
-                        {vehicle.variant?.batteryCapacity || 'N/A'} kWh
-                      </Text>
-                    </View>
-                    <View style={styles.specItem}>
-                      <Ionicons name="speedometer" size={16} color={colors.warning} />
-                      <Text style={[styles.specText, !isDarkMode && styles.lightSpecText]}>
-                        {vehicle.variant?.maxRange || 'N/A'} km
-                      </Text>
-                    </View>
-                  </View>
-                </View>
-              ))}
-            </View>
-          )}
 
           {/* Kişisel Bilgiler - Düzenleme */}
           <View style={styles.section}>
@@ -481,6 +439,7 @@ const styles = StyleSheet.create({
   container: {
     backgroundColor: colors.darkBg,
     flex: 1,
+    minHeight: '100%',
   },
   header: {
     alignItems: 'center',
@@ -501,7 +460,6 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    paddingHorizontal: 20,
   },
   section: {
     marginTop: 24,
@@ -655,7 +613,11 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
   batteryIndicator: {
-    alignItems: 'flex-end',
+    backgroundColor: colors.gray600,
+    borderRadius: 4,
+    height: 6,
+    width: 50,
+    overflow: 'hidden',
   },
   batteryLevel: {
     color: colors.darkText,
@@ -793,6 +755,7 @@ const styles = StyleSheet.create({
   vehicleHeader: {
     alignItems: 'center',
     flexDirection: 'row',
+    justifyContent: 'space-between',
     marginBottom: 12,
   },
   vehicleIcon: {
@@ -823,7 +786,8 @@ const styles = StyleSheet.create({
     color: colors.gray600,
   },
   batteryStatus: {
-    alignItems: 'flex-end',
+    alignItems: 'center',
+    minWidth: 60,
   },
   batteryPercent: {
     color: colors.darkText,
@@ -952,6 +916,55 @@ const styles = StyleSheet.create({
   },
   lightLogoutTitle: {
     color: colors.error,
+  },
+  
+  // No Vehicle Card Styles
+  noVehicleCard: {
+    backgroundColor: colors.darkCard,
+    borderRadius: 16,
+    padding: 20,
+    alignItems: 'center',
+    marginBottom: 16,
+    borderColor: colors.gray200,
+    borderWidth: 1,
+  },
+  lightNoVehicleCard: {
+    backgroundColor: colors.white,
+    borderColor: colors.gray300,
+  },
+  noVehicleText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: colors.darkText,
+    marginTop: 12,
+    textAlign: 'center',
+  },
+  lightNoVehicleText: {
+    color: colors.lightText,
+  },
+  noVehicleSubtext: {
+    fontSize: 14,
+    color: colors.gray500,
+    marginTop: 4,
+    textAlign: 'center',
+  },
+  lightNoVehicleSubtext: {
+    color: colors.gray600,
+  },
+  addVehicleButton: {
+    backgroundColor: colors.primary,
+    borderRadius: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 12,
+  },
+  addVehicleButtonText: {
+    color: colors.white,
+    fontSize: 14,
+    fontWeight: '600',
+    marginLeft: 6,
   },
   
   // Footer
