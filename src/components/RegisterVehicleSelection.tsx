@@ -235,24 +235,42 @@ export const RegisterVehicleSelection: React.FC<RegisterVehicleSelectionProps> =
   };
 
   const loadModelsForBrand = async (brand: VehicleBrand, signal?: AbortSignal) => {
-    if (brandSource === 'db' && !brand.id.startsWith('ev:')) {
+    console.log('🔍 Loading models for brand:', brand.name, 'ID:', brand.id);
+    console.log('📊 Brand source:', brandSource);
+    
+    // EV data kaynağı kontrolü - hem "ev:" hem de "ev-" ile başlayan ID'ler
+    const isEVBrand = brand.id.startsWith('ev:') || brand.id.startsWith('ev-');
+    
+    if (brandSource === 'db' && !isEVBrand) {
+      console.log('🏦 Loading from DB for brand:', brand.id);
       const modelsData = await userVehicleService.getVehicleModels(brand.id);
+      console.log('✅ DB models loaded:', modelsData.length);
       setModels(modelsData);
       setModelSource('db');
       setStep(2);
       return;
     }
 
+    console.log('⚡ Loading from EV data for brand:', brand.name);
     const evs = await fetchEVVehiclesOnce(signal);
+    console.log('📦 Total EV vehicles:', evs.length);
+    
+    const filteredVehicles = evs.filter((v: EVNormalized) => v.brand === brand.name);
+    console.log('🔍 Vehicles for brand', brand.name, ':', filteredVehicles.length);
+    
     const modelNames = [...new Set(
-      evs.filter((v: EVNormalized) => v.brand === brand.name).map((v: EVNormalized) => v.model)
+      filteredVehicles.map((v: EVNormalized) => v.model)
     )].filter(Boolean) as string[];
+    console.log('📝 Unique models:', modelNames);
+    
     const evModels: VehicleModel[] = modelNames.map((name) => ({
       id: `ev:${slugify(brand.name)}:${slugify(name)}`,
       name,
       brandId: brand.id,
       brand,
     }));
+    console.log('✅ EV models created:', evModels.length);
+    
     setModels(evModels);
     setModelSource('ev');
     setStep(2);

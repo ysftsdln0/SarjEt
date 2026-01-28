@@ -27,11 +27,41 @@ interface AuthContextType extends AuthState {
   validateAndRestoreSession: () => Promise<void>;
 }
 
+// 🚨 GEÇİCİ BYPASS - Production'da kaldırılacak!
+const BYPASS_LOGIN = false;
+
+const mockUser: User = {
+  id: 'bypass-user-1',
+  email: 'test@sarjet.com',
+  name: 'Test Kullanıcı',
+  userVehicles: [
+    {
+      id: 'mock-vehicle-1',
+      nickname: 'Tesla Model 3',
+      currentSoC: 80,
+      variant: {
+        id: 'mock-variant-1',
+        name: 'Long Range',
+        batteryCapacity: 75,
+        range: 500,
+        model: {
+          id: 'mock-model-1',
+          name: 'Model 3',
+          brand: {
+            id: 'mock-brand-1',
+            name: 'Tesla'
+          }
+        }
+      }
+    }
+  ]
+};
+
 const initialState: AuthState = {
-  isAuthenticated: false,
-  isLoading: true,
-  user: null,
-  token: null,
+  isAuthenticated: BYPASS_LOGIN,
+  isLoading: false,
+  user: BYPASS_LOGIN ? mockUser : null,
+  token: BYPASS_LOGIN ? 'bypass-token' : null,
   error: null,
 };
 
@@ -100,6 +130,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const validateAndRestoreSession = async () => {
+    // 🚨 BYPASS MODE - Skip token validation
+    if (BYPASS_LOGIN) {
+      console.log('🚨 LOGIN BYPASS ACTIVE - Skipping token validation');
+      return;
+    }
+    
     dispatch({ type: 'AUTH_START_LOADING' });
     
     try {

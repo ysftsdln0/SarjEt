@@ -1,0 +1,30 @@
+# Development Dockerfile for SarjEt Backend
+FROM node:18-alpine AS base
+
+RUN apk add --no-cache libc6-compat openssl
+
+FROM base AS development
+WORKDIR /app
+
+# Copy package files
+COPY package.json package-lock.json* ./
+
+# Install all dependencies (including dev dependencies)
+RUN npm ci
+
+# Copy prisma schema
+COPY prisma ./prisma/
+
+# Generate Prisma Client
+RUN npx prisma generate
+
+# Copy source code
+COPY . .
+
+# Create directories
+RUN mkdir -p logs cache
+
+EXPOSE 3000 9229
+
+# Development command with debugging enabled
+CMD ["npm", "run", "dev"]

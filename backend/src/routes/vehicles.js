@@ -304,6 +304,24 @@ router.post('/user-vehicles', auth, async (req, res) => {
     const userId = req.user.id;
     const { variantId, nickname, licensePlate, color, currentBatteryLevel } = req.body;
     
+    console.log('📥 Add user vehicle request:', { userId, variantId, nickname, licensePlate, color, currentBatteryLevel });
+    
+    // Validate required field
+    if (!variantId) {
+      console.error('❌ Missing variantId');
+      return res.status(400).json({ error: 'Araç varyantı ID gereklidir' });
+    }
+    
+    // Check if variant exists
+    const variantExists = await prisma.vehicleVariant.findUnique({
+      where: { id: variantId }
+    });
+    
+    if (!variantExists) {
+      console.error('❌ Variant not found:', variantId);
+      return res.status(404).json({ error: 'Seçilen araç varyantı bulunamadı' });
+    }
+    
     const userVehicle = await prisma.userVehicle.create({
       data: {
         userId,
@@ -326,10 +344,12 @@ router.post('/user-vehicles', auth, async (req, res) => {
       }
     });
     
+    console.log('✅ User vehicle created successfully:', userVehicle.id);
     res.status(201).json(userVehicle);
   } catch (error) {
-    console.error('Create user vehicle error:', error);
-    res.status(500).json({ error: 'Araç eklenemedi' });
+    console.error('❌ Create user vehicle error:', error);
+    console.error('Error details:', error.message, error.stack);
+    res.status(500).json({ error: 'Araç eklenemedi: ' + error.message });
   }
 });
 

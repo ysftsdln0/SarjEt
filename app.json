@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "Şarjet",
-    "slug": "sarjet",
-    "version": "1.0.0",
+    "name": "Voltify",
+    "slug": "voltify",
+    "version": "0.0.53",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",

@@ -175,13 +175,35 @@ export async function deleteVehicle(token: string, vehicleId: string): Promise<v
 
 export async function getVehicleBrands(): Promise<VehicleBrand[]> {
   const base = await getBaseUrl();
-  const res = await fetch(`${base}/api/vehicles/brands`);
   
-  if (!res.ok) {
-    throw new Error('Araç markaları alınamadı');
+  // Önce EV data service'den markaları al (veritabanı gerektirmez)
+  try {
+    const evRes = await fetch(`${base}/api/vehicles/ev-brands`);
+    if (evRes.ok) {
+      const brandNames: string[] = await evRes.json();
+      // String array'i VehicleBrand formatına çevir
+      return brandNames.map((name, index) => ({
+        id: `ev-${index}`,
+        name: name,
+        logo: null
+      }));
+    }
+  } catch (error) {
+    console.warn('EV brands failed, trying DB brands:', error);
   }
   
-  return await res.json();
+  // Fallback: DB brands (MySQL gerektirir)
+  try {
+    const res = await fetch(`${base}/api/vehicles/brands`);
+    if (res.ok) {
+      return await res.json();
+    }
+  } catch (error) {
+    console.warn('DB brands also failed:', error);
+  }
+  
+  // Her ikisi de başarısız olursa boş array dön
+  return [];
 }
 
 export async function getVehicleModels(brandId: string): Promise<VehicleModel[]> {
@@ -222,23 +244,50 @@ export async function getVehicleVariants(modelId: string, year?: number): Promis
   }
 }
 
-export async function addUserVehicle(vehicleVariantId: string, nickname: string, token: string): Promise<Record<string, unknown>> {
+export async function addUserVehicle(
+  variantId: string, 
+  nickname?: string,
+  token?: string,
+  licensePlate?: string,
+  color?: string,
+  currentBatteryLevel?: number
+): Promise<Record<string, unknown>> {
   const base = await getBaseUrl();
+  
+  const body: any = { variantId };
+  if (nickname) body.nickname = nickname;
+  if (licensePlate) body.licensePlate = licensePlate;
+  if (color) body.color = color;
+  if (currentBatteryLevel !== undefined) body.currentBatteryLevel = currentBatteryLevel;
+  
+  console.log('📤 Adding user vehicle with data:', body);
+  
   const res = await fetch(`${base}/api/vehicles/user-vehicles`, {
     method: 'POST',
     headers: {
-      ...withAuth(token),
+      ...withAuth(token || ''),
       'Content-Type': 'application/json',
     } as any,
-    body: JSON.stringify({ vehicleVariantId, nickname }),
+    body: JSON.stringify(body),
   });
   
+  console.log('📊 Add vehicle response status:', res.status);
+  
   if (!res.ok) {
-    const errorData = await res.json();
-    throw new Error(errorData.message || 'Araç eklenemedi');
+    const errorText = await res.text();
+    console.error('❌ Add vehicle error response:', errorText);
+    
+    try {
+      const errorData = JSON.parse(errorText);
+      throw new Error(errorData.error || errorData.message || 'Araç eklenemedi');
+    } catch (parseError) {
+      throw new Error(`Araç eklenemedi: ${res.status} - ${errorText}`);
+    }
   }
   
-  return await res.json();
+  const data = await res.json();
+  console.log('✅ Vehicle added successfully:', data);
+  return data;
 }
 
 export default { 

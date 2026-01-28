@@ -5,13 +5,19 @@ const prisma = new PrismaClient();
 
 const auth = async (req, res, next) => {
   try {
-    const token = req.header('Authorization')?.replace('Bearer ', '');
+    const authHeader = req.header('Authorization');
+    console.log('🔑 Auth header:', authHeader);
+    
+    const token = authHeader?.replace('Bearer ', '');
+    console.log('🔑 Extracted token:', token);
     
     if (!token) {
+      console.log('❌ No token provided');
       return res.status(401).json({ error: 'Authentication token required' });
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    console.log('✅ Token decoded:', decoded);
     
     // Kullanıcıyı veritabanından bul
     const user = await prisma.user.findUnique({

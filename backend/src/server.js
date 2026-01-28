@@ -24,7 +24,7 @@ const { getLocalIPAddress, getNetworkInterfaces } = require('./utils/networkUtil
 
 // Initialize Express app
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3001;
 
 // Initialize Prisma Client
 const prisma = new PrismaClient({

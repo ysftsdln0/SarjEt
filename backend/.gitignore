@@ -35,6 +35,7 @@ lerna-debug.log*
 
 # PostgreSQL
 *.sql
+!prisma/init.sql
 *.dump
 
 # Prisma
@@ -99,6 +100,11 @@ Desktop.ini
 *.key
 *.p12
 *.pfx
+
+# ===== DOCKER =====
+# Docker
+docker-compose.override.yml
+.dockerignore.local
 
 # ===== CUSTOM =====
 # Project specific

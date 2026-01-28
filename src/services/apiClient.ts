@@ -17,7 +17,7 @@ async function resolveBaseUrl(): Promise<string> {
   
   // Development fallback
   if (__DEV__) {
-    const fallbackUrl = 'http://localhost:3000';
+    const fallbackUrl = 'http://localhost:3001';
     console.warn(`[apiClient] Using fallback URL: ${fallbackUrl}`);
     return fallbackUrl;
   }

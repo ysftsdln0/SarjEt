@@ -192,6 +192,10 @@ export const AddVehicleModal: React.FC<AddVehicleModalProps> = ({
     try {
       setSubmitting(true);
       
+      console.log('🔑 Auth token in AddVehicleModal:', authToken);
+      console.log('🔑 Auth token type:', typeof authToken);
+      console.log('🔑 Auth token length:', authToken?.length);
+      
       const vehicleData: CreateVehicleData = {
         variantId: selectedVariant.id,
         nickname: nickname || undefined,
@@ -200,7 +204,14 @@ export const AddVehicleModal: React.FC<AddVehicleModalProps> = ({
         currentBatteryLevel: batteryLevel ? parseInt(batteryLevel) : undefined,
       };
 
-      await userVehicleService.addUserVehicle(selectedVariant.id, nickname, authToken);
+      await userVehicleService.addUserVehicle(
+        selectedVariant.id, 
+        nickname || undefined,
+        authToken,
+        licensePlate || undefined,
+        color || undefined,
+        batteryLevel ? parseInt(batteryLevel) : undefined
+      );
       
       Alert.alert('Başarılı', 'Araç başarıyla eklendi', [
         { text: 'Tamam', onPress: () => {

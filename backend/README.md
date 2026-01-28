@@ -1,8 +1,38 @@
 # SarjEt Backend API
 
-SarjEt uygulamasının Node.js + Prisma + PostgreSQL backend servisidir.
+SarjEt uygulamasının Node.js + Prisma + MySQL backend servisidir.
 
-## 🚀 Kurulum
+## 🐳 Docker ile Kurulum (Önerilen)
+
+Docker kullanarak tüm servisleri (backend, MySQL, Redis) tek komutla başlatabilirsiniz.
+
+### Hızlı Başlangıç
+
+```bash
+cd backend
+
+# Environment dosyasını hazırlayın
+cp .env.docker .env
+# .env dosyasındaki şifreleri ve gizli değerleri mutlaka güncelleyin!
+
+# Docker container'ları başlatın
+./docker-start.sh
+
+# veya manuel olarak
+docker-compose up -d
+```
+
+Detaylı Docker dokümantasyonu için: [DOCKER_README.md](./DOCKER_README.md)
+
+### Servis URL'leri
+- Backend API: http://localhost:3000
+- Health Check: http://localhost:3000/health
+- MySQL: localhost:3306
+- Redis: localhost:6379
+
+---
+
+## 🚀 Manuel Kurulum (Docker olmadan)
 
 ### 1. Bağımlılıkları Yükleyin
 ```bash
@@ -16,11 +46,11 @@ cp .env.example .env
 ```
 
 `.env` dosyasını düzenleyerek gerekli konfigürasyonları yapın:
-- `DATABASE_URL`: PostgreSQL bağlantı string'i
+- `DATABASE_URL`: MySQL bağlantı string'i
 - `JWT_SECRET`: JWT token şifreleme anahtarı
 - `OPENCHARGE_MAP_API_KEY`: OpenChargeMap API anahtarı
 
-### 3. Veritabanını Hazırlayın (PostgreSQL)
+### 3. Veritabanını Hazırlayın (MySQL)
 ```bash
 # Prisma migration'ları çalıştır
 npm run prisma:migrate
